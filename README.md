@@ -1,4 +1,4 @@
-# rshdmrpy
+# shapleyx
 Python module for constructing random sampling high dimensional model representations
 
 ## Installation
