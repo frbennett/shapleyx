@@ -1,0 +1,9 @@
+setup.py
+shapleyx/ARD.py
+shapleyx/__init__.py
+shapleyx/shapleyx.py
+shapleyx.egg-info/PKG-INFO
+shapleyx.egg-info/SOURCES.txt
+shapleyx.egg-info/dependency_links.txt
+shapleyx.egg-info/requires.txt
+shapleyx.egg-info/top_level.txt

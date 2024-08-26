@@ -1,0 +1,11 @@
+Metadata-Version: 2.1
+Name: shapleyx
+Version: 0.1
+Summary: Python implementation RS-HDMR
+Author: Frederick Bennett
+Author-email: frederick.bennett@des.qld.gov.au
+Keywords: sobol sensitivity analysis
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: matplotlib
+Requires-Dist: scipy
