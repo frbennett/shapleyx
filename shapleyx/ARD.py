@@ -51,7 +51,7 @@ class RegressionARD(RegressorMixin, LinearModel):
         estimated covariance matrix of the weights, computed only
         for non-zero coefficients  
        
-       
+        
     References
     ----------
     [1] Fast marginal likelihood maximisation for sparse Bayesian models (Tipping & Faul 2003)
