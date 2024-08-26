@@ -90,6 +90,9 @@ class rshdmr():
     
         
     def transform_data(self):
+        """
+        Linear transform input dataset to unit hypercube
+        """
         self.X_T = pd.DataFrame()
         self.ranges = {}
         feature_names = list(self.X.columns.values)
