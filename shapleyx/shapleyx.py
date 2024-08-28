@@ -10,6 +10,7 @@ author: 'Frederick Bennett'
 """
 #from typing import Self
 from .ARD import RegressionARD
+from .resampling import *
 from sklearn.linear_model import OrthogonalMatchingPursuit, OrthogonalMatchingPursuitCV, ARDRegression 
 import pandas as pd
 import math
