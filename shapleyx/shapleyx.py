@@ -56,7 +56,8 @@ class rshdmr():
                  n_iter = 300,
                  verbose = False,
                  method = 'ard',
-                 starting_iter = 5):
+                 starting_iter = 5,
+                 resampling = True):
 
         self.read_data(data_file)
         self.n_jobs = n_jobs
@@ -70,6 +71,7 @@ class rshdmr():
         self.verbose = verbose
         self.method = method
         self.starting_iter = starting_iter
+        self.resampling = resampling
         
     def read_data(self,data_file):
         """
@@ -374,6 +376,13 @@ class rshdmr():
         self.total['label'] = label_list
         self.total['total'] = total_list
 
+    def get_pruned_data(self):
+        pruned_data = pd.DataFrame()
+        for label in self.non_zero_coefficients['labels'] :
+            pruned_data[label] = self.X_T_L[label]
+        pruned_data['Y'] = self.Y
+        return pruned_data
+
         
 
     def run_all(self):
@@ -402,6 +411,34 @@ class rshdmr():
     
         self.get_total_index()
         total_index = self.total
-    
+
+        if self.resampling:
+            number_of_resamples = 1000
+            print_heading('Running bootstrap resampling ' + str(number_of_resamples) + ' samples')
+            pruned_data = self.get_pruned_data()
+            resampling_results =  resampling(pruned_data, number_of_resamples = number_of_resamples)
+
+            quantiles = resampling_results.quantile([0.025,0.5,0.975], axis=1)
+            quantiles = quantiles.T
+            quantiles.columns = ['lower', 'mean', 'upper']
+
+            sobol_indices['lower'] = quantiles['lower'] - quantiles['mean'] + sobol_indices['index']
+            sobol_indices['upper'] = quantiles['upper'] - quantiles['mean'] + sobol_indices['index']
+
+            shaps = get_shap(resampling_results, self.X.columns)
+            for i in shaps.columns:
+                shaps[i] = shaps[i]/(shaps[i].sum())
+
+            quantiles = shaps.quantile([0.025,0.5,0.975], axis=1)
+            quantiles = quantiles.T
+            quantiles.columns = ['lower', 'mean', 'upper']
+
+            shapley_effects['lower'] = quantiles['lower'].values - quantiles['mean'].values + shapley_effects['scaled effect'].values
+            shapley_effects['upper'] = quantiles['upper'].values - quantiles['mean'].values + shapley_effects['scaled effect'].values
+            
+            print_heading('Completed bootstrap resampling')
+            
+        print_heading('Completed all analysis')
+
         return sobol_indices, shapley_effects, total_index
  
