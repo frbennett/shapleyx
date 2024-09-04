@@ -39,9 +39,9 @@ warnings.filterwarnings('ignore')
 
 def print_heading(text):
     print()
-    print('=====================================================')
+    print('==========================================================')
     print(text)
-    print('=====================================================')
+    print('==========================================================')
     print() 
     
 
@@ -57,7 +57,9 @@ class rshdmr():
                  verbose = False,
                  method = 'ard',
                  starting_iter = 5,
-                 resampling = True):
+                 resampling = True,
+                 CI=95.0,
+                 number_of_resamples=1000):
 
         self.read_data(data_file)
         self.n_jobs = n_jobs
@@ -72,6 +74,8 @@ class rshdmr():
         self.method = method
         self.starting_iter = starting_iter
         self.resampling = resampling
+        self.CI = CI
+        self.number_of_resamples = number_of_resamples
         
     def read_data(self,data_file):
         """
@@ -177,7 +181,7 @@ class rshdmr():
             self.clf = OrthogonalMatchingPursuit(n_nonzero_coefs=self.n_iter)
         elif self.method == 'ompcv':
             print('running OMP_CV')
-            self.clf = OrthogonalMatchingPursuitCV(max_iter=self.n_iter, cv=5) 
+            self.clf = OrthogonalMatchingPursuitCV(max_iter=self.n_iter, cv=10) 
         elif self.method == 'ardsk':
             print('running ARD_SK')
             self.clf = ARDRegression(max_iter=self.n_iter, compute_score=True) 
@@ -198,7 +202,7 @@ class rshdmr():
             while not converged:
                 print(iteration)
                 clf = RegressionARD(n_iter=iteration, verbose=False)
-                results = cross_val_score(clf, self.X_T_L,self.Y, cv=3)
+                results = cross_val_score(clf, self.X_T_L,self.Y, cv=5)
                 test = np.mean(results)
                 if test > best_score :
                     best_score = test
@@ -211,6 +215,13 @@ class rshdmr():
             print('the best iteration ',     best_score_iter)   
             
             self.clf = RegressionARD(n_iter=best_score_iter, verbose=self.verbose)
+
+        elif self.method == 'ardompcv':
+            print('running ARD OMP cross validation')
+            clf = OrthogonalMatchingPursuitCV(max_iter=self.n_iter, cv=5) 
+            clf.fit(self.X_T_L,self.Y)
+            num_iterations = clf.n_nonzero_coefs_
+            self.clf = RegressionARD(num_iterations, verbose=self.verbose)
              
 #        self.clf = ARDRegression(n_iter=self.n_iter, verbose=True, tol=1.0e-3)
         self.clf.fit(self.X_T_L,self.Y)
@@ -413,12 +424,19 @@ class rshdmr():
         total_index = self.total
 
         if self.resampling:
-            number_of_resamples = 1000
-            print_heading('Running bootstrap resampling ' + str(number_of_resamples) + ' samples')
+            number_of_resamples = self.number_of_resamples
+
+            upper = 100-(100-self.CI)/2
+            lower = 100-upper
+
+
+
+            print_heading('Running bootstrap resampling ' + str(number_of_resamples) + ' samples for ' + str(self.CI) + '% CI')
             pruned_data = self.get_pruned_data()
             resampling_results =  resampling(pruned_data, number_of_resamples = number_of_resamples)
 
-            quantiles = resampling_results.quantile([0.025,0.5,0.975], axis=1)
+
+            quantiles = resampling_results.quantile([lower/100,0.5,upper/100], axis=1)
             quantiles = quantiles.T
             quantiles.columns = ['lower', 'mean', 'upper']
 
@@ -437,7 +455,7 @@ class rshdmr():
             shapley_effects['upper'] = quantiles['upper'].values - quantiles['mean'].values + shapley_effects['scaled effect'].values
             
             print_heading('Completed bootstrap resampling')
-            
+
         print_heading('Completed all analysis')
 
         return sobol_indices, shapley_effects, total_index

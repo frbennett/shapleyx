@@ -2,6 +2,9 @@ from sklearn.base import RegressorMixin, BaseEstimator
 from sklearn.linear_model._base import LinearModel, LinearClassifierMixin
 from sklearn.utils import check_X_y,check_array,as_float_array
 
+from sklearn import linear_model
+from sklearn.model_selection import cross_val_score
+
 from numpy.linalg import LinAlgError
 
 from scipy.linalg import solve_triangular
@@ -69,6 +72,7 @@ class RegressionARD(RegressorMixin, LinearModel):
         self.fit_intercept   = fit_intercept
         self.copy_X          = copy_X
         self.verbose         = verbose
+        self.cv              = True
         
         
     def _center_data(self,X,y):
@@ -107,6 +111,7 @@ class RegressionARD(RegressorMixin, LinearModel):
         X, y = check_X_y(X, y, dtype=np.float64, y_numeric=True)
         X, y, X_mean, y_mean, X_std = self._center_data(X, y)
         n_samples, n_features = X.shape
+        cv_list = []
 
         #  precompute X'*Y , X'*X for faster iterations & allocate memory for
         #  sparsity & quality vectors
@@ -169,6 +174,14 @@ class RegressionARD(RegressorMixin, LinearModel):
             # update precision parameters of coefficients
             A,converged  = update_precisions(Q,S,q,s,A,active,self.tol,
                                              n_samples,False)
+# ***************************************            
+            if self.cv :
+                X_cv = X.T[active].T
+                cv_clf = linear_model.ARDRegression(max_iter=self.n_iter)
+                cv_results = cross_val_score(cv_clf, X_cv,y, cv=10, scoring='neg_root_mean_squared_error')
+                cv_list.append(cv_results.mean())
+                print(i, cv_results.mean())
+            
             if self.verbose:
                 print(('Iteration: {0}, number of features '
                        'in the model: {1}').format(i,np.sum(active)))
@@ -193,9 +206,10 @@ class RegressionARD(RegressorMixin, LinearModel):
         self.lambda_       = A
         self.alpha_        = beta
         self._set_intercept(X_mean,y_mean,X_std)
+        print(max(enumerate(cv_list), key=lambda x: x[1]))
         return self
-    
-
+        
+        
     def _posterior_dist(self,A,beta,XX,XY,full_covar=False):
         '''
         Calculates mean and covariance matrix of posterior distribution
