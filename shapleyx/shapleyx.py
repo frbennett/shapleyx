@@ -28,6 +28,10 @@ import json
 from scipy.stats import bootstrap
 from sklearn.model_selection import cross_validate 
 from sklearn.model_selection import cross_val_score
+
+from .pyquotegen import quotes
+import textwrap
+
 #from ARD import RegressionARD
 #from sklearn.linear_model import ARDRegression 
 
@@ -59,7 +63,8 @@ class rshdmr():
                  starting_iter = 5,
                  resampling = True,
                  CI=95.0,
-                 number_of_resamples=1000):
+                 number_of_resamples=1000,
+                 cv_tol = 0.1):
 
         self.read_data(data_file)
         self.n_jobs = n_jobs
@@ -76,6 +81,7 @@ class rshdmr():
         self.resampling = resampling
         self.CI = CI
         self.number_of_resamples = number_of_resamples
+        self.cv_tol = cv_tol 
         
     def read_data(self,data_file):
         """
@@ -175,7 +181,7 @@ class rshdmr():
         start_time = time.perf_counter()
         if self.method == 'ard':
             print('running ARD')
-            self.clf = RegressionARD(n_iter=self.n_iter, verbose=self.verbose)
+            self.clf = RegressionARD(n_iter=self.n_iter, verbose=self.verbose, cv_tol=self.cv_tol)
         elif self.method == 'omp':
             print('running OMP')
             self.clf = OrthogonalMatchingPursuit(n_nonzero_coefs=self.n_iter)
@@ -458,5 +464,11 @@ class rshdmr():
 
         print_heading('Completed all analysis')
 
+        quote = quotes.get_quote()
+        print_heading(textwrap.fill(quote, 58))
+        
+#        print(textwrap.fill(quote, 50))
+#        print('')
+        
         return sobol_indices, shapley_effects, total_index
  

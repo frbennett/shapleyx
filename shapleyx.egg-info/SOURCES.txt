@@ -1,6 +1,8 @@
+README.md
 setup.py
 shapleyx/ARD.py
 shapleyx/__init__.py
+shapleyx/resampling.py
 shapleyx/shapleyx.py
 shapleyx.egg-info/PKG-INFO
 shapleyx.egg-info/SOURCES.txt

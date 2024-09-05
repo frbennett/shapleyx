@@ -65,7 +65,7 @@ class RegressionARD(RegressorMixin, LinearModel):
     '''
     
     def __init__( self, n_iter = 300, tol = 1e-3, fit_intercept = True, 
-                  copy_X = True, verbose = False):
+                  copy_X = True, verbose = False, cv_tol = 0.1):
         self.n_iter          = n_iter
         self.tol             = tol
         self.scores_         = list()
@@ -73,6 +73,7 @@ class RegressionARD(RegressorMixin, LinearModel):
         self.copy_X          = copy_X
         self.verbose         = verbose
         self.cv              = True
+        self.cv_tol          = cv_tol
         
         
     def _center_data(self,X,y):
@@ -112,6 +113,7 @@ class RegressionARD(RegressorMixin, LinearModel):
         X, y, X_mean, y_mean, X_std = self._center_data(X, y)
         n_samples, n_features = X.shape
         cv_list = []
+        current_r = 0
 
         #  precompute X'*Y , X'*X for faster iterations & allocate memory for
         #  sparsity & quality vectors
@@ -180,7 +182,7 @@ class RegressionARD(RegressorMixin, LinearModel):
                 cv_clf = linear_model.Ridge()
                 cv_results = cross_val_score(cv_clf, X_cv,y, cv=10)
                 percentage_change = (cv_results.mean() - current_r)/current_r * 100
-                if percentage_change < 0.01 :
+                if percentage_change < self.cv_tol :
                     converged = True
                 current_r = cv_results.mean()
                 cv_list.append(cv_results.mean())
