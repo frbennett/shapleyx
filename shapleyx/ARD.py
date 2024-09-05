@@ -177,10 +177,15 @@ class RegressionARD(RegressorMixin, LinearModel):
 # ***************************************            
             if self.cv :
                 X_cv = X.T[active].T
-                cv_clf = linear_model.ARDRegression(max_iter=self.n_iter)
-                cv_results = cross_val_score(cv_clf, X_cv,y, cv=10, scoring='neg_root_mean_squared_error')
+                cv_clf = linear_model.Ridge()
+                cv_results = cross_val_score(cv_clf, X_cv,y, cv=10)
+                percentage_change = (cv_results.mean() - current_r)/current_r * 100
+                if percentage_change < 0.01 :
+                    converged = True
+                current_r = cv_results.mean()
                 cv_list.append(cv_results.mean())
-                print(i, cv_results.mean())
+                print(i, cv_results.mean(), percentage_change)
+
             
             if self.verbose:
                 print(('Iteration: {0}, number of features '
