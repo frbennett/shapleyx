@@ -52,8 +52,8 @@ def print_heading(text):
 class rshdmr():
     
     def __init__(self,data_file, polys = [10, 5],
-                n_jobs = -1,
-                test_size = 0.25,
+                 n_jobs = -1,
+                 test_size = 0.25,
                  limit = 2.0,
                  k_best = 1,
                  p_average = 2,
@@ -64,7 +64,7 @@ class rshdmr():
                  resampling = True,
                  CI=95.0,
                  number_of_resamples=1000,
-                 cv_tol = 0.1):
+                 cv_tol = 0.05):
 
         self.read_data(data_file)
         self.n_jobs = n_jobs
@@ -462,10 +462,13 @@ class rshdmr():
             
             print_heading('Completed bootstrap resampling')
 
-        print_heading('Completed all analysis')
+        quote = quotes.get_quote() 
+        print_heading('                  Completed all analysis \n' + 
+                      '                 ------------------------ \n\n ' + 
+                      textwrap.fill(quote, 58))
 
-        quote = quotes.get_quote()
-        print_heading(textwrap.fill(quote, 58))
+ #       quote = quotes.get_quote()
+ #       print_heading(textwrap.fill(quote, 58))
         
 #        print(textwrap.fill(quote, 50))
 #        print('')
