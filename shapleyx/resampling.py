@@ -56,7 +56,6 @@ def resampling(dataset, number_of_resamples = 1000):
     
         ridgereg =  Ridge() 
         ridgereg.fit(sample, sampleY)
-        ridgereg.fit(sample, sampleY)
         y_pred = ridgereg.predict(sample)
         evs = metrics.explained_variance_score(y_pred,sampleY)
         indicies = ridgereg.coef_**2

@@ -29,8 +29,12 @@ from scipy.stats import bootstrap
 from sklearn.model_selection import cross_validate 
 from sklearn.model_selection import cross_val_score
 
+from pawn import estimate_pawn
+from xsampler import xsampler
 from .pyquotegen import quotes
 import textwrap
+
+from scipy.stats import ks_2samp 
 
 #from ARD import RegressionARD
 #from sklearn.linear_model import ARDRegression 
@@ -97,7 +101,7 @@ class rshdmr():
         # we can clean up the original dataframe
         del df
         
-    def shift_legendre(self,n,x):
+    def shift_legendre(self, n,x):
         funct = math.sqrt(2*n+1) * sp.eval_sh_legendre(n,x)
         return funct
     
@@ -400,7 +404,11 @@ class rshdmr():
         pruned_data['Y'] = self.Y
         return pruned_data
 
-        
+    def get_pawn(self, S=10) :
+        num_features = len(self.X.columns)
+        pawn_results = estimate_pawn(self.X.columns, num_features, self.X.values, self.Y, S=S)
+        return pawn_results
+
 
     def run_all(self):
         print_heading('Transforming data to unit hypercube')
@@ -474,4 +482,83 @@ class rshdmr():
 #        print('')
         
         return sobol_indices, shapley_effects, total_index
+    
+    # put X into a data frame and transform
+    def predict(self, X):
+        X = pd.DataFrame(X, columns=self.X.columns)
+        X_T = pd.DataFrame()
+        for column in self.X.columns:
+            max = self.ranges[column][1]
+            min = self.ranges[column][0]
+            X_T[column] = (X[column] - min) / (max-min)
+
+        #build regression model
+        prunedX = self.get_pruned_data()
+        prunedY = prunedX['Y']
+        del prunedX['Y']
+        ridgereg =  Ridge()
+        ridgereg.fit(prunedX, prunedY)
+
+        # Expand X_T into pruned basis
+        labels = self.get_pruned_data().columns
+        labels = [i for i in labels if i != 'Y']
+
+        # create predict dataframe
+        num_rows = len(X)
+        num_columns = len(labels)
+        predictX = np.ones((num_rows, num_columns))
+
+        for i in range(num_columns):
+            label = labels[i]
+            for function in label.split('*'):
+                func_args = function.split('_')
+                predictX[:,i] *= self.shift_legendre(int(func_args[1]), X_T[func_args[0]])
+
+        return ridgereg.predict(predictX)
+    
+    def get_pawnx(self, Nu, Nc, M):
+        results = {} 
+        resultsp = {}
+        labels = self.X.columns
+        num_features = len(self.ranges)
+        #generate reference set
+        x_ref = xsampler(Nu, self.ranges)
+        y_ref = self.predict(x_ref)
+        print(num_features)
+        for j in range(num_features):
+            all_stats = []
+            all_p = []
+            for i in range(M):
+                Xi = np.random.rand()
+                Xn = xsampler(Nc, self.ranges)
+                Xn[:,j] = Xi
+                Yn = self.predict(Xn)
+                ks = ks_2samp(y_ref, Yn)
+                all_stats.append(ks.statistic)
+                all_p.append(ks.pvalue)
+
+            min = np.min(all_stats)
+            mean = np.mean(all_stats)
+            median = np.median(all_stats)
+            max = np.max(all_stats)
+            std = np.std(all_stats)
+
+            minp = np.min(all_p)
+            meanp = np.mean(all_p)
+            medianp = np.median(all_p)
+            maxp = np.max(all_p)
+            stdp = np.std(all_p)
+
+
+            results[labels[j]] = [min, mean, median, max, std] 
+            resultsp[labels[j]] = [minp, meanp, medianp, maxp, stdp] 
+            print(j+1, np.median(all_stats),np.std(all_stats))
+
+        headings = ['minimum', 'mean', 'median', 'maximum', 'stdev']
+        results = pd.DataFrame(results).T
+        resultsp = pd.DataFrame(resultsp).T
+
+        results.columns = headings
+        resultsp.columns = headings
+        return results, resultsp
  
