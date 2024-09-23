@@ -516,7 +516,8 @@ class rshdmr():
 
         return ridgereg.predict(predictX)
     
-    def get_pawnx(self, Nu, Nc, M):
+    def get_pawnx(self, Nu, Nc, M, C=95):
+        reject = (100-C)/100
         results = {} 
         resultsp = {}
         labels = self.X.columns
@@ -526,6 +527,7 @@ class rshdmr():
         y_ref = self.predict(x_ref)
         print(num_features)
         for j in range(num_features):
+            accept = 'accept'
             all_stats = []
             all_p = []
             for i in range(M):
@@ -548,13 +550,14 @@ class rshdmr():
             medianp = np.median(all_p)
             maxp = np.max(all_p)
             stdp = np.std(all_p)
+            if minp < reject :
+                accept = 'reject'
 
-
-            results[labels[j]] = [min, mean, median, max, std] 
-            resultsp[labels[j]] = [minp, meanp, medianp, maxp, stdp] 
+            results[labels[j]] = [min, mean, median, max, std, accept] 
+            resultsp[labels[j]] = [minp, meanp, medianp, maxp, stdp, accept] 
             print(j+1, np.median(all_stats),np.std(all_stats))
 
-        headings = ['minimum', 'mean', 'median', 'maximum', 'stdev']
+        headings = ['minimum', 'mean', 'median', 'maximum', 'stdev', 'null hyp']
         results = pd.DataFrame(results).T
         resultsp = pd.DataFrame(resultsp).T
 
