@@ -1,12 +1,9 @@
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
-# Welcome to ESMDAPY
-A Python implementation of the Ensemble Smoother with Multiple Data Assimilations (ES-MDA). 
-$$
-\prod_{i=0}^{5}x_{i}+\frac{a}{b}
-$$
+# Welcome to ShapleyX
+A Python implementation of some methods for parameter sensitivity analysis from a .
 
 
-
+![alt text](./images/image.png)
 ## Purpose
 
 SPOTPY is a Python framework that enables the use of Computational optimization techniques for calibration, uncertainty and sensitivity analysis techniques of almost every (environmental-) model. The package is puplished in the open source journal PLoS One:
