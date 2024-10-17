@@ -185,12 +185,7 @@ class rshdmr():
         start_time = time.perf_counter()
         if self.method == 'ard':
             print('running ARD')
-            self.clf = RegressionARD(n_iter=self.n_iter, verbose=self.verbose, cv=False)
-            
-        if self.method == 'ard_cv':
-            print('running ARD')
-            self.clf = RegressionARD(n_iter=self.n_iter, verbose=self.verbose, cv_tol=self.cv_tol, cv=True)
-            
+            self.clf = RegressionARD(n_iter=self.n_iter, verbose=self.verbose, cv_tol=self.cv_tol)
         elif self.method == 'omp':
             print('running OMP')
             self.clf = OrthogonalMatchingPursuit(n_nonzero_coefs=self.n_iter)
@@ -521,7 +516,8 @@ class rshdmr():
 
         return ridgereg.predict(predictX)
     
-    def get_pawnx(self, Nu, Nc, M, alpha=0.05):
+    def get_pawnx(self, Nu, Nc, M, C=95):
+        alpha = (100-C)/100
         calpha = np.sqrt(-np.log(alpha/2)/2)
         Dnm = np.sqrt((Nu+Nc)/(Nu*Nc))
         critical_value = Dnm*calpha
@@ -572,5 +568,5 @@ class rshdmr():
 
         results.columns = headings
         resultsp.columns = headings
-        return results  
+        return results, resultsp
  

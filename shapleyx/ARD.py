@@ -65,14 +65,14 @@ class RegressionARD(RegressorMixin, LinearModel):
     '''
     
     def __init__( self, n_iter = 300, tol = 1e-3, fit_intercept = True, 
-                  copy_X = True, verbose = False, cv_tol = 0.1):
+                  copy_X = True, verbose = False, cv_tol = 0.1, cv=False):
         self.n_iter          = n_iter
         self.tol             = tol
         self.scores_         = list()
         self.fit_intercept   = fit_intercept
         self.copy_X          = copy_X
         self.verbose         = verbose
-        self.cv              = True
+        self.cv              = cv
         self.cv_tol          = cv_tol
         
         
@@ -213,7 +213,8 @@ class RegressionARD(RegressorMixin, LinearModel):
         self.lambda_       = A
         self.alpha_        = beta
         self._set_intercept(X_mean,y_mean,X_std)
-        print(max(enumerate(cv_list), key=lambda x: x[1]))
+        if self.cv :
+            print(max(enumerate(cv_list), key=lambda x: x[1]))
         return self
         
         
