@@ -1,10 +1,16 @@
 <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
 # Welcome to ShapleyX
-A Python implementation of some methods for parameter sensitivity analysis from a .
+ShapleyX is a Python implementation of various methods for parameter sensitivity analysis of tabulated data. 
+
+## Available Methods
+* Sobol sensitivity indices to arbitrary order
+* Shapley effects
+* Owen-Shapley interactions
+* PAWN distribution based sensitivity analysis
 
 
+## Getting Started
 ![alt text](./images/image.png)
-## Purpose
 
 SPOTPY is a Python framework that enables the use of Computational optimization techniques for calibration, uncertainty and sensitivity analysis techniques of almost every (environmental-) model. The package is puplished in the open source journal PLoS One:
 
