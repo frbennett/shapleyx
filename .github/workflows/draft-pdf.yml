@@ -1,9 +1,6 @@
 
 name: Draft PDF
-on:
-  push:
-    branch:
-      - main
+on: [push]
 
 jobs:
   paper:
