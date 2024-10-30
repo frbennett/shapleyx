@@ -5,17 +5,12 @@ tags:
   - sensitivity analysis
   - high dimensional model representation
 authors:
-  - name: Reto Stauffer
+  - name: Frederick R. Bennett
     orcid: 0000-0001-8868-6737
-    affiliation: "1, 2"
-  - name: Achim Zeileis
-    orcid: 0000-0003-0918-3766
     affiliation: 1
 affiliations:
- - name: Department of Statistics, Universität Innsbruck, Austria
+ - name: Department of Environment, Science and Innovation, Queensland, Australia
    index: 1
- - name: Digital Science Center, Universität Innsbruck, Austria
-   index: 2
 date: 28 October 2024
 bibliography: paper/paper.bib
 ---
@@ -43,6 +38,6 @@ the range of techniques into typical modelling workflows.
 
 The library facilitates the generation of samples associated with a model's
 inputs, and then provides functions to analyse the outputs from a model and
-visualise those results.
+visualise those results [@saltelli_sensitivity_2023].
 
 # References
