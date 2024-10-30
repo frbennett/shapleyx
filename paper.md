@@ -1,14 +1,12 @@
 ---
-title: 'colorspace: A Python Toolbox for Manipulating and Assessing Colors and Palettes'
+title: 'ShapleyX: A Python Package for Meta-Model Based Parameter Sensitivity Analysis'
 tags:
   - Python
-  - color palettes
-  - color vision
-  - visualization
-  - assesment
+  - sensitivity analysis
+  - high dimensional model representation
 authors:
   - name: Reto Stauffer
-    orcid: 0000-0002-3798-5507
+    orcid: 0000-0001-8868-6737
     affiliation: "1, 2"
   - name: Achim Zeileis
     orcid: 0000-0003-0918-3766
