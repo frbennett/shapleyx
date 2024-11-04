@@ -525,7 +525,7 @@ class rshdmr():
         calpha = np.sqrt(-np.log(alpha/2)/2)
         Dnm = np.sqrt((Nu+Nc)/(Nu*Nc))
         critical_value = Dnm*calpha
-        print(f'for the Kolmogorov–Smirnov test with alpha = {alpha:.3f} the critical value is {critical_value:.3f}')
+        print(f'For the Kolmogorov–Smirnov test with alpha = {alpha:.3f} the critical value is {critical_value:.3f}')
         
         results = {} 
         resultsp = {}
