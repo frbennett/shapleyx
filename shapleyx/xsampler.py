@@ -1,6 +1,15 @@
 from scipy.stats import qmc
 
 def xsampler(n, ranges):
+    """_summary_
+
+    Args:
+        n (_type_): _description_
+        ranges (_type_): _description_
+
+    Returns:
+        _type_: _description_
+    """
     num_features = len(ranges)
     lower = []
     upper = []

@@ -29,8 +29,8 @@ from scipy.stats import bootstrap
 from sklearn.model_selection import cross_validate 
 from sklearn.model_selection import cross_val_score
 
-from pawn import estimate_pawn
-from xsampler import xsampler
+from .pawn import estimate_pawn
+from .xsampler import xsampler
 from .pyquotegen import quotes
 import textwrap
 
@@ -521,7 +521,20 @@ class rshdmr():
 
         return ridgereg.predict(predictX)
     
-    def get_pawnx(self, Nu, Nc, M, alpha=0.05):
+    def get_pawnx(self, Nu : int, Nc : int, M : int, alpha=0.05):
+        """
+        Calculate PAWN indices for the RS-HDMR surrogate function
+
+        Args:
+            Nu (int): Number of unconditioned samples
+            Nc (int): Number of conditioned samples
+            M (int): Number of KS samples
+            alpha (float, optional): p value for KS test. Defaults to 0.05.
+
+        Returns:
+            _type_: Dataframe
+        """
+        
         calpha = np.sqrt(-np.log(alpha/2)/2)
         Dnm = np.sqrt((Nu+Nc)/(Nu*Nc))
         critical_value = Dnm*calpha
