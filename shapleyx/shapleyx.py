@@ -54,6 +54,69 @@ def print_heading(text):
     
 
 class rshdmr():
+
+    """
+    *******************************************************************************
+    Global Sensitivity Analysis using Sparse Random Sampling - High Dimensional 
+    Model Representation (HDMR) with Group Method of Data Handling (GMDH) for 
+    parameter selection and linear regression for parameter refinement.
+    *******************************************************************************
+    
+    This module implements a global sensitivity analysis (GSA) framework using 
+    Sparse Random Sampling (SRS) combined with High Dimensional Model Representation 
+    (HDMR). The method employs the Group Method of Data Handling (GMDH) for parameter 
+    selection and linear regression for parameter refinement. The framework is designed 
+    to analyze the sensitivity of model outputs to input parameters, providing insights 
+    into the relative importance of each parameter and their interactions.
+    
+    The module includes functionality for:
+    - Reading and preprocessing input data.
+    - Transforming data to a unit hypercube.
+    - Building basis functions using Legendre polynomials.
+    - Running regression analysis using various methods (ARD, OMP, etc.).
+    - Evaluating Sobol indices, Shapley effects, and total indices.
+    - Performing bootstrap resampling for confidence intervals.
+    - Calculating PAWN indices for sensitivity analysis.
+    - Predicting model outputs based on input parameters.
+    
+    Author: Frederick Bennett
+    
+    Classes:
+        rshdmr: Main class for performing global sensitivity analysis using RS-HDMR.
+    
+    Methods:
+        __init__: Initializes the RS-HDMR object with input data and parameters.
+        read_data: Reads and preprocesses input data.
+        transform_data: Transforms input data to a unit hypercube.
+        legendre_expand: Expands the input data using Legendre polynomials.
+        run_regression: Runs regression analysis using specified method.
+        stats: Computes and prints model performance statistics.
+        plot_hdmr: Plots predicted vs. experimental values.
+        eval_sobol_indices: Evaluates Sobol indices for sensitivity analysis.
+        get_shapley: Computes Shapley effects for sensitivity analysis.
+        get_total_index: Computes total sensitivity indices.
+        get_pruned_data: Returns pruned dataset based on non-zero coefficients.
+        get_pawn: Computes PAWN indices for sensitivity analysis.
+        run_all: Runs the entire RS-HDMR analysis pipeline.
+        predict: Predicts model outputs based on input parameters.
+        get_pawnx: Computes PAWN indices with additional statistical analysis.
+    
+    Example:
+        # Initialize RS-HDMR object
+        analyzer = rshdmr(data_file='input_data.csv', polys=[10, 5], method='ard')
+        
+        # Run the entire analysis pipeline
+        sobol_indices, shapley_effects, total_index = analyzer.run_all()
+        
+        # Predict model outputs for new input data
+        predictions = analyzer.predict(new_input_data)
+        
+        # Compute PAWN indices
+        pawn_results = analyzer.get_pawn(S=10)
+    """
+    
+    # Rest of the code...
+    
     
     def __init__(self,data_file, polys = [10, 5],
                  n_jobs = -1,
@@ -87,42 +150,154 @@ class rshdmr():
         self.number_of_resamples = number_of_resamples
         self.cv_tol = cv_tol 
         
-    def read_data(self,data_file):
+    def read_data(self, data_file):
         """
-        dsdsd
+        Reads data from a file or DataFrame and initializes the X and Y attributes.
+
+        This method reads input data from either a CSV file or a pandas DataFrame. 
+        The input data is expected to contain a column labeled 'Y' representing the 
+        target variable. The remaining columns are treated as input features (X).
+
+        Parameters:
+        -----------
+        data_file : str or pd.DataFrame
+            The file path to the CSV file or a pandas DataFrame containing the data.
+            If a string is provided, it is assumed to be the path to a CSV file.
+            If a DataFrame is provided, it is used directly.
+
+        Attributes:
+        -----------
+        self.Y : pd.Series
+            A pandas Series containing the target variable 'Y' extracted from the input data.
+        self.X : pd.DataFrame
+            A pandas DataFrame containing the input features (all columns except 'Y').
+
+        Notes:
+        ------
+        - If the input is a CSV file, it is read into a DataFrame using `pd.read_csv`.
+        - The original DataFrame (`df`) is deleted after extracting `X` and `Y` to save memory.
+        - The method assumes the presence of a column named 'Y' in the input data.
+
+        Example:
+        --------
+        # Initialize the class
+        analyzer = rshdmr()
+
+        # Read data from a CSV file
+        analyzer.read_data('input_data.csv')
+
+        # Read data from a DataFrame
+        import pandas as pd
+        data = pd.DataFrame({'X1': [1, 2, 3], 'X2': [4, 5, 6], 'Y': [7, 8, 9]})
+        analyzer.read_data(data)
         """
         if isinstance(data_file, pd.DataFrame):
-            print(' found a dataframe')
+            print('Found a DataFrame')
             df = data_file
-        if isinstance(data_file, str):
+        elif isinstance(data_file, str):
             df = pd.read_csv(data_file)
+        else:
+            raise ValueError("data_file must be either a pandas DataFrame or a file path (str).")
+        
         self.Y = df['Y']
-        self.X = df.drop('Y', axis=1) 
-        # we can clean up the original dataframe
+        self.X = df.drop('Y', axis=1)
+        
+        # Clean up the original DataFrame to save memory
         del df
         
-    def shift_legendre(self, n,x):
-        funct = math.sqrt(2*n+1) * sp.eval_sh_legendre(n,x)
-        return funct
+
+        
+
+            
+    def shift_legendre(self, n, x):
+        """
+        Computes the shifted Legendre polynomial of degree `n` evaluated at `x` and scales
+        by a normalization factor.
+
+        Args:
+            n (int): Degree of the shifted Legendre polynomial.
+            x (float or array-like): Point(s) at which the polynomial is evaluated.
+
+        Returns:
+            float or array-like: Value of the shifted Legendre polynomial at `x`.
+        """
+        normalization_factor = math.sqrt(2 * n + 1)
+        polynomial_value = sp.eval_sh_legendre(n, x)
+        return normalization_factor * polynomial_value
+
     
         
     def transform_data(self):
         """
-        Linear transform input dataset to unit hypercube
+        Linearly transforms the input dataset to a unit hypercube.
+    
+        This method scales each feature in the dataset to the range [0, 1] using min-max scaling.
+        It also stores the original min and max values for each feature in the `ranges` attribute.
+    
+        Attributes:
+            self.X_T (pd.DataFrame): Transformed dataset with features scaled to [0, 1].
+            self.ranges (dict): Dictionary storing the original min and max values for each feature.
         """
         self.X_T = pd.DataFrame()
         self.ranges = {}
-        feature_names = list(self.X.columns.values)
-        print(feature_names)
-        for column in feature_names:
-            max = self.X[column].max()
-            min = self.X[column].min()
-            print(column + " : min " + str(min) + " max " + str(max)) 
-            self.X_T[column] = (self.X[column] - min) / (max-min)
-            self.ranges[column] = [min,max]
+    
+        for column in self.X.columns:
+            feature_min = self.X[column].min()
+            feature_max = self.X[column].max()
+    
+            # Log the min and max values for debugging or informational purposes
+            print(f"{column}: min = {feature_min}, max = {feature_max}")
+    
+            # Perform min-max scaling to transform the feature to [0, 1]
+            self.X_T[column] = (self.X[column] - feature_min) / (feature_max - feature_min)
+    
+            # Store the original min and max values for potential inverse transformations
+            self.ranges[column] = [feature_min, feature_max]
+    
         
             
     def legendre_expand(self):
+        """
+        Expands the input features using Legendre polynomials and generates polynomial combinations.
+    
+        This method performs the following steps:
+        1. For each column in `self.X_T`, it computes Legendre polynomial expansions up to the order specified by `self.max_1st`.
+           The results are stored in `self.X_T_L` as new columns, with column names in the format `<column>_<order>`.
+        2. Generates polynomial combinations of the expanded features based on the polynomial orders specified in `self.polys`.
+        3. Constructs a matrix of polynomial terms and concatenates them into a final DataFrame, which is stored in `self.X_T_L`.
+    
+        Attributes:
+            self.primitive_variables (list): A list of primitive variable names used in the expansion.
+            self.poly_orders (list): A list of polynomial orders corresponding to each primitive variable.
+            self.X_T_L (pd.DataFrame): A DataFrame containing the expanded Legendre polynomial terms and their combinations.
+    
+        Steps:
+            1. For each column in `self.X_T`:
+                - Compute Legendre polynomial expansions for orders from 1 to `self.max_1st`.
+                - Append the primitive variable name and polynomial order to `self.primitive_variables` and `self.poly_orders`.
+                - Store the expanded terms in `self.X_T_L` with appropriate column headings.
+            2. For each polynomial order in `self.polys`:
+                - Generate a basis set of terms for the current polynomial order.
+                - Create valid combinations of terms, ensuring that each combination contains unique primitive variables.
+                - Compute the polynomial terms by multiplying the corresponding columns in `self.X_T_L`.
+                - Store the computed terms in a matrix and concatenate them into the final DataFrame `generated_set`.
+            3. Update `self.X_T_L` with the final generated set of polynomial terms.
+    
+        Notes:
+            - The method assumes that `self.X_T`, `self.max_1st`, `self.polys`, and `self.Y` are properly initialized.
+            - The `self.shift_legendre` method is used to compute the Legendre polynomial values.
+            - The `combinations` function from the `itertools` module is used to generate term combinations.
+            - The method prints the number of terms generated for each polynomial order.
+    
+        Example:
+            If `self.X_T` contains columns 'A' and 'B', and `self.max_1st` is 2, the method will compute:
+            - Legendre polynomial expansions for 'A_1', 'A_2', 'B_1', and 'B_2'.
+            - If `self.polys` is [1, 2], it will generate:
+                - First-order terms: 'A_1', 'B_1'.
+                - Second-order terms: 'A_1*B_1', 'A_2*B_1', etc.
+        """
+        # Method implementation...
+    
         self.primitive_variables = []
         self.poly_orders = []
         self.X_T_L = pd.DataFrame()
