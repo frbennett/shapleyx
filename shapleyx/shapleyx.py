@@ -46,11 +46,14 @@ import warnings
 warnings.filterwarnings('ignore')
 
 def print_heading(text):
-    print()
-    print('==========================================================')
-    print(text)
-    print('==========================================================')
-    print() 
+    """
+    Prints a heading with the given text, surrounded by a border of equal signs.
+
+    Args:
+        text (str): The text to be displayed as the heading.
+    """
+    border = '=' * 60
+    print(f"\n{border}\n{text}\n{border}\n")
     
 
 class rshdmr():
@@ -651,16 +654,13 @@ class rshdmr():
             print_heading('Completed bootstrap resampling')
 
         quote = quotes.get_quote() 
-        print_heading('                  Completed all analysis \n' + 
-                      '                 ------------------------ \n\n ' + 
-                      textwrap.fill(quote, 58))
-
- #       quote = quotes.get_quote()
- #       print_heading(textwrap.fill(quote, 58))
-        
-#        print(textwrap.fill(quote, 50))
-#        print('')
-        
+        message = (
+            "                  Completed all analysis\n"
+            "                 ------------------------\n\n"
+            f"{textwrap.fill(quote, 58)}"
+        )
+        print_heading(message)
+               
         return sobol_indices, shapley_effects, total_index
     
     # put X into a data frame and transform
@@ -696,69 +696,84 @@ class rshdmr():
 
         return ridgereg.predict(predictX)
     
-    def get_pawnx(self, Nu : int, Nc : int, M : int, alpha=0.05):
+    def get_pawnx(self, num_unconditioned: int, num_conditioned: int, num_ks_samples: int, alpha: float = 0.05) -> pd.DataFrame:
         """
-        Calculate PAWN indices for the RS-HDMR surrogate function
-
+        Calculate PAWN indices for the RS-HDMR surrogate function.
+    
         Args:
-            Nu (int): Number of unconditioned samples
-            Nc (int): Number of conditioned samples
-            M (int): Number of KS samples
-            alpha (float, optional): p value for KS test. Defaults to 0.05.
-
+            num_unconditioned (int): Number of unconditioned samples.
+            num_conditioned (int): Number of conditioned samples.
+            num_ks_samples (int): Number of KS samples.
+            alpha (float, optional): p-value for KS test. Defaults to 0.05.
+    
         Returns:
-            _type_: Dataframe
+            pd.DataFrame: DataFrame containing PAWN indices and statistics.
         """
-        
-        calpha = np.sqrt(-np.log(alpha/2)/2)
-        Dnm = np.sqrt((Nu+Nc)/(Nu*Nc))
-        critical_value = Dnm*calpha
-        print(f'For the Kolmogorov–Smirnov test with alpha = {alpha:.3f} the critical value is {critical_value:.3f}')
-        
-        results = {} 
-        resultsp = {}
-        labels = self.X.columns
+        # Calculate critical value for KS test
+        calpha = np.sqrt(-np.log(alpha / 2) / 2)
+        dnm = np.sqrt((num_unconditioned + num_conditioned) / (num_unconditioned * num_conditioned))
+        critical_value = dnm * calpha
+        print(f'For the Kolmogorov–Smirnov test with alpha = {alpha:.3f}, the critical value is {critical_value:.3f}')
+    
+        # Initialize dictionaries to store results
+        results = {}
+        results_p = {}
+        feature_labels = self.X.columns
         num_features = len(self.ranges)
-        #generate reference set
-        x_ref = xsampler(Nu, self.ranges)
+    
+        # Generate reference set
+        x_ref = xsampler(num_unconditioned, self.ranges)
         y_ref = self.predict(x_ref)
-        print(num_features)
+        print(f"Number of features: {num_features}")
+    
+        # Iterate over each feature
         for j in range(num_features):
             accept = 'accept'
-            all_stats = []
-            all_p = []
-            for i in range(M):
-                Xi = np.random.rand()
-                Xn = xsampler(Nc, self.ranges)
-                Xn[:,j] = Xi
-                Yn = self.predict(Xn)
-                ks = ks_2samp(y_ref, Yn)
-                all_stats.append(ks.statistic)
-                all_p.append(ks.pvalue)
-
-            min = np.min(all_stats)
-            mean = np.mean(all_stats)
-            median = np.median(all_stats)
-            max = np.max(all_stats)
-            std = np.std(all_stats)
-
-            minp = np.min(all_p)
-            meanp = np.mean(all_p)
-            medianp = np.median(all_p)
-            maxp = np.max(all_p)
-            stdp = np.std(all_p)
-            if minp < alpha :
-                accept = 'reject'
-
-            results[labels[j]] = [min, mean, median, max, std, accept] 
-            resultsp[labels[j]] = [minp, meanp, medianp, maxp, stdp, accept] 
-            print(j+1, np.median(all_stats),np.std(all_stats))
-
-        headings = ['minimum', 'mean', 'median', 'maximum', 'stdev', 'null hyp']
-        results = pd.DataFrame(results).T
-        resultsp = pd.DataFrame(resultsp).T
-
-        results.columns = headings
-        resultsp.columns = headings
-        return results  
+            ks_stats = []
+            ks_p_values = []
+            parameter_range = self.ranges[feature_labels[j]]
+    
+            # Perform KS test for each sample
+            for _ in range(num_ks_samples):
+                xi = np.random.uniform(parameter_range[0], parameter_range[1])
+                xn = xsampler(num_conditioned, self.ranges)
+                xn[:, j] = xi
+                yn = self.predict(xn)
+                ks_result = ks_2samp(y_ref, yn)
+                ks_stats.append(ks_result.statistic)
+                ks_p_values.append(ks_result.pvalue)
+    
+            # Calculate summary statistics for KS statistics
+            stats_summary = {
+                'minimum': np.min(ks_stats),
+                'mean': np.mean(ks_stats),
+                'median': np.median(ks_stats),
+                'maximum': np.max(ks_stats),
+                'stdev': np.std(ks_stats),
+                'null hyp': 'accept' if np.min(ks_p_values) >= alpha else 'reject'
+            }
+    
+            # Calculate summary statistics for p-values
+            p_values_summary = {
+                'minimum': np.min(ks_p_values),
+                'mean': np.mean(ks_p_values),
+                'median': np.median(ks_p_values),
+                'maximum': np.max(ks_p_values),
+                'stdev': np.std(ks_p_values),
+                'null hyp': stats_summary['null hyp']
+            }
+    
+            # Store results for the current feature
+            results[feature_labels[j]] = stats_summary
+            results_p[feature_labels[j]] = p_values_summary
+    
+            # Print progress
+            print(f"Feature {j + 1}: Median KS Statistic = {stats_summary['median']:.3f}, Std Dev = {stats_summary['stdev']:.3f}")
+    
+        # Convert results to DataFrames
+        results_df = pd.DataFrame(results).T
+        results_p_df = pd.DataFrame(results_p).T
+    
+        return results_df
+    
  

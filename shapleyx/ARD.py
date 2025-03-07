@@ -8,60 +8,88 @@ from sklearn.model_selection import cross_val_score
 from numpy.linalg import LinAlgError
 
 from scipy.linalg import solve_triangular
+from scipy.linalg import pinvh
 import numpy as np 
 import warnings
 class RegressionARD(RegressorMixin, LinearModel):
     '''
-    Regression with Automatic Relevance Determination (Fast Version uses 
-    Sparse Bayesian Learning)
-    
+    Regression with Automatic Relevance Determination (ARD) using Sparse Bayesian Learning.
+
+    This class implements a fast version of ARD regression, which is a Bayesian approach
+    to regression that automatically determines the relevance of each feature. It is based
+    on the Sparse Bayesian Learning (SBL) algorithm, which promotes sparsity in the model
+    by estimating the precision of the coefficients.
+
     Parameters
     ----------
-    n_iter: int, optional (DEFAULT = 100)
-        Maximum number of iterations
-        
-    tol: float, optional (DEFAULT = 1e-3)
-        If absolute change in precision parameter for weights is below threshold
-        algorithm terminates.
-        
-    fit_intercept : boolean, optional (DEFAULT = True)
-        whether to calculate the intercept for this model. If set
-        to false, no intercept will be used in calculations
-        (e.g. data is expected to be already centered).
-        
-    copy_X : boolean, optional (DEFAULT = True)
+    n_iter : int, optional (default=300)
+        Maximum number of iterations for the optimization algorithm.
+
+    tol : float, optional (default=1e-3)
+        Convergence threshold. If the absolute change in the precision parameter for the
+        weights is below this threshold, the algorithm terminates.
+
+    fit_intercept : bool, optional (default=True)
+        Whether to calculate the intercept for this model. If set to False, no intercept
+        will be used in calculations (e.g., data is expected to be already centered).
+
+    copy_X : bool, optional (default=True)
         If True, X will be copied; else, it may be overwritten.
-        
-    verbose : boolean, optional (DEFAULT = True)
-        Verbose mode when fitting the model
-        
-        
+
+    verbose : bool, optional (default=False)
+        If True, the algorithm will print progress messages during fitting.
+
+    cv_tol : float, optional (default=0.1)
+        Tolerance for cross-validation. If the percentage change in cross-validation score
+        is below this threshold, the algorithm terminates.
+
+    cv : bool, optional (default=False)
+        If True, cross-validation will be used to determine the optimal number of features.
+
     Attributes
     ----------
-    coef_ : array, shape = (n_features)
-        Coefficients of the regression model (mean of posterior distribution)
-        
+    coef_ : array, shape (n_features,)
+        Coefficients of the regression model (mean of the posterior distribution).
+
     alpha_ : float
-       estimated precision of the noise
-       
-    active_ : array, dtype = np.bool, shape = (n_features)
-       True for non-zero coefficients, False otherwise
-       
-    lambda_ : array, shape = (n_features)
-       estimated precisions of the coefficients
-       
-    sigma_ : array, shape = (n_features, n_features)
-        estimated covariance matrix of the weights, computed only
-        for non-zero coefficients  
-       
-        
+        Estimated precision of the noise.
+
+    active_ : array, dtype=bool, shape (n_features,)
+        Boolean array indicating which features are active (non-zero coefficients).
+
+    lambda_ : array, shape (n_features,)
+        Estimated precisions of the coefficients.
+
+    sigma_ : array, shape (n_features, n_features)
+        Estimated covariance matrix of the weights, computed only for non-zero coefficients.
+
+    scores_ : list
+        List of cross-validation scores if `cv` is True.
+
+    Methods
+    -------
+    fit(X, y)
+        Fit the ARD regression model to the data.
+
+    predict_dist(X)
+        Compute the predictive distribution for the test set.
+
+    _center_data(X, y)
+        Center the data by subtracting the mean.
+
+    _posterior_dist(A, beta, XX, XY, full_covar=False)
+        Calculate the mean and covariance matrix of the posterior distribution of coefficients.
+
+    _sparsity_quality(XX, XXd, XY, XYa, Aa, Ri, active, beta, cholesky)
+        Calculate sparsity and quality parameters for each feature.
+
     References
     ----------
-    [1] Fast marginal likelihood maximisation for sparse Bayesian models (Tipping & Faul 2003)
-        (http://www.miketipping.com/papers/met-fastsbl.pdf)
-    [2] Analysis of sparse Bayesian learning (Tipping & Faul 2001)
-        (http://www.miketipping.com/abstracts.htm#Faul:NIPS01)
-        
+    [1] Tipping, M. E., & Faul, A. C. (2003). Fast marginal likelihood maximisation for
+        sparse Bayesian models. In Proceedings of the Ninth International Workshop on
+        Artificial Intelligence and Statistics (pp. 276-283).
+    [2] Tipping, M. E., & Faul, A. C. (2001). Analysis of sparse Bayesian learning. In
+        Advances in Neural Information Processing Systems (pp. 383-389).
     '''
     
     def __init__( self, n_iter = 300, tol = 1e-3, fit_intercept = True, 
@@ -94,20 +122,20 @@ class RegressionARD(RegressorMixin, LinearModel):
   
     def fit(self,X,y):
         '''
-        Fits ARD Regression with Sequential Sparse Bayes Algorithm.
-        
+        Fit the ARD regression model to the data.
+
         Parameters
-        -----------
-        X: {array-like, sparse matrix} of size (n_samples, n_features)
-           Training data, matrix of explanatory variables
-        
-        y: array-like of size [n_samples, n_features] 
-           Target values
-           
+        ----------
+        X : {array-like, sparse matrix}, shape (n_samples, n_features)
+            Training data, matrix of explanatory variables.
+
+        y : array-like, shape (n_samples,)
+            Target values.
+
         Returns
         -------
         self : object
-            Returns self.
+            Returns the instance itself.
         '''
         X, y = check_X_y(X, y, dtype=np.float64, y_numeric=True)
         X, y, X_mean, y_mean, X_std = self._center_data(X, y)
@@ -220,8 +248,36 @@ class RegressionARD(RegressorMixin, LinearModel):
         
     def _posterior_dist(self,A,beta,XX,XY,full_covar=False):
         '''
-        Calculates mean and covariance matrix of posterior distribution
-        of coefficients.
+        Calculate the mean and covariance matrix of the posterior distribution of coefficients.
+
+        Parameters
+        ----------
+        A : array, shape (n_features,)
+            Precision parameters for the coefficients.
+
+        beta : float
+            Precision of the noise.
+
+        XX : array, shape (n_features, n_features)
+            X' * X matrix.
+
+        XY : array, shape (n_features,)
+            X' * y vector.
+
+        full_covar : bool, optional (default=False)
+            If True, return the full covariance matrix; otherwise, return the inverse of the
+            lower triangular matrix from the Cholesky decomposition.
+
+        Returns
+        -------
+        Mn : array, shape (n_features,)
+            Mean of the posterior distribution.
+
+        Sn : array, shape (n_features, n_features)
+            Covariance matrix of the posterior distribution.
+
+        cholesky : bool
+            Whether the Cholesky decomposition was successful.
         '''
         # compute precision matrix for active features
         Sinv = beta * XX
@@ -251,8 +307,52 @@ class RegressionARD(RegressorMixin, LinearModel):
 
     def _sparsity_quality(self,XX,XXd,XY,XYa,Aa,Ri,active,beta,cholesky):
         '''
-        Calculates sparsity and quality parameters for each feature
-        
+        Calculate sparsity and quality parameters for each feature.
+
+        Parameters
+        ----------
+        XX : array, shape (n_features, n_features)
+            X' * X matrix.
+
+        XXd : array, shape (n_features,)
+            Diagonal of X' * X matrix.
+
+        XY : array, shape (n_features,)
+            X' * y vector.
+
+        XYa : array, shape (n_active_features,)
+            X' * y vector for active features.
+
+        Aa : array, shape (n_active_features,)
+            Precision parameters for active features.
+
+        Ri : array, shape (n_active_features, n_active_features)
+            Inverse of the lower triangular matrix from the Cholesky decomposition or the
+            covariance matrix.
+
+        active : array, dtype=bool, shape (n_features,)
+            Boolean array indicating which features are active.
+
+        beta : float
+            Precision of the noise.
+
+        cholesky : bool
+            Whether the Cholesky decomposition was successful.
+
+        Returns
+        -------
+        si : array, shape (n_features,)
+            Sparsity parameters.
+
+        qi : array, shape (n_features,)
+            Quality parameters.
+
+        S : array, shape (n_features,)
+            Intermediate sparsity parameters.
+
+        Q : array, shape (n_features,)
+            Intermediate quality parameters.
+
         Theoretical Note:
         -----------------
         Here we used Woodbury Identity for inverting covariance matrix
@@ -260,6 +360,7 @@ class RegressionARD(RegressorMixin, LinearModel):
         C    = 1/beta + 1/alpha * X' * X
         C^-1 = beta - beta^2 * X * Sn * X'
         '''
+
         bxy        = beta*XY
         bxx        = beta*XXd
         if cholesky:
@@ -291,20 +392,17 @@ class RegressionARD(RegressorMixin, LinearModel):
         Gaussian and therefore is characterised by mean and variance.
         
         Parameters
-        -----------
-        X: {array-like, sparse} (n_samples_test, n_features)
-           Test data, matrix of explanatory variables
-           
+        ----------
+        X : {array-like, sparse matrix}, shape (n_samples_test, n_features)
+            Test data, matrix of explanatory variables.
+
         Returns
         -------
-        : list of length two [y_hat, var_hat]
-        
-             y_hat: numpy array of size (n_samples_test,)
-                    Estimated values of targets on test set (i.e. mean of predictive
-                    distribution)
-           
-             var_hat: numpy array of size (n_samples_test,)
-                    Variance of predictive distribution
+        y_hat : array, shape (n_samples_test,)
+            Estimated values of targets on the test set (mean of the predictive distribution).
+
+        var_hat : array, shape (n_samples_test,)
+            Variance of the predictive distribution.
         '''
         y_hat     = self._decision_function(X)
         var_hat   = 1./self.alpha_
@@ -316,8 +414,53 @@ class RegressionARD(RegressorMixin, LinearModel):
 
 def update_precisions(Q,S,q,s,A,active,tol,n_samples,clf_bias):
     '''
-    Selects one feature to be added/recomputed/deleted to model based on 
-    effect it will have on value of log marginal likelihood.
+    Updates the precision parameters (alpha) for features in a sparse Bayesian learning model
+    by selecting a feature to add, recompute, or delete based on its impact on the log marginal
+    likelihood. The function also checks for convergence.
+
+    Parameters:
+    -----------
+    Q : numpy.ndarray
+        Quality parameters for all features.
+    S : numpy.ndarray
+        Sparsity parameters for all features.
+    q : numpy.ndarray
+        Quality parameters for features currently in the model.
+    s : numpy.ndarray
+        Sparsity parameters for features currently in the model.
+    A : numpy.ndarray
+        Precision parameters (alpha) for all features.
+    active : numpy.ndarray (bool)
+        Boolean array indicating whether each feature is currently in the model.
+    tol : float
+        Tolerance threshold for determining convergence based on changes in precision.
+    n_samples : int
+        Number of samples in the dataset, used to normalize the change in log marginal likelihood.
+    clf_bias : bool
+        Flag indicating whether the model includes a bias term (used in classification tasks).
+
+    Returns:
+    --------
+    list
+        A list containing two elements:
+        - Updated precision parameters (A) for all features.
+        - A boolean flag indicating whether the model has converged.
+
+    Notes:
+    ------
+    The function performs the following steps:
+    1. Computes the change in log marginal likelihood for adding, recomputing, or deleting features.
+    2. Identifies the feature that causes the largest change in likelihood.
+    3. Updates the precision parameter (alpha) for the selected feature.
+    4. Checks for convergence based on whether no features are added/deleted and changes in precision
+       are below the specified tolerance.
+    5. Returns the updated precision parameters and convergence status.
+
+    Convergence is determined by two conditions:
+    - No features are added or deleted.
+    - The change in precision for features already in the model is below the tolerance threshold.
+
+    The function ensures that the bias term is not removed in classification tasks.
     '''
     # initialise vector holding changes in log marginal likelihood
     deltaL = np.zeros(Q.shape[0])
