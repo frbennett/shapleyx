@@ -33,8 +33,11 @@ from .pawn import estimate_pawn
 from .xsampler import xsampler
 from .pyquotegen import quotes
 import textwrap
-
-from scipy.stats import ks_2samp 
+from .utilities import ( 
+    legendre,
+    transformation,
+    regression,  
+) 
 
 #from ARD import RegressionARD
 #from sklearn.linear_model import ARDRegression 
@@ -209,230 +212,54 @@ class rshdmr():
         del df
         
 
-        
-
-            
-    def shift_legendre(self, n, x):
-        """
-        Computes the shifted Legendre polynomial of degree `n` evaluated at `x` and scales
-        by a normalization factor.
-
-        Args:
-            n (int): Degree of the shifted Legendre polynomial.
-            x (float or array-like): Point(s) at which the polynomial is evaluated.
-
-        Returns:
-            float or array-like: Value of the shifted Legendre polynomial at `x`.
-        """
-        normalization_factor = math.sqrt(2 * n + 1)
-        polynomial_value = sp.eval_sh_legendre(n, x)
-        return normalization_factor * polynomial_value
 
     
         
     def transform_data(self):
         """
         Linearly transforms the input dataset to a unit hypercube.
-    
-        This method scales each feature in the dataset to the range [0, 1] using min-max scaling.
-        It also stores the original min and max values for each feature in the `ranges` attribute.
-    
-        Attributes:
-            self.X_T (pd.DataFrame): Transformed dataset with features scaled to [0, 1].
-            self.ranges (dict): Dictionary storing the original min and max values for each feature.
+
+        This method applies a transformation to the input dataset `self.X` and stores the transformed data
+        in `self.X_T`. It also calculates and stores the ranges of the transformed data in `self.ranges`.
+
+        Side Effects:
+        - Updates `self.ranges` with the ranges of the transformed data.
+        - Updates `self.X_T` with the transformed dataset.
         """
-        self.X_T = pd.DataFrame()
-        self.ranges = {}
-    
-        for column in self.X.columns:
-            feature_min = self.X[column].min()
-            feature_max = self.X[column].max()
-    
-            # Log the min and max values for debugging or informational purposes
-            print(f"{column}: min = {feature_min}, max = {feature_max}")
-    
-            # Perform min-max scaling to transform the feature to [0, 1]
-            self.X_T[column] = (self.X[column] - feature_min) / (feature_max - feature_min)
-    
-            # Store the original min and max values for potential inverse transformations
-            self.ranges[column] = [feature_min, feature_max]
-    
-        
+        transformed_data = transformation.transformation(self.X)
+        transformed_data.do_transform()
+        self.ranges = transformed_data.get_ranges()
+        self.X_T = transformed_data.get_X_T()
+       
             
     def legendre_expand(self):
         """
-        Expands the input features using Legendre polynomials and generates polynomial combinations.
-    
-        This method performs the following steps:
-        1. For each column in `self.X_T`, it computes Legendre polynomial expansions up to the order specified by `self.max_1st`.
-           The results are stored in `self.X_T_L` as new columns, with column names in the format `<column>_<order>`.
-        2. Generates polynomial combinations of the expanded features based on the polynomial orders specified in `self.polys`.
-        3. Constructs a matrix of polynomial terms and concatenates them into a final DataFrame, which is stored in `self.X_T_L`.
-    
-        Attributes:
-            self.primitive_variables (list): A list of primitive variable names used in the expansion.
-            self.poly_orders (list): A list of polynomial orders corresponding to each primitive variable.
-            self.X_T_L (pd.DataFrame): A DataFrame containing the expanded Legendre polynomial terms and their combinations.
-    
-        Steps:
-            1. For each column in `self.X_T`:
-                - Compute Legendre polynomial expansions for orders from 1 to `self.max_1st`.
-                - Append the primitive variable name and polynomial order to `self.primitive_variables` and `self.poly_orders`.
-                - Store the expanded terms in `self.X_T_L` with appropriate column headings.
-            2. For each polynomial order in `self.polys`:
-                - Generate a basis set of terms for the current polynomial order.
-                - Create valid combinations of terms, ensuring that each combination contains unique primitive variables.
-                - Compute the polynomial terms by multiplying the corresponding columns in `self.X_T_L`.
-                - Store the computed terms in a matrix and concatenate them into the final DataFrame `generated_set`.
-            3. Update `self.X_T_L` with the final generated set of polynomial terms.
-    
-        Notes:
-            - The method assumes that `self.X_T`, `self.max_1st`, `self.polys`, and `self.Y` are properly initialized.
-            - The `self.shift_legendre` method is used to compute the Legendre polynomial values.
-            - The `combinations` function from the `itertools` module is used to generate term combinations.
-            - The method prints the number of terms generated for each polynomial order.
-    
-        Example:
-            If `self.X_T` contains columns 'A' and 'B', and `self.max_1st` is 2, the method will compute:
-            - Legendre polynomial expansions for 'A_1', 'A_2', 'B_1', and 'B_2'.
-            - If `self.polys` is [1, 2], it will generate:
-                - First-order terms: 'A_1', 'B_1'.
-                - Second-order terms: 'A_1*B_1', 'A_2*B_1', etc.
+        Expands the input data using Legendre polynomials.
+
+        This method applies Legendre polynomial expansion to the input data `self.X` and the transformed data `self.X_T`.
+        It stores the expanded data in `self.X_T_L`, along with the primitive variables and polynomial orders.
+
+        Side Effects:
+        - Updates `self.primitive_variables` with the primitive variables from the expansion.
+        - Updates `self.poly_orders` with the polynomial orders from the expansion.
+        - Updates `self.X_T_L` with the expanded dataset.
         """
-        # Method implementation...
-    
-        self.primitive_variables = []
-        self.poly_orders = []
-        self.X_T_L = pd.DataFrame()
-        for column in self.X_T:
-            for n in range (1,self.max_1st+1):
-                self.primitive_variables.append(column)
-                self.poly_orders.append(n)
-                column_heading = column + "_" + str(n)
-                self.X_T_L[column_heading] = [self.shift_legendre(n, x) for x in self.X_T[column]]
-                
-        polys = self.polys
-        generated_set = pd.DataFrame() 
-        max_poly = max(polys)
-        order = 0
-        for i in polys:
-            order += 1
-            max_poly_order = polys[order-1] 
-            basis_set = []
-            for x in  self.X.columns :
-                for j in range(max_poly_order):
-                    basis_set.append(x + '_' + str(j+1))
-                    
-            combo_list = []
-            for combo in combinations(basis_set, order):
-                primitive_list = []
-                for i in combo:
-                    primitive_list.append(i.split('_')[0])
-                if len(np.unique(primitive_list)) == order:
-                    combo_list.append(combo)
-                    
-            total_combinations = len(combo_list)
-            print(' number of terms of order ', str(order), 'is ', str(total_combinations)) 
-    
-            matrix = np.zeros([len(self.Y),total_combinations])
-            derived_labels = []
-            term_labels = []
-            term_index = 0
-            
-            for combination in combo_list:
-#            for combination in combinations(basis_set, order): 
-                term_id = 1
-                for term in combination:
-                    if term_id == 1:
-                        matrix[:,term_index] = self.X_T_L[term] 
-                        term_label = term
-                        term_id +=1
-                    else :
-                        matrix[:,term_index] = matrix[:,term_index] * self.X_T_L[term]
-                        term_label = term_label + '*' + term
-                term_labels.append(term_label)         
-                term_index += 1
-            em = pd.DataFrame(matrix) 
-            em.columns = term_labels 
-    
-            generated_set = pd.concat([generated_set, em], axis = 1)
-        
-        self.X_T_L = generated_set
+
+        expansion_data = legendre.legendre_expand(self.X, self.X_T, self.max_1st, self.polys, self.Y)
+        expansion_data.do_expand() 
+
+        self.primitive_variables = expansion_data.get_primitive_variables() 
+        self.poly_orders = expansion_data.get_poly_orders()
+        self.X_T_L = expansion_data.get_expanded()  
+
 
     def run_regression(self):
-        start_time = time.perf_counter()
-        if self.method == 'ard':
-            print('running ARD')
-            self.clf = RegressionARD(n_iter=self.n_iter, verbose=self.verbose, cv=False)
-            
-        if self.method == 'ard_cv':
-            print('running ARD')
-            self.clf = RegressionARD(n_iter=self.n_iter, verbose=self.verbose, cv_tol=self.cv_tol, cv=True)
-            
-        elif self.method == 'omp':
-            print('running OMP')
-            self.clf = OrthogonalMatchingPursuit(n_nonzero_coefs=self.n_iter)
-        elif self.method == 'ompcv':
-            print('running OMP_CV')
-            self.clf = OrthogonalMatchingPursuitCV(max_iter=self.n_iter, cv=10) 
-        elif self.method == 'ardsk':
-            print('running ARD_SK')
-            self.clf = ARDRegression(max_iter=self.n_iter, compute_score=True) 
-            
-        elif self.method == 'ardcv':
-            print('running ARD with cross validation')
-            # Use OMPCV to get a ballpark figure for n_iter
- #           clf = OrthogonalMatchingPursuitCV(max_iter=self.n_iter, cv=5) 
- #           clf.fit(self.X_T_L,self.Y)
-            
-            best_score = -100
-            best_score_iter = 2
-            # set the starting iteration a few steps earlier than the OMPCV estimate
- #           iteration = clf.n_nonzero_coefs_ - 5
-            iteration = self.starting_iter 
-            converged = False
-            
-            while not converged:
-                print(iteration)
-                clf = RegressionARD(n_iter=iteration, verbose=False)
-                results = cross_val_score(clf, self.X_T_L,self.Y, cv=5)
-                test = np.mean(results)
-                if test > best_score :
-                    best_score = test
-                    best_score_iter = iteration
+        regression_data = regression.regression(self.X_T_L, self.Y, self.method, self.n_iter, self.verbose, self.cv_tol, self.starting_iter)
+        self.coef_, self.y_pred = regression_data.run_regression() 
 
-                if ((iteration -best_score_iter) >= 10) or (iteration == self.n_iter):
-                    converged = True
-        
-                iteration += 1
-            print('the best iteration ',     best_score_iter)   
-            
-            self.clf = RegressionARD(n_iter=best_score_iter, verbose=self.verbose)
-
-        elif self.method == 'ardompcv':
-            print('running ARD OMP cross validation')
-            clf = OrthogonalMatchingPursuitCV(max_iter=self.n_iter, cv=5) 
-            clf.fit(self.X_T_L,self.Y)
-            num_iterations = clf.n_nonzero_coefs_
-            self.clf = RegressionARD(num_iterations, verbose=self.verbose)
-             
-#        self.clf = ARDRegression(n_iter=self.n_iter, verbose=True, tol=1.0e-3)
-        self.clf.fit(self.X_T_L,self.Y)
-        end_time = time.perf_counter()
-
-        if self.method == 'ompcv':
-            print('Number of non-zero coefficeints from OMP_CV : ', self.clf.n_nonzero_coefs_)
-
-#        print('number of iterations ', self.clf.n_iter_)
-        print(f"Fit Execution Time : {end_time - start_time:0.6f}" ) 
-        print('--') 
-        print(" ")
-        print(" Model complete ")
-
-        print(" ")
 
     def stats(self):
-        model_coefficients = self.clf.coef_
+        model_coefficients = self.coef_
         sum_of_coeffs_squared = np.sum(model_coefficients**2)
         data_variance = (np.std(self.Y))**2 
         var_ratio = sum_of_coeffs_squared/data_variance
@@ -441,7 +268,7 @@ class rshdmr():
         print("variance ratio          : {var_ratio:0.3f}".format(var_ratio=var_ratio))
         
         print("===============================")
-        y_pred = self.clf.predict(self.X_T_L)
+        y_pred = self.y_pred 
         mse = metrics.mean_squared_error(y_pred,self.Y)
         mae = metrics.mean_absolute_error(y_pred,self.Y)
         evs = metrics.explained_variance_score(y_pred,self.Y)
@@ -458,8 +285,7 @@ class rshdmr():
         print("std error : ", std_err)
 
     def plot_hdmr(self):
-        y_pred = self.clf.predict(self.X_T_L)
-        plt.scatter(self.Y,y_pred)
+        plt.scatter(self.Y,self.y_pred)
         plt.ylabel('Predicted')
         plt.xlabel('Experimental')
         plt.show()
@@ -482,103 +308,121 @@ class rshdmr():
         return derived_label_list  
  
 
-    def eval_sobol_indicesxxx(self):
-        coefficients = pd.DataFrame()
-        coefficients['labels'] =self.X_T_L.columns
-        coefficients['coeff'] = self.clf.coef_
-    
-        non_zero_coefficients = (coefficients[coefficients['coeff'] != 0]).copy() 
-        non_zero_coefficients['std_devs'] = np.diag(np.sqrt(self.clf.sigma_) ) 
-        non_zero_coefficients.reset_index(drop=True, inplace=True)
-        non_zero_coefficients['derived_labels'] =  self.get_derived_labels(non_zero_coefficients['labels']) 
-
-        
-        posterior_indicies = pd.DataFrame()
-        for i in range(1000) : 
-            posterior_indicies['sample_' + str(i+1)] = np.random.normal(non_zero_coefficients['coeff'], non_zero_coefficients['std_devs'])
-            
-        self.posterior_indicies = posterior_indicies
-            
-#        non_zero_coefficients['lower'] = posterior_indices.quantile(0.025, axis=1)
-#        non_zero_coefficients['upper'] = posterior_indices.quantile(0.975, axis=1)
-#        non_zero_coefficients['median'] = posterior_indices.quantile(0.5, axis=1)
-
-        non_zero_coefficients['index'] = (non_zero_coefficients['coeff'])**2.0
-#        non_zero_coefficients['index'] = (non_zero_coefficients['coeff']/np.std(self.Y))**2.0
-        non_zero_coefficients['lower'] = posterior_indicies.quantile(0.025, axis=1)
-        non_zero_coefficients['upper'] = posterior_indicies.quantile(0.975, axis=1)
-        non_zero_coefficients['median'] = posterior_indicies.quantile(0.975, axis=1)
-        
-        self.non_zero_coefficients = non_zero_coefficients
-        
-        self.results = non_zero_coefficients.groupby(['derived_labels']).sum()
-        modelled_variance = self.results['index'].sum() 
-        self.results['index'] = self.results['index']/modelled_variance * self.evs
-        self.results['median'] = self.results['median']/modelled_variance * self.evs
-        self.results['lower'] = self.results['lower']/modelled_variance * self.evs
-        self.results['upper'] = self.results['upper']/modelled_variance * self.evs
-
-
-        self.ttt = non_zero_coefficients.copy() 
-        print(self.results) 
 
     def eval_sobol_indices(self):
-        coefficients = pd.DataFrame()
-        coefficients['labels'] =self.X_T_L.columns
-        coefficients['coeff'] = self.clf.coef_
-    
-        non_zero_coefficients = (coefficients[coefficients['coeff'] != 0]).copy()  
+        # Create a DataFrame for coefficients with labels and coefficients
+        coefficients = pd.DataFrame({
+            'labels': self.X_T_L.columns,
+            'coeff': self.coef_
+        })
+        
+        # Filter out non-zero coefficients and reset the index
+        non_zero_coefficients = coefficients[coefficients['coeff'] != 0].copy()
         non_zero_coefficients.reset_index(drop=True, inplace=True)
-        non_zero_coefficients['derived_labels'] =  self.get_derived_labels(non_zero_coefficients['labels']) 
-
         
-            
-#        non_zero_coefficients['lower'] = posterior_indices.quantile(0.025, axis=1)
-#        non_zero_coefficients['upper'] = posterior_indices.quantile(0.975, axis=1)
-#        non_zero_coefficients['median'] = posterior_indices.quantile(0.5, axis=1)
-
-        non_zero_coefficients['index'] = (non_zero_coefficients['coeff'])**2.0
-#        non_zero_coefficients['index'] = (non_zero_coefficients['coeff']/np.std(self.Y))**2.0
+        # Add derived labels to the DataFrame
+        non_zero_coefficients['derived_labels'] = self.get_derived_labels(non_zero_coefficients['labels'])
         
+        # Calculate the index (squared coefficients)
+        non_zero_coefficients['index'] = non_zero_coefficients['coeff'] ** 2.0
+        
+        # Store the non-zero coefficients in the instance
         self.non_zero_coefficients = non_zero_coefficients
         
-        self.results = non_zero_coefficients.groupby(['derived_labels']).sum()
-        modelled_variance = self.results['index'].sum() 
-        self.results['index'] = self.results['index']/modelled_variance * self.evs
-
-
-        self.ttt = non_zero_coefficients.copy()  
+        # Group by derived labels and sum the indices
+        self.results = non_zero_coefficients.groupby('derived_labels', as_index=False).sum()
+        
+        # Calculate the total modelled variance
+        modelled_variance = self.results['index'].sum()
+        
+        # Normalize the indices by the modelled variance and multiply by explained variance (evs)
+        self.results['index'] = (self.results['index'] / modelled_variance) * self.evs
+        
+        # Store a copy of non_zero_coefficients in the instance (for debugging or further use)
+        self.non_zero_coefficients.copy = non_zero_coefficients.copy()
+    
         
 
         
     def get_shapley(self):
-        self.shap = pd.DataFrame()
-        label_list = []
-        shap_list = []
-        for i in self.X.columns:
-            shap=0
-            for j, k in self.results.iterrows():
-                if i in j.split('_'):
-                    shap += k['index']/len(j.split('_'))
-            label_list.append(i)
-            shap_list.append(shap)
-        self.shap['label'] = label_list
-        self.shap['effect'] = shap_list
-        self.shap['scaled effect'] = self.shap['effect']/self.shap['effect'].sum()
+        """
+        Calculate and store SHAP (SHapley Additive exPlanations) values for each feature in the dataset.
+
+        This method computes the contribution of each feature to the model's predictions using a SHAP-based approach.
+        The SHAP values are calculated by iterating over the results of the model and distributing the contribution
+        of each feature based on its presence in derived labels. The resulting SHAP values are stored in a DataFrame
+        and scaled to represent relative importance.
+
+        Attributes:
+            self.shap (pd.DataFrame): A DataFrame containing the following columns:
+                - 'label': The name of the feature.
+                - 'effect': The raw SHAP value for the feature.
+                - 'scaled effect': The SHAP value scaled by the sum of all SHAP values, representing relative importance.
+
+        Steps:
+            1. Initialize an empty DataFrame to store SHAP values.
+            2. Iterate over each feature in the dataset (self.X.columns).
+            3. For each feature, calculate its SHAP value by iterating over the model results (self.results).
+            - If the feature is present in the derived labels of a result, its contribution is added proportionally.
+            4. Store the feature names and their corresponding SHAP values in a list of tuples.
+            5. Create a DataFrame from the list of tuples and store it in self.shap.
+            6. Scale the SHAP values by dividing each value by the sum of all SHAP values to represent relative importance.
+
+        Example:
+            Assuming `self.results` contains model results with derived labels and indices, and `self.X` contains the feature matrix:
+            >>> self.get_shapley()
+            >>> print(self.shap)
+                label  effect  scaled effect
+            0   feature1  0.123      0.456
+            1   feature2  0.234      0.567
+            2   feature3  0.345      0.678
+
+        Notes:
+            - The SHAP values are calculated based on the assumption that the contribution of a feature is evenly distributed
+            among all features in its derived labels.
+            - The scaled effect provides a normalized measure of feature importance, summing to 1 across all features.
+        """
+        # Initialize an empty DataFrame for SHAP values
+        self.shap = pd.DataFrame(columns=['label', 'effect', 'scaled effect'])
+        
+        # Calculate SHAP values for each feature
+        shap_values = []
+        for feature in self.X.columns:
+            shap = 0
+            for _, result in self.results.iterrows():
+                derived_labels = result['derived_labels'].split('_')
+                if feature in derived_labels:
+                    shap += result['index'] / len(derived_labels)
+            shap_values.append((feature, shap))
+        
+        # Create DataFrame from the calculated SHAP values
+        self.shap['label'], self.shap['effect'] = zip(*shap_values)
+        
+        # Scale the SHAP values
+        self.shap['scaled effect'] = self.shap['effect'] / self.shap['effect'].sum()
+
             
     def get_total_index(self):
-        self.total = pd.DataFrame()
+        # Initialize an empty DataFrame with columns 'label' and 'total'
+        self.total = pd.DataFrame(columns=['label', 'total'])
+        
+        # Use a list comprehension to calculate the total index for each column in self.X
         label_list = []
         total_list = []
-        for i in self.X.columns:
-            total=0
-            for j, k in self.results.iterrows():
-                if i in j.split('_'):
-                    total += k['index']
-            label_list.append(i)
-            total_list.append(total)  
+        
+        for column in self.X.columns:
+            # Calculate the total index for the current column
+            total = sum(
+                row['index'] for _, row in self.results.iterrows()
+                if column in row['derived_labels'].split('_')
+            )
+            label_list.append(column)
+            total_list.append(total)
+        
+        # Assign the lists to the DataFrame
         self.total['label'] = label_list
         self.total['total'] = total_list
+
 
     def get_pruned_data(self):
         pruned_data = pd.DataFrame()
@@ -588,78 +432,152 @@ class rshdmr():
         return pruned_data
 
     def get_pawn(self, S=10) :
-        num_features = len(self.X.columns)
+        """
+    Estimate the PAWN sensitivity indices for the model's features.
+
+    This method calculates the PAWN sensitivity indices, which are used to assess the influence of each input feature 
+    on the output of the model. The PAWN method is a variance-based sensitivity analysis technique that provides 
+    insights into the relative importance of features.
+
+    Parameters:
+    -----------
+    S : int, optional
+        Number of intervals to divide the range of each input variable. Default is 10.
+
+    Returns:
+    --------
+    pawn_results : dict or array-like
+        The results of the PAWN sensitivity analysis. The structure of the output depends on the implementation 
+        of the `estimate_pawn` function. Typically, it includes sensitivity indices for each feature.
+
+    Notes:
+    ------
+    - The method relies on the `estimate_pawn` function to perform the actual sensitivity analysis.
+    - The input features (`self.X`) and output values (`self.Y`) are assumed to be preprocessed and available as 
+      attributes of the class instance.
+    - The number of features is automatically determined from the shape of `self.X`.
+
+    Example:
+    --------
+    >>> model = MyModel()
+    >>> model.X = pd.DataFrame({'feature1': [1, 2, 3], 'feature2': [4, 5, 6]})
+    >>> model.Y = np.array([10, 20, 30])
+    >>> pawn_results = model.get_pawn(num_samples=20)
+    >>> print(pawn_results)
+    {'feature1': 0.75, 'feature2': 0.25}
+        """
+        num_features = self.X.shape[1] 
         pawn_results = estimate_pawn(self.X.columns, num_features, self.X.values, self.Y, S=S)
         return pawn_results
 
 
     def run_all(self):
-        print_heading('Transforming data to unit hypercube')
+        """
+    Execute a complete sequence of steps for RS-HDMR (Random Sampling High-Dimensional Model Representation) analysis.
+
+    This method performs the following steps in sequence:
+    1. Transforms the input data to a unit hypercube.
+    2. Builds basis functions using Legendre polynomials.
+    3. Runs regression analysis to fit the model.
+    4. Calculates and displays RS-HDMR model performance statistics.
+    5. Evaluates Sobol indices to quantify the contribution of each input variable to the output variance.
+    6. Calculates Shapley effects to measure the importance of each input variable.
+    7. Computes the total index to assess the overall impact of input variables.
+    8. If resampling is enabled, performs bootstrap resampling to estimate confidence intervals for Sobol indices and Shapley effects.
+    9. Prints a completion message with a randomly selected quote.
+
+    Returns:
+        tuple: A tuple containing three elements:
+            - sobol_indices (pd.DataFrame): A DataFrame containing Sobol indices for each input variable.
+            - shapley_effects (pd.DataFrame): A DataFrame containing Shapley effects for each input variable.
+            - total_index (pd.DataFrame): A DataFrame containing the total index for each input variable.
+
+    Notes:
+        - The method assumes that the necessary data and configurations are already set in the class instance.
+        - If resampling is enabled (`self.resampling` is True), confidence intervals (CIs) are calculated for Sobol indices and Shapley effects.
+        - The method uses helper functions like `transform_data`, `legendre_expand`, `run_regression`, `stats`, `plot_hdmr`, `eval_sobol_indices`, `get_shapley`, and `get_total_index` to perform specific tasks.
+        - The completion message includes a randomly selected quote for a touch of inspiration.
+
+    Example:
+        >>> sobol_indices, shapley_effects, total_index = instance.run_all()
+        >>> print(sobol_indices)
+        >>> print(shapley_effects)
+        >>> print(total_index)
+    """
+        # Define a helper function to print headings
+        def print_step(step_name):
+            print_heading(step_name)
+
+        # Step 1: Transform data to unit hypercube
+        print_step('Transforming data to unit hypercube')
         self.transform_data()
-    
-        print_heading('Building basis functions')
+
+        # Step 2: Build basis functions
+        print_step('Building basis functions')
         self.legendre_expand()
-    
-        print_heading('Running regression analysis')
-        self.run_regression() 
-    
-        print_heading('RS-HDMR model performance statistics')
-        self.stats() 
+
+        # Step 3: Run regression analysis
+        print_step('Running regression analysis')
+        self.run_regression()
+
+        # Step 4: Calculate RS-HDMR model performance statistics
+        print_step('RS-HDMR model performance statistics')
+        self.stats()
         print()
-        self.plot_hdmr() 
+        self.plot_hdmr()
 
+        # Step 5: Evaluate Sobol indices
         self.eval_sobol_indices()
-        sobol_indices = self.results
+        sobol_indices = self.results.drop(columns=['labels', 'coeff'])
 
-        del sobol_indices['labels']
-        del sobol_indices['coeff']
-
+        # Step 6: Calculate Shapley effects
         self.get_shapley()
         shapley_effects = self.shap
-    
+
+        # Step 7: Calculate total index
         self.get_total_index()
         total_index = self.total
 
+        # Step 8: Perform resampling if enabled
         if self.resampling:
             number_of_resamples = self.number_of_resamples
-
             upper = 100-(100-self.CI)/2
             lower = 100-upper
 
-
-
-            print_heading('Running bootstrap resampling ' + str(number_of_resamples) + ' samples for ' + str(self.CI) + '% CI')
+            print_step(f'Running bootstrap resampling {number_of_resamples} samples for {self.CI}% CI')
             pruned_data = self.get_pruned_data()
             resampling_results =  resampling(pruned_data, number_of_resamples = number_of_resamples)
 
-
-            quantiles = resampling_results.quantile([lower/100,0.5,upper/100], axis=1)
-            quantiles = quantiles.T
+            quantiles = resampling_results.quantile([lower/100,0.5,upper/100], axis=1).T
             quantiles.columns = ['lower', 'mean', 'upper']
+            
+            # Calculate quantiles for Sobol indices
+            sobol_indices['lower'] = quantiles['lower'].values - quantiles['mean'].values + sobol_indices['index'].values
+            sobol_indices['upper'] = quantiles['upper'].values - quantiles['mean'].values + sobol_indices['index'].values
 
-            sobol_indices['lower'] = quantiles['lower'] - quantiles['mean'] + sobol_indices['index']
-            sobol_indices['upper'] = quantiles['upper'] - quantiles['mean'] + sobol_indices['index']
-
+            # Calculate quantiles for Shapley effects
             shaps = get_shap(resampling_results, self.X.columns)
-            for i in shaps.columns:
-                shaps[i] = shaps[i]/(shaps[i].sum())
+            shaps = shaps.div(shaps.sum(axis=0), axis=1)  # Normalize Shapley effects 
+#            for i in shaps.columns:
+#                shaps[i] = shaps[i]/(shaps[i].sum())
 
-            quantiles = shaps.quantile([0.025,0.5,0.975], axis=1)
-            quantiles = quantiles.T
+            quantiles = shaps.quantile([0.025,0.5,0.975], axis=1).T
+#            quantiles = quantiles.T
             quantiles.columns = ['lower', 'mean', 'upper']
 
             shapley_effects['lower'] = quantiles['lower'].values - quantiles['mean'].values + shapley_effects['scaled effect'].values
             shapley_effects['upper'] = quantiles['upper'].values - quantiles['mean'].values + shapley_effects['scaled effect'].values
             
-            print_heading('Completed bootstrap resampling')
+            print_step('Completed bootstrap resampling')
 
+        # Step 9: Print completion message with a quote
         quote = quotes.get_quote() 
         message = (
             "                  Completed all analysis\n"
             "                 ------------------------\n\n"
             f"{textwrap.fill(quote, 58)}"
         )
-        print_heading(message)
+        print_step(message)
                
         return sobol_indices, shapley_effects, total_index
     
