@@ -9,25 +9,11 @@ author: 'Frederick Bennett'
 
 """
 #from typing import Self
-from .ARD import RegressionARD
-from .resampling import *
-from sklearn.linear_model import OrthogonalMatchingPursuit, OrthogonalMatchingPursuitCV, ARDRegression 
 import pandas as pd
-import math
 import numpy as np
 import scipy.special as sp
 from scipy import stats 
-from itertools import combinations
-import matplotlib
-import matplotlib.pyplot as plt 
-from sklearn import metrics
-from scipy.stats import linregress 
 # from numba import jit
-import time
-import json
-from scipy.stats import bootstrap
-from sklearn.model_selection import cross_validate 
-from sklearn.model_selection import cross_val_score
 
 from .pawn import estimate_pawn
 from .xsampler import xsampler
@@ -35,8 +21,12 @@ from .pyquotegen import quotes
 import textwrap
 from .utilities import ( 
     legendre,
+    predictor,
     transformation,
-    regression,  
+    regression, 
+    stats,
+    indicies,  
+    resampling, 
 ) 
 
 #from ARD import RegressionARD
@@ -159,43 +149,6 @@ class rshdmr():
     def read_data(self, data_file):
         """
         Reads data from a file or DataFrame and initializes the X and Y attributes.
-
-        This method reads input data from either a CSV file or a pandas DataFrame. 
-        The input data is expected to contain a column labeled 'Y' representing the 
-        target variable. The remaining columns are treated as input features (X).
-
-        Parameters:
-        -----------
-        data_file : str or pd.DataFrame
-            The file path to the CSV file or a pandas DataFrame containing the data.
-            If a string is provided, it is assumed to be the path to a CSV file.
-            If a DataFrame is provided, it is used directly.
-
-        Attributes:
-        -----------
-        self.Y : pd.Series
-            A pandas Series containing the target variable 'Y' extracted from the input data.
-        self.X : pd.DataFrame
-            A pandas DataFrame containing the input features (all columns except 'Y').
-
-        Notes:
-        ------
-        - If the input is a CSV file, it is read into a DataFrame using `pd.read_csv`.
-        - The original DataFrame (`df`) is deleted after extracting `X` and `Y` to save memory.
-        - The method assumes the presence of a column named 'Y' in the input data.
-
-        Example:
-        --------
-        # Initialize the class
-        analyzer = rshdmr()
-
-        # Read data from a CSV file
-        analyzer.read_data('input_data.csv')
-
-        # Read data from a DataFrame
-        import pandas as pd
-        data = pd.DataFrame({'X1': [1, 2, 3], 'X2': [4, 5, 6], 'Y': [7, 8, 9]})
-        analyzer.read_data(data)
         """
         if isinstance(data_file, pd.DataFrame):
             print('Found a DataFrame')
@@ -211,20 +164,10 @@ class rshdmr():
         # Clean up the original DataFrame to save memory
         del df
         
-
-
-    
         
     def transform_data(self):
         """
         Linearly transforms the input dataset to a unit hypercube.
-
-        This method applies a transformation to the input dataset `self.X` and stores the transformed data
-        in `self.X_T`. It also calculates and stores the ranges of the transformed data in `self.ranges`.
-
-        Side Effects:
-        - Updates `self.ranges` with the ranges of the transformed data.
-        - Updates `self.X_T` with the transformed dataset.
         """
         transformed_data = transformation.transformation(self.X)
         transformed_data.do_transform()
@@ -235,14 +178,6 @@ class rshdmr():
     def legendre_expand(self):
         """
         Expands the input data using Legendre polynomials.
-
-        This method applies Legendre polynomial expansion to the input data `self.X` and the transformed data `self.X_T`.
-        It stores the expanded data in `self.X_T_L`, along with the primitive variables and polynomial orders.
-
-        Side Effects:
-        - Updates `self.primitive_variables` with the primitive variables from the expansion.
-        - Updates `self.poly_orders` with the polynomial orders from the expansion.
-        - Updates `self.X_T_L` with the expanded dataset.
         """
 
         expansion_data = legendre.legendre_expand(self.X, self.X_T, self.max_1st, self.polys, self.Y)
@@ -254,41 +189,26 @@ class rshdmr():
 
 
     def run_regression(self):
-        regression_data = regression.regression(self.X_T_L, self.Y, self.method, self.n_iter, self.verbose, self.cv_tol, self.starting_iter)
-        self.coef_, self.y_pred = regression_data.run_regression() 
-
+        """
+        Runs a regression analysis using the provided data and configuration.
+        """
+        regression_instance = regression.regression(
+            X_T_L=self.X_T_L,
+            Y=self.Y,
+            method=self.method,
+            n_iter=self.n_iter,
+            verbose=self.verbose,
+            cv_tol=self.cv_tol,
+            starting_iter=self.starting_iter
+        )
+        self.coef_, self.y_pred = regression_instance.run_regression()
 
     def stats(self):
-        model_coefficients = self.coef_
-        sum_of_coeffs_squared = np.sum(model_coefficients**2)
-        data_variance = (np.std(self.Y))**2 
-        var_ratio = sum_of_coeffs_squared/data_variance
-        print("variance of data        : {data_variance:0.3f}".format(data_variance=data_variance))
-        print("sum of coefficients^2   : {sum_of_coeffs_squared:0.3f}".format(sum_of_coeffs_squared=sum_of_coeffs_squared))
-        print("variance ratio          : {var_ratio:0.3f}".format(var_ratio=var_ratio))
-        
-        print("===============================")
-        y_pred = self.y_pred 
-        mse = metrics.mean_squared_error(y_pred,self.Y)
-        mae = metrics.mean_absolute_error(y_pred,self.Y)
-        evs = metrics.explained_variance_score(y_pred,self.Y)
-        self.evs = evs
-        slope, intercept, r_value, p_value, std_err = linregress(self.Y, y_pred)
-        print("mae error on test set   : {mae:0.3f}".format(mae=mae))
-        print("mse error on test set   : {mse:0.3f}".format(mse=mse))
-        print("explained variance score: {evs:0.3f}".format(evs=evs))
-        print("===============================")
-        print("slope     : ", slope)
-        print("r value   : ", r_value)
-        print("r^2       : ", r_value*r_value)
-        print("p value   : ", p_value)
-        print("std error : ", std_err)
+        self.evs = stats.stats(self.Y, self.y_pred, self.coef_)
 
     def plot_hdmr(self):
-        plt.scatter(self.Y,self.y_pred)
-        plt.ylabel('Predicted')
-        plt.xlabel('Experimental')
-        plt.show()
+        stats.plot_hdmr(self.Y, self.y_pred)
+
 
     def get_derived_labels(self, labels):
         derived_label_list = []
@@ -310,118 +230,12 @@ class rshdmr():
 
 
     def eval_sobol_indices(self):
-        # Create a DataFrame for coefficients with labels and coefficients
-        coefficients = pd.DataFrame({
-            'labels': self.X_T_L.columns,
-            'coeff': self.coef_
-        })
-        
-        # Filter out non-zero coefficients and reset the index
-        non_zero_coefficients = coefficients[coefficients['coeff'] != 0].copy()
-        non_zero_coefficients.reset_index(drop=True, inplace=True)
-        
-        # Add derived labels to the DataFrame
-        non_zero_coefficients['derived_labels'] = self.get_derived_labels(non_zero_coefficients['labels'])
-        
-        # Calculate the index (squared coefficients)
-        non_zero_coefficients['index'] = non_zero_coefficients['coeff'] ** 2.0
-        
-        # Store the non-zero coefficients in the instance
-        self.non_zero_coefficients = non_zero_coefficients
-        
-        # Group by derived labels and sum the indices
-        self.results = non_zero_coefficients.groupby('derived_labels', as_index=False).sum()
-        
-        # Calculate the total modelled variance
-        modelled_variance = self.results['index'].sum()
-        
-        # Normalize the indices by the modelled variance and multiply by explained variance (evs)
-        self.results['index'] = (self.results['index'] / modelled_variance) * self.evs
-        
-        # Store a copy of non_zero_coefficients in the instance (for debugging or further use)
-        self.non_zero_coefficients.copy = non_zero_coefficients.copy()
-    
-        
+        eval_indicies = indicies.eval_indices(self.X_T_L, self.Y, self.coef_, self.evs) 
+        self.results = eval_indicies.get_sobol_indicies()
+        self.non_zero_coefficients = eval_indicies.get_non_zero_coefficients() 
 
-        
-    def get_shapley(self):
-        """
-        Calculate and store SHAP (SHapley Additive exPlanations) values for each feature in the dataset.
-
-        This method computes the contribution of each feature to the model's predictions using a SHAP-based approach.
-        The SHAP values are calculated by iterating over the results of the model and distributing the contribution
-        of each feature based on its presence in derived labels. The resulting SHAP values are stored in a DataFrame
-        and scaled to represent relative importance.
-
-        Attributes:
-            self.shap (pd.DataFrame): A DataFrame containing the following columns:
-                - 'label': The name of the feature.
-                - 'effect': The raw SHAP value for the feature.
-                - 'scaled effect': The SHAP value scaled by the sum of all SHAP values, representing relative importance.
-
-        Steps:
-            1. Initialize an empty DataFrame to store SHAP values.
-            2. Iterate over each feature in the dataset (self.X.columns).
-            3. For each feature, calculate its SHAP value by iterating over the model results (self.results).
-            - If the feature is present in the derived labels of a result, its contribution is added proportionally.
-            4. Store the feature names and their corresponding SHAP values in a list of tuples.
-            5. Create a DataFrame from the list of tuples and store it in self.shap.
-            6. Scale the SHAP values by dividing each value by the sum of all SHAP values to represent relative importance.
-
-        Example:
-            Assuming `self.results` contains model results with derived labels and indices, and `self.X` contains the feature matrix:
-            >>> self.get_shapley()
-            >>> print(self.shap)
-                label  effect  scaled effect
-            0   feature1  0.123      0.456
-            1   feature2  0.234      0.567
-            2   feature3  0.345      0.678
-
-        Notes:
-            - The SHAP values are calculated based on the assumption that the contribution of a feature is evenly distributed
-            among all features in its derived labels.
-            - The scaled effect provides a normalized measure of feature importance, summing to 1 across all features.
-        """
-        # Initialize an empty DataFrame for SHAP values
-        self.shap = pd.DataFrame(columns=['label', 'effect', 'scaled effect'])
-        
-        # Calculate SHAP values for each feature
-        shap_values = []
-        for feature in self.X.columns:
-            shap = 0
-            for _, result in self.results.iterrows():
-                derived_labels = result['derived_labels'].split('_')
-                if feature in derived_labels:
-                    shap += result['index'] / len(derived_labels)
-            shap_values.append((feature, shap))
-        
-        # Create DataFrame from the calculated SHAP values
-        self.shap['label'], self.shap['effect'] = zip(*shap_values)
-        
-        # Scale the SHAP values
-        self.shap['scaled effect'] = self.shap['effect'] / self.shap['effect'].sum()
-
-            
-    def get_total_index(self):
-        # Initialize an empty DataFrame with columns 'label' and 'total'
-        self.total = pd.DataFrame(columns=['label', 'total'])
-        
-        # Use a list comprehension to calculate the total index for each column in self.X
-        label_list = []
-        total_list = []
-        
-        for column in self.X.columns:
-            # Calculate the total index for the current column
-            total = sum(
-                row['index'] for _, row in self.results.iterrows()
-                if column in row['derived_labels'].split('_')
-            )
-            label_list.append(column)
-            total_list.append(total)
-        
-        # Assign the lists to the DataFrame
-        self.total['label'] = label_list
-        self.total['total'] = total_list
+        self.shap = eval_indicies.eval_shapley(self.X.columns)
+        self.total = eval_indicies.eval_total_index(self.X.columns)
 
 
     def get_pruned_data(self):
@@ -434,37 +248,6 @@ class rshdmr():
     def get_pawn(self, S=10) :
         """
     Estimate the PAWN sensitivity indices for the model's features.
-
-    This method calculates the PAWN sensitivity indices, which are used to assess the influence of each input feature 
-    on the output of the model. The PAWN method is a variance-based sensitivity analysis technique that provides 
-    insights into the relative importance of features.
-
-    Parameters:
-    -----------
-    S : int, optional
-        Number of intervals to divide the range of each input variable. Default is 10.
-
-    Returns:
-    --------
-    pawn_results : dict or array-like
-        The results of the PAWN sensitivity analysis. The structure of the output depends on the implementation 
-        of the `estimate_pawn` function. Typically, it includes sensitivity indices for each feature.
-
-    Notes:
-    ------
-    - The method relies on the `estimate_pawn` function to perform the actual sensitivity analysis.
-    - The input features (`self.X`) and output values (`self.Y`) are assumed to be preprocessed and available as 
-      attributes of the class instance.
-    - The number of features is automatically determined from the shape of `self.X`.
-
-    Example:
-    --------
-    >>> model = MyModel()
-    >>> model.X = pd.DataFrame({'feature1': [1, 2, 3], 'feature2': [4, 5, 6]})
-    >>> model.Y = np.array([10, 20, 30])
-    >>> pawn_results = model.get_pawn(num_samples=20)
-    >>> print(pawn_results)
-    {'feature1': 0.75, 'feature2': 0.25}
         """
         num_features = self.X.shape[1] 
         pawn_results = estimate_pawn(self.X.columns, num_features, self.X.values, self.Y, S=S)
@@ -522,52 +305,28 @@ class rshdmr():
 
         # Step 4: Calculate RS-HDMR model performance statistics
         print_step('RS-HDMR model performance statistics')
-        self.stats()
+        self.stats() 
         print()
         self.plot_hdmr()
-
+        
         # Step 5: Evaluate Sobol indices
         self.eval_sobol_indices()
         sobol_indices = self.results.drop(columns=['labels', 'coeff'])
 
         # Step 6: Calculate Shapley effects
-        self.get_shapley()
         shapley_effects = self.shap
 
-        # Step 7: Calculate total index
-        self.get_total_index()
+        # Step 7: Calculate total index 
         total_index = self.total
 
         # Step 8: Perform resampling if enabled
         if self.resampling:
-            number_of_resamples = self.number_of_resamples
-            upper = 100-(100-self.CI)/2
-            lower = 100-upper
-
-            print_step(f'Running bootstrap resampling {number_of_resamples} samples for {self.CI}% CI')
-            pruned_data = self.get_pruned_data()
-            resampling_results =  resampling(pruned_data, number_of_resamples = number_of_resamples)
-
-            quantiles = resampling_results.quantile([lower/100,0.5,upper/100], axis=1).T
-            quantiles.columns = ['lower', 'mean', 'upper']
-            
-            # Calculate quantiles for Sobol indices
-            sobol_indices['lower'] = quantiles['lower'].values - quantiles['mean'].values + sobol_indices['index'].values
-            sobol_indices['upper'] = quantiles['upper'].values - quantiles['mean'].values + sobol_indices['index'].values
-
+            print_step(f'Running bootstrap resampling {self.number_of_resamples} samples for {self.CI}% CI') 
+            do_resampling = resampling.resampling(self.get_pruned_data(), self.number_of_resamples, self.X.columns)
+            do_resampling.do_resampling() 
+            sobol_indices = do_resampling.get_sobol_quantiles(sobol_indices, self.CI)
             # Calculate quantiles for Shapley effects
-            shaps = get_shap(resampling_results, self.X.columns)
-            shaps = shaps.div(shaps.sum(axis=0), axis=1)  # Normalize Shapley effects 
-#            for i in shaps.columns:
-#                shaps[i] = shaps[i]/(shaps[i].sum())
-
-            quantiles = shaps.quantile([0.025,0.5,0.975], axis=1).T
-#            quantiles = quantiles.T
-            quantiles.columns = ['lower', 'mean', 'upper']
-
-            shapley_effects['lower'] = quantiles['lower'].values - quantiles['mean'].values + shapley_effects['scaled effect'].values
-            shapley_effects['upper'] = quantiles['upper'].values - quantiles['mean'].values + shapley_effects['scaled effect'].values
-            
+            shapley_effects = do_resampling.get_shap_quantiles(shapley_effects, self.CI) 
             print_step('Completed bootstrap resampling')
 
         # Step 9: Print completion message with a quote
@@ -580,39 +339,12 @@ class rshdmr():
         print_step(message)
                
         return sobol_indices, shapley_effects, total_index
-    
-    # put X into a data frame and transform
+
     def predict(self, X):
-        X = pd.DataFrame(X, columns=self.X.columns)
-        X_T = pd.DataFrame()
-        for column in self.X.columns:
-            max = self.ranges[column][1]
-            min = self.ranges[column][0]
-            X_T[column] = (X[column] - min) / (max-min)
-
-        #build regression model
-        prunedX = self.get_pruned_data()
-        prunedY = prunedX['Y']
-        del prunedX['Y']
-        ridgereg =  Ridge()
-        ridgereg.fit(prunedX, prunedY)
-
-        # Expand X_T into pruned basis
-        labels = self.get_pruned_data().columns
-        labels = [i for i in labels if i != 'Y']
-
-        # create predict dataframe
-        num_rows = len(X)
-        num_columns = len(labels)
-        predictX = np.ones((num_rows, num_columns))
-
-        for i in range(num_columns):
-            label = labels[i]
-            for function in label.split('*'):
-                func_args = function.split('_')
-                predictX[:,i] *= self.shift_legendre(int(func_args[1]), X_T[func_args[0]])
-
-        return ridgereg.predict(predictX)
+        if not hasattr(self, 'surrogate_model'):
+            self.surrogate_model = predictor.surrogate(self.non_zero_coefficients, self.ranges)
+            self.surrogate_model.fit(self.X, self.Y)
+        return self.surrogate_model.predict(X)       
     
     def get_pawnx(self, num_unconditioned: int, num_conditioned: int, num_ks_samples: int, alpha: float = 0.05) -> pd.DataFrame:
         """
