@@ -3,23 +3,8 @@ import numpy as np
 import scipy.special as sp
 import pandas as pd 
 from sklearn.linear_model import Ridge 
+from .legendre import shift_legendre 
 
-
-def shift_legendre(n, x):
-        """
-        Computes the shifted Legendre polynomial of degree `n` evaluated at `x` and scales
-        by a normalization factor.
-
-        Args:
-            n (int): Degree of the shifted Legendre polynomial.
-            x (float or array-like): Point(s) at which the polynomial is evaluated.
-
-        Returns:
-            float or array-like: Value of the shifted Legendre polynomial at `x`.
-        """
-        normalization_factor = math.sqrt(2 * n + 1)
-        polynomial_value = sp.eval_sh_legendre(n, x)
-        return normalization_factor * polynomial_value
 
 
 class surrogate():

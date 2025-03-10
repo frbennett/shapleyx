@@ -8,15 +8,10 @@ parameter selection and linear regression for parameter refinement
 author: 'Frederick Bennett'
 
 """
-#from typing import Self
-import pandas as pd
-import numpy as np
-import scipy.special as sp
-from scipy import stats 
-# from numba import jit
 
-from .pawn import estimate_pawn
-from .xsampler import xsampler
+import pandas as pd
+from scipy import stats 
+
 from .pyquotegen import quotes
 import textwrap
 from .utilities import ( 
@@ -27,13 +22,9 @@ from .utilities import (
     stats,
     indicies,  
     resampling, 
-) 
+    pawn,
+)
 
-#from ARD import RegressionARD
-#from sklearn.linear_model import ARDRegression 
-
-from collections import Counter 
-# import gmdh
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -167,7 +158,19 @@ class rshdmr():
         
     def transform_data(self):
         """
-        Linearly transforms the input dataset to a unit hypercube.
+        Transforms the data using into a unit hypercube.
+
+        This method applies a transformation to the data stored in `self.X`, 
+        updates the transformed data, and retrieves the ranges and transformed 
+        data matrix.
+
+        Attributes:
+            self.X (DataFrame or ndarray): The original data to be transformed.
+            self.ranges (list): The ranges of the transformed data.
+            self.X_T (DataFrame or ndarray): The transformed data matrix.
+
+        Returns:
+            None
         """
         transformed_data = transformation.transformation(self.X)
         transformed_data.do_transform()
@@ -177,9 +180,17 @@ class rshdmr():
             
     def legendre_expand(self):
         """
-        Expands the input data using Legendre polynomials.
+        Perform Legendre expansion on the input data.
+        This method uses the `legendre_expand` function from the `legendre` module to
+        expand the input data `X` and `X_T` up to the specified maximum order `max_1st`
+        using the provided polynomial basis `polys` and target values `Y`.
+        The expanded data is then stored in the instance variables:
+        - `primitive_variables`: The primitive variables obtained from the expansion.
+        - `poly_orders`: The polynomial orders used in the expansion.
+        - `X_T_L`: The expanded data.
+        Returns:
+            None
         """
-
         expansion_data = legendre.legendre_expand(self.X, self.X_T, self.max_1st, self.polys, self.Y)
         expansion_data.do_expand() 
 
@@ -190,7 +201,24 @@ class rshdmr():
 
     def run_regression(self):
         """
-        Runs a regression analysis using the provided data and configuration.
+        Runs the regression using the specified method and parameters.
+
+        This method initializes a regression instance with the provided
+        parameters and runs the regression to obtain the coefficients and
+        predicted values.
+
+        Attributes:
+            X_T_L (array-like): The transformed feature matrix.
+            Y (array-like): The target variable.
+            method (str): The regression method to use.
+            n_iter (int): The number of iterations for the regression algorithm.
+            verbose (bool): If True, enables verbose output.
+            cv_tol (float): The tolerance for cross-validation.
+            starting_iter (int): The starting iteration for the regression algorithm.
+
+        Returns:
+            None: The method updates the instance attributes `coef_` and `y_pred`
+            with the regression coefficients and predicted values, respectively.
         """
         regression_instance = regression.regression(
             X_T_L=self.X_T_L,
@@ -204,32 +232,44 @@ class rshdmr():
         self.coef_, self.y_pred = regression_instance.run_regression()
 
     def stats(self):
+        """
+        Calculate and store evaluation statistics for the model.
+
+        This method computes evaluation statistics using the actual target values (self.Y),
+        the predicted values (self.y_pred), and the model coefficients (self.coef_). The
+        results are stored in the instance variable `self.evs`.
+
+        Returns:
+            None
+        """
         self.evs = stats.stats(self.Y, self.y_pred, self.coef_)
 
     def plot_hdmr(self):
+        """
+        Plots the High-Dimensional Model Representation (HDMR) of the model's predictions.
+
+        This method uses the `plot_hdmr` function from the `stats` module to visualize the 
+        HDMR of the actual values (`self.Y`) against the predicted values (`self.y_pred`).
+
+        Returns:
+            None
+        """
         stats.plot_hdmr(self.Y, self.y_pred)
-
-
-    def get_derived_labels(self, labels):
-        derived_label_list = []
-        for label in labels :
-            if '*' in label :
-                label_list = []
-                sp1 = label.split('*')
-                for i in sp1:
-                    label_list.append(i.split('_')[0])
-                derived_label = '_'.join(label_list)
-                
-
-            if '*' not in label :
-                sp1 = label.split('_')  
-                derived_label = sp1[0]
-            derived_label_list.append(derived_label)
-        return derived_label_list  
  
 
 
-    def eval_sobol_indices(self):
+    def eval_all_indices(self):
+        """
+        Evaluate all indices and store the results.
+        This method performs the following evaluations:
+        1. Evaluates indices using the provided data and model coefficients.
+        2. Retrieves Sobol indices and stores them in `self.results`.
+        3. Retrieves non-zero coefficients and stores them in `self.non_zero_coefficients`.
+        4. Evaluates Shapley values for the features and stores them in `self.shap`.
+        5. Evaluates the total index for the features and stores it in `self.total`.
+        Returns:
+            None
+        """
         eval_indicies = indicies.eval_indices(self.X_T_L, self.Y, self.coef_, self.evs) 
         self.results = eval_indicies.get_sobol_indicies()
         self.non_zero_coefficients = eval_indicies.get_non_zero_coefficients() 
@@ -239,20 +279,21 @@ class rshdmr():
 
 
     def get_pruned_data(self):
+        """
+        Generates a pruned dataset containing only the features with non-zero coefficients.
+
+        This method creates a new DataFrame that includes only the columns from the original
+        dataset (`X_T_L`) that correspond to the labels with non-zero coefficients. Additionally,
+        it includes the target variable (`Y`).
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the pruned data with selected features and the target variable.
+        """
         pruned_data = pd.DataFrame()
         for label in self.non_zero_coefficients['labels'] :
             pruned_data[label] = self.X_T_L[label]
         pruned_data['Y'] = self.Y
         return pruned_data
-
-    def get_pawn(self, S=10) :
-        """
-    Estimate the PAWN sensitivity indices for the model's features.
-        """
-        num_features = self.X.shape[1] 
-        pawn_results = estimate_pawn(self.X.columns, num_features, self.X.values, self.Y, S=S)
-        return pawn_results
-
 
     def run_all(self):
         """
@@ -310,7 +351,7 @@ class rshdmr():
         self.plot_hdmr()
         
         # Step 5: Evaluate Sobol indices
-        self.eval_sobol_indices()
+        self.eval_all_indices()
         sobol_indices = self.results.drop(columns=['labels', 'coeff'])
 
         # Step 6: Calculate Shapley effects
@@ -341,6 +382,19 @@ class rshdmr():
         return sobol_indices, shapley_effects, total_index
 
     def predict(self, X):
+        """
+        Predict the output for the given input data using the surrogate model.
+
+        Parameters:
+        X (array-like): Input data for which predictions are to be made.
+
+        Returns:
+        array-like: Predicted output for the input data.
+
+        Notes:
+        If the predictive-surrogate model does not exist, it will be created and trained using
+        the non-zero coefficients and ranges provided during initialization.
+        """
         if not hasattr(self, 'surrogate_model'):
             self.surrogate_model = predictor.surrogate(self.non_zero_coefficients, self.ranges)
             self.surrogate_model.fit(self.X, self.Y)
@@ -348,82 +402,45 @@ class rshdmr():
     
     def get_pawnx(self, num_unconditioned: int, num_conditioned: int, num_ks_samples: int, alpha: float = 0.05) -> pd.DataFrame:
         """
-        Calculate PAWN indices for the RS-HDMR surrogate function.
-    
-        Args:
-            num_unconditioned (int): Number of unconditioned samples.
-            num_conditioned (int): Number of conditioned samples.
-            num_ks_samples (int): Number of KS samples.
-            alpha (float, optional): p-value for KS test. Defaults to 0.05.
-    
+        Calculate the PAWN sensitivity indices for the RS-HDMR surrogate model.
+
+        Parameters:
+        -----------
+        num_unconditioned : int
+            The number of unconditioned samples to be used in the PAWN analysis.
+        num_conditioned : int
+            The number of conditioned samples to be used in the PAWN analysis.
+        num_ks_samples : int
+            The number of samples to be used in the Kolmogorov-Smirnov test.
+        alpha : float, optional
+            The significance level for the Kolmogorov-Smirnov test (default is 0.05).
+
         Returns:
-            pd.DataFrame: DataFrame containing PAWN indices and statistics.
+        --------
+        pd.DataFrame
+            A DataFrame containing the PAWN sensitivity indices.
         """
-        # Calculate critical value for KS test
-        calpha = np.sqrt(-np.log(alpha / 2) / 2)
-        dnm = np.sqrt((num_unconditioned + num_conditioned) / (num_unconditioned * num_conditioned))
-        critical_value = dnm * calpha
-        print(f'For the Kolmogorov–Smirnov test with alpha = {alpha:.3f}, the critical value is {critical_value:.3f}')
+        pawn_instance = pawn.pawnx(self.X, self.Y, self.ranges, self.non_zero_coefficients)
+        pawn_indices = pawn_instance.get_pawnx(num_unconditioned, num_conditioned, num_ks_samples, alpha) 
+        return pawn_indices 
     
-        # Initialize dictionaries to store results
-        results = {}
-        results_p = {}
-        feature_labels = self.X.columns
-        num_features = len(self.ranges)
-    
-        # Generate reference set
-        x_ref = xsampler(num_unconditioned, self.ranges)
-        y_ref = self.predict(x_ref)
-        print(f"Number of features: {num_features}")
-    
-        # Iterate over each feature
-        for j in range(num_features):
-            accept = 'accept'
-            ks_stats = []
-            ks_p_values = []
-            parameter_range = self.ranges[feature_labels[j]]
-    
-            # Perform KS test for each sample
-            for _ in range(num_ks_samples):
-                xi = np.random.uniform(parameter_range[0], parameter_range[1])
-                xn = xsampler(num_conditioned, self.ranges)
-                xn[:, j] = xi
-                yn = self.predict(xn)
-                ks_result = ks_2samp(y_ref, yn)
-                ks_stats.append(ks_result.statistic)
-                ks_p_values.append(ks_result.pvalue)
-    
-            # Calculate summary statistics for KS statistics
-            stats_summary = {
-                'minimum': np.min(ks_stats),
-                'mean': np.mean(ks_stats),
-                'median': np.median(ks_stats),
-                'maximum': np.max(ks_stats),
-                'stdev': np.std(ks_stats),
-                'null hyp': 'accept' if np.min(ks_p_values) >= alpha else 'reject'
-            }
-    
-            # Calculate summary statistics for p-values
-            p_values_summary = {
-                'minimum': np.min(ks_p_values),
-                'mean': np.mean(ks_p_values),
-                'median': np.median(ks_p_values),
-                'maximum': np.max(ks_p_values),
-                'stdev': np.std(ks_p_values),
-                'null hyp': stats_summary['null hyp']
-            }
-    
-            # Store results for the current feature
-            results[feature_labels[j]] = stats_summary
-            results_p[feature_labels[j]] = p_values_summary
-    
-            # Print progress
-            print(f"Feature {j + 1}: Median KS Statistic = {stats_summary['median']:.3f}, Std Dev = {stats_summary['stdev']:.3f}")
-    
-        # Convert results to DataFrames
-        results_df = pd.DataFrame(results).T
-        results_p_df = pd.DataFrame(results_p).T
-    
-        return results_df
+    def get_pawn(self, S=10) :
+        """
+        Estimate the PAWN sensitivity indices for the features in the dataset.
+        Parameters:
+        -----------
+        S : int, optional
+            The number of slides to use for the estimation. Default is 10.
+        Returns:
+        --------
+        pawn_results : dict
+            A dictionary containing the PAWN sensitivity indices for each feature.
+        """
+
+        num_features = self.X.shape[1] 
+        pawn_results = pawn.estimate_pawn(self.X.columns, num_features, self.X.values, self.Y, S=S)
+        return pawn_results
+
+
     
  

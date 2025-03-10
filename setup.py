@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
    name='shapleyx',
-   version='0.1',
+   version='0.2',
    description='Python implementation RS-HDMR',
    keywords='sobol sensitivity analysis',
    author='Frederick Bennett',

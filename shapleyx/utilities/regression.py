@@ -39,10 +39,10 @@ class regression():
         elif self.method == 'omp':
             print('running OMP')
             self.clf = OrthogonalMatchingPursuit(n_nonzero_coefs=self.n_iter)
-        elif self.method == 'ompcv':
+        elif self.method == 'omp_cv':
             print('running OMP_CV')
             self.clf = OrthogonalMatchingPursuitCV(max_iter=self.n_iter, cv=10) 
-        elif self.method == 'ardsk':
+        elif self.method == 'ard_sk':
             print('running ARD_SK')
             self.clf = ARDRegression(max_iter=self.n_iter, compute_score=True) 
             
@@ -76,7 +76,7 @@ class regression():
             
             self.clf = RegressionARD(n_iter=best_score_iter, verbose=self.verbose)
 
-        elif self.method == 'ardompcv':
+        elif self.method == 'ard_omp_cv':
             print('running ARD OMP cross validation')
             clf = OrthogonalMatchingPursuitCV(max_iter=self.n_iter, cv=5) 
             clf.fit(self.X_T_L,self.Y)
