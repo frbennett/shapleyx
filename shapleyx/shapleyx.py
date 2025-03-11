@@ -191,8 +191,8 @@ class rshdmr():
         Returns:
             None
         """
-        expansion_data = legendre.legendre_expand(self.X, self.X_T, self.max_1st, self.polys, self.Y)
-        expansion_data.do_expand() 
+        expansion_data = legendre.legendre_expand(self.X_T, self.polys)
+        expansion_data.build_basis_set() 
 
         self.primitive_variables = expansion_data.get_primitive_variables() 
         self.poly_orders = expansion_data.get_poly_orders()
