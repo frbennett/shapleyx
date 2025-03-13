@@ -1,10 +1,9 @@
 
 from scipy.stats import ks_2samp
+from scipy.stats import gaussian_kde
 import numpy as np
 import pandas as pd
 from .predictor import surrogate 
-
-
 from scipy.stats import qmc
 
 
@@ -233,3 +232,91 @@ class pawnx():
         results_p_df = pd.DataFrame(results_p).T
     
         return results_df
+    
+#****************************************************************************
+#                            Delta moment-free method                       *
+#****************************************************************************
+
+def kde_area_between(kde1, kde2,D1, D2, grid_resolution=1000):
+    """
+    Computes the area between two KDEs using SciPy's gaussian_kde.
+    
+    Parameters:
+    - D1, D2: Input datasets (1D numpy arrays)
+    - bw_method1, bw_method2: Bandwidth methods for each KDE (optional)
+    - grid_resolution: Number of points for evaluation grid
+    
+    Returns:
+    - Area between the two KDEs
+    """
+    # Create KDE objects
+
+    # Determine integration range with 3x max bandwidth padding
+    h = max(kde1.covariance_factor() * np.std(D1, ddof=1),
+            kde2.covariance_factor() * np.std(D2, ddof=1))
+    
+    x_min = min(D1.min(), D2.min()) - 3*h
+    x_max = max(D1.max(), D2.max()) + 3*h
+    x = np.linspace(x_min, x_max, grid_resolution)
+
+    # Evaluate KDEs
+    kde1_vals = kde1(x)
+    kde2_vals = kde2(x)
+
+    # Compute absolute differences and integrate
+    return np.trapz(np.abs(kde1_vals - kde2_vals), x)
+
+
+class DeltaX():
+    def __init__(self, X, y, ranges, non_zero_coefficients):
+
+        self.X = X
+        self.y = y 
+        self.ranges = ranges
+        self.non_zero_coefficients = non_zero_coefficients 
+        self.predict = surrogate(self.non_zero_coefficients, self.ranges)
+        self.predict.fit(self.X, self.y)
+
+    def get_deltax(self,num_unconditioned: int,  num_samples: int) -> pd.DataFrame:
+
+        # Initialize dictionaries to store results
+        results = {}
+        results_p = {}
+        feature_labels = self.X.columns
+        num_features = len(self.ranges)
+    
+        # Generate reference set
+        x_ref = xsampler(num_unconditioned, self.ranges)
+        self.x_ref = x_ref 
+        D1 = self.predict.predict(x_ref)
+        kde1 = gaussian_kde(D1, bw_method='silverman')
+
+        print(f"Number of features: {num_features}")
+        
+        delta_stats = [] 
+        # Iterate over each feature
+        for j in range(num_features):
+            parameter_range = self.ranges[feature_labels[j]]
+    
+            # Perform calc test for each sample
+            areas = []
+            for _ in range(num_samples):
+                xi = np.random.uniform(parameter_range[0], parameter_range[1])
+                xn = x_ref.copy() 
+                xn[:, j] = xi
+                self.xn = xn
+                D2 = self.predict.predict(xn)
+                self.D2 = D2 
+                kde2 = gaussian_kde(D2, bw_method='silverman')
+                area = kde_area_between(kde1, kde2,D1, D2, grid_resolution=1000)
+                areas.append(area)
+            delta_stat = np.median(areas)
+            delta_stats.append(delta_stat)
+            print(f"Feature {feature_labels[j]}: Median delta Statistic = {delta_stat:.3f}")
+
+        results = pd.DataFrame()
+        results['Var'] = feature_labels
+        results['delta'] = delta_stats
+        results['delta_norm'] = delta_stats/np.sum(delta_stats)
+    
+        return results

@@ -398,7 +398,12 @@ class rshdmr():
         if not hasattr(self, 'surrogate_model'):
             self.surrogate_model = predictor.surrogate(self.non_zero_coefficients, self.ranges)
             self.surrogate_model.fit(self.X, self.Y)
-        return self.surrogate_model.predict(X)       
+        return self.surrogate_model.predict(X) 
+
+    def get_deltax(self, num_unconditioned: int, delta_samples: int) -> pd.DataFrame:      
+        self.delta_instance = pawn.DeltaX(self.X, self.Y, self.ranges, self.non_zero_coefficients)
+        delta_indices = self.delta_instance.get_deltax(num_unconditioned, delta_samples)
+        return delta_indices
     
     def get_pawnx(self, num_unconditioned: int, num_conditioned: int, num_ks_samples: int, alpha: float = 0.05) -> pd.DataFrame:
         """
