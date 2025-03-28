@@ -268,6 +268,32 @@ def kde_area_between(kde1, kde2,D1, D2, grid_resolution=1000):
 
 
 class DeltaX():
+    """
+    A class to calculate delta statistics for feature importance analysis.
+
+    The DeltaX class is designed to compute delta statistics, which measure the influence of each feature
+    on the output of a surrogate model. The delta statistic is calculated by comparing the distribution
+    of the model's predictions when a feature is fixed to a specific value versus when it is unconditioned.
+
+    Attributes:
+    -----------
+    X : pd.DataFrame
+        The input feature matrix used for training the surrogate model.
+    y : pd.Series or np.ndarray
+        The target values corresponding to the input feature matrix.
+    ranges : dict
+        A dictionary specifying the range of values for each feature. Keys are feature labels, and values
+        are tuples of (min, max) values.
+    non_zero_coefficients : np.ndarray
+        An array of non-zero coefficients used by the surrogate model.
+    predict : callable
+        A surrogate model trained on the input data (X, y) using the provided non-zero coefficients.
+
+    Methods:
+    --------
+    get_deltax(num_unconditioned: int, num_samples: int) -> pd.DataFrame:
+        Calculates the delta statistics for each feature in the dataset.
+    """
     def __init__(self, X, y, ranges, non_zero_coefficients):
 
         self.X = X
@@ -278,7 +304,29 @@ class DeltaX():
         self.predict.fit(self.X, self.y)
 
     def get_deltax(self,num_unconditioned: int,  num_samples: int) -> pd.DataFrame:
+        """
+        Calculate the delta statistics for each feature in the dataset.
 
+        The delta statistic quantifies the influence of each feature on the model's predictions by comparing
+        the distribution of predictions when the feature is fixed to a specific value versus when it is
+        unconditioned. The statistic is computed using kernel density estimation (KDE) and the area between
+        the KDEs of the two distributions.
+
+        Parameters:
+        -----------
+        num_unconditioned : int
+            The number of unconditioned samples to generate for the reference set.
+        num_samples : int
+            The number of samples to generate for each feature to calculate the delta statistic.
+
+        Returns:
+        --------
+        pd.DataFrame
+            A DataFrame containing the following columns:
+            - 'Var': The feature labels.
+            - 'delta': The median delta statistic for each feature.
+            - 'delta_norm': The normalized delta statistic for each feature.
+        """
         # Initialize dictionaries to store results
         results = {}
         results_p = {}
@@ -287,7 +335,6 @@ class DeltaX():
     
         # Generate reference set
         x_ref = xsampler(num_unconditioned, self.ranges)
-        self.x_ref = x_ref 
         D1 = self.predict.predict(x_ref)
         kde1 = gaussian_kde(D1, bw_method='silverman')
 
@@ -304,15 +351,155 @@ class DeltaX():
                 xi = np.random.uniform(parameter_range[0], parameter_range[1])
                 xn = x_ref.copy() 
                 xn[:, j] = xi
-                self.xn = xn
                 D2 = self.predict.predict(xn)
-                self.D2 = D2 
                 kde2 = gaussian_kde(D2, bw_method='silverman')
                 area = kde_area_between(kde1, kde2,D1, D2, grid_resolution=1000)
                 areas.append(area)
-            delta_stat = np.median(areas)
+            delta_stat = np.mean(areas)
             delta_stats.append(delta_stat)
-            print(f"Feature {feature_labels[j]}: Median delta Statistic = {delta_stat:.3f}")
+            print(f"Feature {feature_labels[j]}: Expectation value of delta Statistic = {delta_stat:.3f}")
+
+        results = pd.DataFrame()
+        results['Var'] = feature_labels
+        results['delta'] = delta_stats
+        results['delta_norm'] = delta_stats/np.sum(delta_stats)
+    
+        return results
+    
+
+#****************************************************************************
+#                            h moment-free method                       *
+#****************************************************************************
+
+def kl_divergence(kde_p, kde_q ,samples_p, samples_q, num_points=1000, epsilon=1e-10):
+    """
+    Compute KL(P || Q) where P and Q are KDEs estimated from samples_p and samples_q.
+    
+    Args:
+        samples_p: 1D array of samples from distribution P
+        samples_q: 1D array of samples from distribution Q
+        epsilon: Small value to avoid numerical issues
+        num_points: Number of evaluation points for numerical integration
+        
+    Returns:
+        KL divergence value
+    """
+    # Fit KDEs to the samples
+    kde_p = gaussian_kde(samples_p)
+    kde_q = gaussian_kde(samples_q)
+    
+    # Define evaluation points spanning both datasets
+    min_val = min(np.min(samples_p), np.min(samples_q)) - 1.0
+    max_val = max(np.max(samples_p), np.max(samples_q)) + 1.0
+    grid_points = np.linspace(min_val, max_val, num_points)
+    
+    # Evaluate KDEs (add epsilon to avoid zeros)
+    p = kde_p(grid_points) + epsilon
+    q = kde_q(grid_points) + epsilon
+    
+    # Normalize to ensure valid probability distributions
+    p /= np.trapz(p, grid_points)
+    q /= np.trapz(q, grid_points)
+    
+    # Compute KL divergence: ∫ p(x) * log(p(x)/q(x)) dx
+    kl_integrand = p * (np.log(p) - np.log(q))
+    kl = np.trapz(kl_integrand, grid_points)
+    
+    return kl
+
+
+class hX():
+    """
+    A class to calculate delta statistics for feature importance analysis.
+
+    The DeltaX class is designed to compute delta statistics, which measure the influence of each feature
+    on the output of a surrogate model. The delta statistic is calculated by comparing the distribution
+    of the model's predictions when a feature is fixed to a specific value versus when it is unconditioned.
+
+    Attributes:
+    -----------
+    X : pd.DataFrame
+        The input feature matrix used for training the surrogate model.
+    y : pd.Series or np.ndarray
+        The target values corresponding to the input feature matrix.
+    ranges : dict
+        A dictionary specifying the range of values for each feature. Keys are feature labels, and values
+        are tuples of (min, max) values.
+    non_zero_coefficients : np.ndarray
+        An array of non-zero coefficients used by the surrogate model.
+    predict : callable
+        A surrogate model trained on the input data (X, y) using the provided non-zero coefficients.
+
+    Methods:
+    --------
+    get_deltax(num_unconditioned: int, num_samples: int) -> pd.DataFrame:
+        Calculates the delta statistics for each feature in the dataset.
+    """
+    def __init__(self, X, y, ranges, non_zero_coefficients, epsilon=1e-10):
+
+        self.X = X
+        self.y = y 
+        self.ranges = ranges
+        self.non_zero_coefficients = non_zero_coefficients 
+        self.predict = surrogate(self.non_zero_coefficients, self.ranges)
+        self.predict.fit(self.X, self.y)
+        self.epsilon = epsilon
+
+    def get_hx(self,num_unconditioned: int,  num_samples: int) -> pd.DataFrame:
+        """
+        Calculate the delta statistics for each feature in the dataset.
+
+        The delta statistic quantifies the influence of each feature on the model's predictions by comparing
+        the distribution of predictions when the feature is fixed to a specific value versus when it is
+        unconditioned. The statistic is computed using kernel density estimation (KDE) and the area between
+        the KDEs of the two distributions.
+
+        Parameters:
+        -----------
+        num_unconditioned : int
+            The number of unconditioned samples to generate for the reference set.
+        num_samples : int
+            The number of samples to generate for each feature to calculate the delta statistic.
+
+        Returns:
+        --------
+        pd.DataFrame
+            A DataFrame containing the following columns:
+            - 'Var': The feature labels.
+            - 'delta': The median delta statistic for each feature.
+            - 'delta_norm': The normalized delta statistic for each feature.
+        """
+        # Initialize dictionaries to store results
+        results = {}
+        results_p = {}
+        feature_labels = self.X.columns
+        num_features = len(self.ranges)
+    
+        # Generate reference set
+        x_ref = xsampler(num_unconditioned, self.ranges)
+        D1 = self.predict.predict(x_ref)
+        kde1 = gaussian_kde(D1, bw_method='silverman')
+
+        print(f"Number of features: {num_features}")
+        
+        delta_stats = [] 
+        # Iterate over each feature
+        for j in range(num_features):
+            parameter_range = self.ranges[feature_labels[j]]
+    
+            # Perform calc test for each sample
+            areas = []
+            for _ in range(num_samples):
+                xi = np.random.uniform(parameter_range[0], parameter_range[1])
+                xn = x_ref.copy() 
+                xn[:, j] = xi
+                D2 = self.predict.predict(xn)
+                kde2 = gaussian_kde(D2, bw_method='silverman')
+                area = kl_divergence(kde1, kde2,D1, D2, num_points=1000, epsilon=self.epsilon)
+                areas.append(area)
+            delta_stat = np.mean(areas)
+            delta_stats.append(delta_stat)
+            print(f"Feature {feature_labels[j]}: Expectation value of delta Statistic = {delta_stat:.3f}")
 
         results = pd.DataFrame()
         results['Var'] = feature_labels

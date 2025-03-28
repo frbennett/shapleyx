@@ -214,11 +214,10 @@ class RegressionARD(RegressorMixin, LinearModel):
                     converged = True
                 current_r = cv_results.mean()
                 cv_list.append(cv_results.mean())
-                print(i, cv_results.mean(), percentage_change)
-
+                print(f"Iteration: {i:<4}  Mean CV Score: {cv_results.mean():.4f}, Percentage Change: {percentage_change:.2f}%")
             
             if self.verbose:
-                print(('Iteration: {0}, number of features '
+                print(('Iteration: {:<5}, number of features '
                        'in the model: {1}').format(i,np.sum(active)))
             if converged or i == self.n_iter - 1:
                 print('finished') 

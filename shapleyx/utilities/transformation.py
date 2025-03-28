@@ -12,7 +12,7 @@ class transformation():
             feature_max = self.X[column].max()
     
             # Log the min and max values for debugging or informational purposes
-            print(f"{column}: min = {feature_min}, max = {feature_max}")
+            print(f"Feature: {column}, Min Value: {feature_min:.4f}, Max Value: {feature_max:.4f}") 
     
             # Perform min-max scaling to transform the feature to [0, 1]
             self.X_T[column] = (self.X[column] - feature_min) / (feature_max - feature_min)

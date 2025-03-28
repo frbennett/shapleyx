@@ -401,9 +401,43 @@ class rshdmr():
         return self.surrogate_model.predict(X) 
 
     def get_deltax(self, num_unconditioned: int, delta_samples: int) -> pd.DataFrame:      
+        """
+        Calculate delta indices for the given number of unconditioned variables and delta samples.
+
+        This method initializes a DeltaX instance using the provided data and parameters,
+        then computes the delta indices based on the specified number of unconditioned variables
+        and delta samples.
+
+        Args:
+            num_unconditioned (int): The number of unconditioned variables.
+            delta_samples (int): The number of delta samples to generate.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the computed delta indices.
+        """
         self.delta_instance = pawn.DeltaX(self.X, self.Y, self.ranges, self.non_zero_coefficients)
         delta_indices = self.delta_instance.get_deltax(num_unconditioned, delta_samples)
         return delta_indices
+    
+    def get_hx(self, num_unconditioned: int, delta_samples: int) -> pd.DataFrame:      
+        """
+        Calculate delta indices for the given number of unconditioned variables and delta samples.
+
+        This method initializes a DeltaX instance using the provided data and parameters,
+        then computes the delta indices based on the specified number of unconditioned variables
+        and delta samples.
+
+        Args:
+            num_unconditioned (int): The number of unconditioned variables.
+            delta_samples (int): The number of delta samples to generate.
+
+        Returns:
+            pd.DataFrame: A DataFrame containing the computed delta indices.
+        """
+        self.delta_instance = pawn.hX(self.X, self.Y, self.ranges, self.non_zero_coefficients)
+        delta_indices = self.delta_instance.get_hx(num_unconditioned, delta_samples)
+        return delta_indices
+    
     
     def get_pawnx(self, num_unconditioned: int, num_conditioned: int, num_ks_samples: int, alpha: float = 0.05) -> pd.DataFrame:
         """

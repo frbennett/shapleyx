@@ -21,8 +21,6 @@ def calculate_PC_basis_set_size(dims, max_poly):
     print(f"Total basis functions in basis set : {int(total)}")
     
 
-
-
 def shift_legendre(n, x):
         """
         Computes the shifted Legendre polynomial of degree `n` evaluated at `x` and scales
