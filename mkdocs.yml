@@ -5,6 +5,8 @@ nav:
     - User Guide:
         - Introduction: theory.md
         - Quick Start: quick_start.md
+    - API: api.md
+    
 
 
 
