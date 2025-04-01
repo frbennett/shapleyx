@@ -1,13 +1,34 @@
-site_name: ESMDAPY Documentation
+site_name: ShapleyX Documentation
+site_url: https://shapleyx.readthedocs.io/en/latest/ # Replace with your actual RTD URL once set up
 
 nav:
-    - Quick Start: quick_start.md 
-    - User Guide:
-        - Introduction: theory.md
-        - Quick Start: quick_start.md
-    - API: api.md
-    
+  - Home: index.md
+  - Quick Start: quick_start.md
+  - Theory: theory.md
+  - API Reference: api.md
 
+theme:
+  name: readthedocs
+  # Optionally add features like navigation depth:
+  # navigation_depth: 2
 
+# Specify the directory containing your markdown source files
+docs_dir: docs
 
-        
+# Add plugins/extensions for better rendering
+markdown_extensions:
+  - admonition # Adds styled blocks like notes, warnings
+  - pymdownx.details # Collapsible blocks
+  - pymdownx.superfences # Enhanced code blocks
+  - toc:
+      permalink: true # Adds anchor links to headers
+  # Add mkdocstrings if you plan to auto-generate API docs from docstrings
+  # - mkdocstrings:
+  #     handlers:
+  #       python:
+  #         options:
+  #           show_root_heading: true
+
+# Optional: Add repo URL for edit links
+# repo_url: https://github.com/your_username/shapleyx # Replace with your repo URL
+# edit_uri: edit/main/docs/ # Or blob/main/docs/ depending on your repo settings

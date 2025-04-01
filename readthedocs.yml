@@ -5,15 +5,30 @@
 # Required
 version: 2
 
-
+# Set the OS, Python version and other tools you might need
 build:
   os: "ubuntu-22.04"
   tools:
-    python: "3.10"
+    python: "3.10" # Or your project's target Python version
 
 # Build documentation with MkDocs
 mkdocs:
   configuration: mkdocs.yml
+  # fail_on_warning: true # Optional: Treat warnings as errors
+
+# Specify requirements needed to build the documentation
+python:
+  install:
+    - requirements: docs/requirements.txt # Recommended: Create a requirements file
+    # Alternatively, list packages directly:
+    # - package: mkdocs
+    # - package: mkdocs-readthedocs-theme
+    # - package: pymdown-extensions
+    # - package: mkdocstrings # If using mkdocstrings
+    # - package: mkdocstrings-python # If using mkdocstrings for Python
+    # Install the shapleyx package itself if needed for mkdocstrings
+    # - method: pip
+    #   path: .
 
 # Optionally build your docs in additional formats such as PDF and ePub
 formats: all
