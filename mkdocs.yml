@@ -8,7 +8,7 @@ nav:
   - API Reference: api.md
 
 theme:
-  name: readthedocs
+  name: mkdocs
   # Optionally add features like navigation depth:
   # navigation_depth: 2
 
