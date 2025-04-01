@@ -1,3 +1,10 @@
+---
+title: "Theory Background"
+layout: single
+classes: wide
+mathjax: true
+---
+
 # Theoretical Background
 
 ## RS-HDMR Methodology

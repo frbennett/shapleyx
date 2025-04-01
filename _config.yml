@@ -1,5 +1,41 @@
-remote_theme: pages-themes/modernist@v0.2.0
+# Minimal Mistakes theme configuration
+remote_theme: mmistakes/minimal-mistakes@4.24.0
 plugins:
-- jekyll-remote-theme # add this line to the plugins list if you already have one
-title: ShapleyX Docs
-description: Documentation 
+  - jekyll-remote-theme
+  - jekyll-include-cache
+
+# Site settings
+title: ShapleyX Documentation
+description: Global sensitivity analysis using RS-HDMR with GMDH
+url: "https://frbennett.github.io/shapleyx"
+repository: frbennett/shapleyx
+
+# Navigation
+defaults:
+  - scope:
+      path: ""
+      type: "pages"
+    values:
+      layout: "single"
+      author_profile: false
+      read_time: false
+      comments: false
+      share: false
+      related: false
+
+# Theme settings
+minimal_mistakes_skin: "default"
+
+# Navigation
+navigation:
+  main:
+    - title: "Home"
+      url: "/"
+    - title: "Quick Start"
+      url: "/quick_start/"
+    - title: "Theory"
+      url: "/theory/"
+    - title: "API Reference"
+      url: "/api/"
+    - title: "GitHub"
+      url: "https://github.com/frbennett/shapleyx"

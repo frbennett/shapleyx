@@ -1,4 +1,9 @@
-<script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS_HTML"></script>
+---
+title: "ShapleyX Documentation"
+layout: single
+classes: wide
+mathjax: true
+---
 # Welcome to ShapleyX
 
 ShapleyX is a Python package for global sensitivity analysis using Random Sampling High-Dimensional Model Representation (RS-HDMR) with the Group Method of Data Handling (GMDH) for parameter selection and linear regression for parameter refinement.

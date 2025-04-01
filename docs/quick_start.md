@@ -1,3 +1,10 @@
+---
+title: "Quick Start Guide"
+layout: single
+classes: wide
+mathjax: true
+---
+
 # Quick Start Guide
 
 This guide will walk you through a basic sensitivity analysis using ShapleyX.

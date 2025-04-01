@@ -1,3 +1,10 @@
+---
+title: "API Reference"
+layout: single
+classes: wide
+mathjax: true
+---
+
 # API Reference
 
 ## Main Class: `rshdmr`
