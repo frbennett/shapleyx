@@ -20,9 +20,11 @@ jobs:
           pip install mkdocs-material
           pip install mkdocs-git-revision-date-localized-plugin
           
-      - name: Build and deploy
-        uses: mhausenblas/mkdocs-deploy-gh-pages@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DOCS_DIR: 'docs_src/docs'
-          CONFIG_FILE: 'mkdocs.yml'
+      - name: Build docs
+        run: mkdocs build --site-dir site
+        
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./site
