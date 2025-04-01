@@ -1,0 +1,22 @@
+site_name: ShapleyX Documentation
+site_url: https://frbennett.github.io/shapleyx
+repo_url: https://github.com/frbennett/shapleyx
+
+theme:
+  name: material
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.top
+
+nav:
+  - Home: index.md
+  - Quick Start: quick_start.md
+  - Theory: theory.md
+  - API Reference: api.md
+
+markdown_extensions:
+  - admonition
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex
