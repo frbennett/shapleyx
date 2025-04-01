@@ -95,4 +95,4 @@ plt.show()
 ## Next Steps
 - Explore advanced options in the [API Reference](api.md)
 - Learn about the theoretical foundations in [Theory Background](theory.md)
-- Try the [example notebooks](../Examples/)
+- Try the [example notebooks](https://github.com/frbennett/shapleyx/tree/main/Examples)
