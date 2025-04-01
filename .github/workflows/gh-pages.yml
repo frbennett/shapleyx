@@ -1,4 +1,4 @@
-name: Deploy Docs to GitHub Pages
+name: Deploy Docs to GitHub Pages # Last updated: 2025-04-02
 on:
   push:
     branches: [ main ]
