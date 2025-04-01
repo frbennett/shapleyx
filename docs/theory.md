@@ -1,6 +1,6 @@
 ---
 title: "Theory Background"
-layout: single
+layout: default
 classes: wide
 mathjax: true
 ---

@@ -7,8 +7,13 @@ plugins:
 # Site settings
 title: ShapleyX Documentation
 description: Global sensitivity analysis using RS-HDMR with GMDH
-url: "https://frbennett.github.io/shapleyx"
+url: "https://frbennett.github.io"
+baseurl: "/shapleyx"
 repository: frbennett/shapleyx
+
+# GitHub Pages requirements
+github:
+  metadata: true
 
 # Navigation
 defaults:

@@ -1,6 +1,6 @@
 ---
 title: "API Reference"
-layout: single
+layout: default
 classes: wide
 mathjax: true
 ---

@@ -1,6 +1,6 @@
 ---
 title: "Quick Start Guide"
-layout: single
+layout: default
 classes: wide
 mathjax: true
 ---

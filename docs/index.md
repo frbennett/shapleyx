@@ -1,6 +1,6 @@
 ---
 title: "ShapleyX Documentation"
-layout: single
+layout: default
 classes: wide
 mathjax: true
 ---
