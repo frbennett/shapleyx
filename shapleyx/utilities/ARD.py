@@ -205,30 +205,67 @@ class RegressionARD(RegressorMixin, LinearModel):
             A,converged  = update_precisions(Q,S,q,s,A,active,self.tol,
                                              n_samples,False)
 # ***************************************            
-            if self.cv :
-                X_cv = X.T[active].T
-                cv_clf = linear_model.Ridge()
-                cv_results = cross_val_score(cv_clf, X_cv,y, cv=10)
-                percentage_change = (cv_results.mean() - current_r)/current_r * 100
-                if percentage_change < self.cv_tol :
-                    converged = True
-                current_r = cv_results.mean()
-                cv_list.append(cv_results.mean())
-                print(f"Iteration: {i:<4}  Mean CV Score: {cv_results.mean():.4f}, Percentage Change: {percentage_change:.2f}%")
-            
+            # --- Cross-validation based early stopping (if enabled) ---
+            if self.cv:
+                # Select active features for CV - use direct slicing for efficiency
+                X_active_cv = X[:, active]
+
+                # Define and run cross-validation
+                # TODO: Consider making Ridge alpha and cv folds class attributes (e.g., self.ridge_alpha, self.cv_folds)
+                cv_folds = 10  # Or ideally use a configurable parameter like self.cv_folds
+                cv_model = linear_model.Ridge() # Consider specifying alpha or making it configurable
+
+                try:
+                    cv_scores = cross_val_score(cv_model, X_active_cv, y, cv=cv_folds)
+                    mean_cv_score = cv_scores.mean()
+
+                    # Calculate percentage change in CV score, handling potential division by zero
+                    if abs(current_r) > np.finfo(float).eps: # Check if previous score is non-zero
+                        percentage_change = (mean_cv_score - current_r) / current_r * 100.0
+                    else:
+                        # Handle case where previous score was zero (e.g., first iteration)
+                        percentage_change = np.inf if mean_cv_score > np.finfo(float).eps else 0.0
+                        if self.verbose:
+                            print(f"Iteration: {i:<4}  Previous CV score was zero, setting change to {percentage_change:.2f}%.")
+
+                    # Check for CV convergence (early stopping based on CV score improvement)
+                    # This provides an *additional* condition to the main ARD convergence
+                    cv_based_convergence = percentage_change < self.cv_tol
+                    if cv_based_convergence:
+                        converged = True # Trigger early stopping if CV improvement is below tolerance
+
+                    # Update history and print CV status
+                    current_r = mean_cv_score
+                    cv_list.append(mean_cv_score) # Assuming cv_list is used elsewhere
+
+                    print(f"Iteration: {i:<4}  Mean CV Score: {mean_cv_score:.4f}, Percentage Change: {percentage_change:.2f}%")
+                    if cv_based_convergence and self.verbose:
+                         print(f"Iteration: {i:<4}  Convergence detected based on CV tolerance ({self.cv_tol}%).")
+
+                except ValueError as e:
+                    # Handle potential errors during cross_val_score (e.g., if X_active_cv becomes empty)
+                    warnings.warn(f"Iteration {i}: Cross-validation failed with error: {e}. Skipping CV check for this iteration.")
+                    # Decide how to proceed: continue without CV check? Stop?
+                    # Here, we'll just skip the CV check for this iteration.
+                    pass # Or add more specific handling
+
+            # --- Verbose output for main iteration progress ---
             if self.verbose:
-                print(('Iteration: {:<5}, number of features '
-                       'in the model: {1}').format(i,np.sum(active)))
+                # Use f-string for consistency and clarity
+                print(f'Iteration: {i:<5}, number of features remaining: {np.sum(active)}')
+
+            # --- Check for final convergence or max iterations reached ---
             if converged or i == self.n_iter - 1:
-                print('finished') 
-                print(('Iteration: {0}, number of features '
-                       'in the model: {1}').format(i,np.sum(active)))
+                print(f'Finished ARD iterations at iteration {i+1}.') # Use i+1 for 1-based iteration count in message
                 if converged and self.verbose:
-                    print('Algorithm converged !')
-                break
+                    # Indicate if convergence was due to CV if that flag was set
+                    reason = "(CV tolerance)" if 'cv_based_convergence' in locals() and cv_based_convergence else "(ARD criteria)"
+                    print(f'Algorithm converged {reason}.')
+                elif i == self.n_iter - 1 and self.verbose:
+                    print('Reached maximum number of iterations without full convergence.')
+                break # Exit the main loop
         
-        print(('Iteration: {0}, number of features '
-                       'in the model: {1}').format(i,np.sum(active)))        
+            
         # after last update of alpha & beta update parameters
         # of posterior distribution
         XXa,XYa,Aa         = XX[active,:][:,active],XY[active],A[active]
@@ -241,7 +278,8 @@ class RegressionARD(RegressorMixin, LinearModel):
         self.alpha_        = beta
         self._set_intercept(X_mean,y_mean,X_std)
         if self.cv :
-            print(max(enumerate(cv_list), key=lambda x: x[1]))
+            print(('Number of features '
+                       'in the model: {0}').format(np.sum(active)))    
         return self
         
         

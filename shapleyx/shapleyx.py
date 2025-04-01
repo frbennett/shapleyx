@@ -14,6 +14,7 @@ from scipy import stats
 
 from .pyquotegen import quotes
 import textwrap
+
 from .utilities import ( 
     legendre,
     predictor,

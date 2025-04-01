@@ -11,6 +11,7 @@ from scipy.linalg import solve_triangular
 from scipy.linalg import pinvh
 import numpy as np 
 import warnings
+import logging
 class RegressionARD(RegressorMixin, LinearModel):
     '''
     Regression with Automatic Relevance Determination (ARD) using Sparse Bayesian Learning.
@@ -141,6 +142,7 @@ class RegressionARD(RegressorMixin, LinearModel):
         X, y, X_mean, y_mean, X_std = self._center_data(X, y)
         n_samples, n_features = X.shape
         cv_list = []
+        cv_score_history = [] 
         current_r = 0
 
         #  precompute X'*Y , X'*X for faster iterations & allocate memory for
@@ -205,31 +207,90 @@ class RegressionARD(RegressorMixin, LinearModel):
             A,converged  = update_precisions(Q,S,q,s,A,active,self.tol,
                                              n_samples,False)
 # ***************************************            
-            if self.cv :
-                X_cv = X.T[active].T
-                cv_clf = linear_model.Ridge()
-                cv_results = cross_val_score(cv_clf, X_cv,y, cv=10)
-                percentage_change = (cv_results.mean() - current_r)/current_r * 100
-                if percentage_change < self.cv_tol :
-                    converged = True
-                current_r = cv_results.mean()
-                cv_list.append(cv_results.mean())
-                print(i, cv_results.mean(), percentage_change)
+            if self.cv:
+                # Select features based on the 'active' mask
+                # Assumes X is a numpy array for efficient slicing
+                X_active = X[:, active]
+
+                # Define the model for cross-validation (instantiated fresh each time)
+                cv_model = linear_model.Ridge()
+
+                try:
+                    # Perform 10-fold cross-validation, explicitly using R^2 scoring
+                    # Ensure 'y' corresponds correctly to 'X_active'
+                    cv_scores = cross_val_score(cv_model, X_active, y, cv=10, scoring='r2')
+                    new_cv_score = np.mean(cv_scores) # Use numpy mean for clarity
+
+                    # Calculate percentage change, handling division by zero
+                    # Assumes current_cv_score is initialized (e.g., to None or 0.0) before the loop
+                    if current_cv_score is not None and current_cv_score != 0:
+                        percentage_change = (new_cv_score - current_cv_score) / current_cv_score * 100
+                    elif new_cv_score == 0 and (current_cv_score is None or current_cv_score == 0):
+                        percentage_change = 0.0 # No change if both old and new scores are zero
+                    else:
+                        # Handle cases where current_cv_score is None (first iteration) or zero
+                        percentage_change = np.inf # Indicate a large change if starting from zero/None
+
+                    # Optional: Replace print with logging for better control in applications
+                    # Assumes 'i' is an iteration counter from an outer loop
+                    print(f"Iteration {i}: CV Score = {new_cv_score:.4f}, % Change = {percentage_change:.2f}%")
+
+                    # Check for convergence based on the absolute percentage change
+                    # Assumes cv_tol is a positive threshold for the magnitude of change
+                    # Assumes 'converged' is initialized (e.g., to False) before the loop
+                    if current_cv_score is not None and abs(percentage_change) < self.cv_tol:
+                        converged = True
+                        # Consider adding a 'break' here if the loop should terminate immediately upon convergence
+
+                    # Update the current score and history
+                    # Assumes cv_score_history is initialized (e.g., as []) before the loop
+                    current_cv_score = new_cv_score
+                    cv_score_history.append(new_cv_score)
+
+                except ValueError as ve:
+                    # Catch specific errors, e.g., if X_active becomes empty or has incompatible dimensions
+                    print(f"Warning: Cross-validation failed at iteration {i} due to ValueError: {ve}")
+                    # Decide how to handle: stop, skip, assign default score?
+                    # Example: Treat as no improvement or break
+                    percentage_change = np.nan # Mark as invalid
+                    # converged = True # Option: Stop if CV fails
+                except Exception as e:
+                    # Catch other potential errors during cross-validation
+                    print(f"Warning: Cross-validation failed unexpectedly at iteration {i}: {e}")
+                    percentage_change = np.nan
+                    # converged = True # Option: Stop if CV fails
 
             
+            # Calculate active features once per iteration
+            num_active_features = np.sum(active)
+
             if self.verbose:
-                print(('Iteration: {0}, number of features '
-                       'in the model: {1}').format(i,np.sum(active)))
+                # Use logging (assuming logger is configured) and f-string for iteration progress
+                # import logging  # Ensure logging is imported at the top of the file
+                logging.info(f"Iteration: {i}, Active Features: {num_active_features}")
+
+            # Check for convergence or max iterations to terminate
             if converged or i == self.n_iter - 1:
-                print('finished') 
-                print(('Iteration: {0}, number of features '
-                       'in the model: {1}').format(i,np.sum(active)))
-                if converged and self.verbose:
-                    print('Algorithm converged !')
-                break
+                # Construct the final status message
+                final_status = f"Finished at Iteration: {i}, Active Features: {num_active_features}."
+                if converged:
+                    log_level = logging.INFO # Normal convergence
+                    final_status += " Algorithm converged."
+                    # The original code printed "Algorithm converged !" only if verbose.
+                    # Logging INFO level covers this sufficiently. Add DEBUG if more detail needed.
+                    # if self.verbose:
+                    #    logging.debug("Convergence details: ...")
+                else: # i == self.n_iter - 1
+                    log_level = logging.WARNING # Reached max iterations without converging
+                    final_status += f" Reached maximum iterations ({self.n_iter})."
+
+                # Log the final status
+                logging.log(log_level, final_status)
+                break # Exit the loop
         
-        print(('Iteration: {0}, number of features '
-                       'in the model: {1}').format(i,np.sum(active)))        
+        #print(('Iteration: {0}, number of features '
+        #               'in the model: {1}').format(i,np.sum(active)))      
+          
         # after last update of alpha & beta update parameters
         # of posterior distribution
         XXa,XYa,Aa         = XX[active,:][:,active],XY[active],A[active]
@@ -242,7 +303,9 @@ class RegressionARD(RegressorMixin, LinearModel):
         self.alpha_        = beta
         self._set_intercept(X_mean,y_mean,X_std)
         if self.cv :
-            print(max(enumerate(cv_list), key=lambda x: x[1]))
+        #    print(max(enumerate(cv_list), key=lambda x: x[1]))
+            print(('Iteration: {0}, number of features '
+                       'in the model: {1}').format(i,np.sum(active))) 
         return self
         
         
