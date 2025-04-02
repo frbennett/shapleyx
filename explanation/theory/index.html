@@ -943,20 +943,28 @@
 <li>Provide unique attribution under certain axioms</li>
 </ol>
 <h2 id="mathematical-formulation">Mathematical Formulation</h2>
-<p>For a model output $Y = f(X_1, X_2, ..., X_d)$, the Shapley effect $\phi_i$ for parameter $X_i$ is:</p>
-<p>$$
-\phi_i = \sum_{S \subseteq D \setminus {i}} \frac{|S|!(d-|S|-1)!}{d!} [\text{Var}(E[Y|X_S \cup {i}]) - \text{Var}(E[Y|X_S])]
-$$</p>
+<p>For a model output <span class="arithmatex">\( Y = f(X_1, X_2, \dots, X_d)\)</span> , the Shapley effect <span class="arithmatex">\(\phi_i\)</span> for parameter <span class="arithmatex">\(X_i\)</span> is:</p>
+<div class="arithmatex">\[
+\phi_i = \sum_{S \subseteq D \setminus \{i\}} \frac{|S|!(d-|S|-1)!}{d!} \left[\text{Var}\big(E[Y|X_S \cup \{i\}]\big) - \text{Var}\big(E[Y|X_S]\big)\right]
+\]</div>
 <p>where:
-- $D$ is the set of all parameters
-- $S$ is a subset of parameters excluding $i$
-- $X_S$ represents the parameters in subset $S$</p>
+- <span class="arithmatex">\(D\)</span> is the set of all parameters
+- <span class="arithmatex">\(S\)</span> is a subset of parameters excluding <span class="arithmatex">\(i\)</span>
+- <span class="arithmatex">\(X_S\)</span> represents the parameters in subset <span class="arithmatex">\(S\)</span>
+For a model output $$ Y = f(X_1, X_2, \ldots, X_d) $$, the Shapley effect <span class="arithmatex">\(<span class="arithmatex">\(\phi_i\)</span>\)</span> for parameter <span class="arithmatex">\(<span class="arithmatex">\(X_i\)</span>\)</span> is:</p>
+<div class="arithmatex">\[
+\phi_i = \sum_{S \subseteq D \setminus \{i\}} \frac{|S|!(d-|S|-1)!}{d!} [\text{Var}(E[Y|X_S \cup \{i\}]) - \text{Var}(E[Y|X_S])]
+\]</div>
+<p>where:
+- <span class="arithmatex">\(D\)</span> is the set of all parameters
+- <span class="arithmatex">\(S\)</span> is a subset of parameters excluding <span class="arithmatex">\(i\)</span>
+- <span class="arithmatex">\(X_S\)</span> represents the parameters in subset <span class="arithmatex">\(S\)</span></p>
 <h2 id="relationship-to-sobol-indices">Relationship to Sobol Indices</h2>
 <p>Shapley effects generalize Sobol indices by:
 - Combining all order effects involving a parameter
 - Providing a complete decomposition where:
-  - $\sum_{i=1}^d \phi_i = \text{Var}(Y)$
-  - Each $\phi_i \geq 0$</p>
+  - <span class="arithmatex">\(\sum_{i=1}^d \phi_i = \text{Var}(Y)\)</span>
+  - Each <span class="arithmatex">\(\phi_i \geq 0\)</span></p>
 <h2 id="advantages">Advantages</h2>
 <ol>
 <li><strong>Complete Attribution</strong>: Accounts for all interactions</li>
@@ -1029,6 +1037,8 @@ $$</p>
     
     
       <script src="../../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
     
   </body>

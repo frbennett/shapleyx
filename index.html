@@ -904,12 +904,14 @@
 <li><strong>Reference</strong>: Complete API documentation</li>
 <li><strong>Explanation</strong>: Background and theory</li>
 </ul>
-<p>```python
-import shapleyx</p>
-<h1 id="initialize-rs-hdmr-analyzer">Initialize RS-HDMR analyzer</h1>
-<p>analyzer = shapleyx.rshdmr(data_file='input_data.csv', polys=[10, 5], method='ard')</p>
-<h1 id="run-the-entire-analysis-pipeline">Run the entire analysis pipeline</h1>
-<p>sobol_indices, shapley_effects, total_index = analyzer.run_all()</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">shapleyx</span>
+
+<span class="c1"># Initialize RS-HDMR analyzer</span>
+<span class="n">analyzer</span> <span class="o">=</span> <span class="n">shapleyx</span><span class="o">.</span><span class="n">rshdmr</span><span class="p">(</span><span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;input_data.csv&#39;</span><span class="p">,</span> <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ard&#39;</span><span class="p">)</span>
+
+<span class="c1"># Run the entire analysis pipeline</span>
+<span class="n">sobol_indices</span><span class="p">,</span> <span class="n">shapley_effects</span><span class="p">,</span> <span class="n">total_index</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+</code></pre></div>
 
 
 
@@ -970,6 +972,8 @@ import shapleyx</p>
     
     
       <script src="assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
       
     
   </body>
