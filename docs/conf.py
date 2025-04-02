@@ -14,7 +14,7 @@ import os
 import sys
 sys.path.insert(0, os.path.abspath('..')) # Add project root to path
 
-import shapleyx # Import the package to get version info
+#import shapleyx # Import the package to get version info
 
 
 # -- Project information -----------------------------------------------------
@@ -24,7 +24,8 @@ copyright = '2025, Your Name' # Placeholder - User should update
 author = 'Your Name' # Placeholder - User should update
 
 # The full version, including alpha/beta/rc tags
-release = shapleyx.__version__
+#release = shapleyx.__version__
+release = '0.1.0' # Placeholder - User should update
 
 
 # -- General configuration ---------------------------------------------------
