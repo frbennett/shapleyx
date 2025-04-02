@@ -1,5 +1,0 @@
-mkdocs>=1.4
-mkdocs-readthedocs-theme
-pymdown-extensions
-# Add mkdocstrings[python]>=0.18 if you enable mkdocstrings in mkdocs.yml
-# Add '.' (a single dot on its own line) if mkdocstrings needs to import your shapleyx package

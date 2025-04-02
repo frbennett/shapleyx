@@ -5,6 +5,9 @@ from pathlib import Path
 readme_path = Path(__file__).parent / 'README.md'
 long_description = readme_path.read_text(encoding='utf-8')
 
+with open('LICENSE') as f: # Assuming a LICENSE file will be added later
+    license_text = f.read()
+
 setup(
     name='shapleyx',
     version='0.2',
