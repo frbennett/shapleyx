@@ -19,9 +19,9 @@ sys.path.insert(0, os.path.abspath('..')) # Add project root to path
 
 # -- Project information -----------------------------------------------------
 
-project = 'My Python Package'
-copyright = '2025, Your Name' # Placeholder - User should update
-author = 'Your Name' # Placeholder - User should update
+project = 'ShapleyX'
+copyright = '2025, Frederick Bennett' # Placeholder - User should update
+author = 'Frederick Bennett' # Placeholder - User should update
 
 # The full version, including alpha/beta/rc tags
 #release = shapleyx.__version__
@@ -38,6 +38,7 @@ extensions = [
     'sphinx.ext.napoleon', # Support NumPy and Google style docstrings
     'sphinx.ext.viewcode', # Add links to source code
     'sphinx.ext.intersphinx', # Link to other projects' documentation
+    'myst_parser', # Support Markdown files
 ]
 
 # Add any paths that contain templates here, relative to this directory.

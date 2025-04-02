@@ -1,0 +1,889 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../../">
+  <head><meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../genindex.html" /><link rel="search" title="Search" href="../../search.html" />
+
+    <!-- Generated with Sphinx 7.3.7 and Furo 2024.08.06 -->
+        <title>shapleyx.ARD - ShapleyX 0.1.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo.css?v=354aac6f" />
+    <link rel="stylesheet" type="text/css" href="../../_static/styles/furo-extensions.css?v=302659d7" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f8f8f8;
+  --color-code-foreground: black;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc">
+<label class="overlay sidebar-overlay" for="__navigation">
+  <div class="visually-hidden">Hide navigation sidebar</div>
+</label>
+<label class="overlay toc-overlay" for="__toc">
+  <div class="visually-hidden">Hide table of contents sidebar</div>
+</label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <div class="visually-hidden">Toggle site navigation sidebar</div>
+        <i class="icon"><svg><use href="#svg-menu"></use></svg></i>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../../index.html"><div class="brand">ShapleyX 0.1.0 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle">
+          <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon no-toc" for="__toc">
+        <div class="visually-hidden">Toggle table of contents sidebar</div>
+        <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../../index.html">
+  
+  
+  <span class="sidebar-brand-text">ShapleyX 0.1.0 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api.html">API Reference</a><input class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><div class="visually-hidden">Toggle navigation of API Reference</div><i class="icon"><svg><use href="#svg-arrow-right"></use></svg></i></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../modules/shapleyx.html">ShapleyX Main Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../modules/ARD.html">ARD Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../modules/xsampler.html">XSampler Module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../modules/pyquotegen.html">PyQuoteGen Module</a></li>
+</ul>
+</li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle">
+              <div class="visually-hidden">Toggle Light / Dark / Auto color theme</div>
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon no-toc" for="__toc">
+            <div class="visually-hidden">Toggle table of contents sidebar</div>
+            <i class="icon"><svg><use href="#svg-toc"></use></svg></i>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <h1>Source code for shapleyx.ARD</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegressorMixin</span><span class="p">,</span> <span class="n">BaseEstimator</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.linear_model._base</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearModel</span><span class="p">,</span> <span class="n">LinearClassifierMixin</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">check_X_y</span><span class="p">,</span><span class="n">check_array</span><span class="p">,</span><span class="n">as_float_array</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn</span><span class="w"> </span><span class="kn">import</span> <span class="n">linear_model</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sklearn.model_selection</span><span class="w"> </span><span class="kn">import</span> <span class="n">cross_val_score</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinAlgError</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">solve_triangular</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.linalg</span><span class="w"> </span><span class="kn">import</span> <span class="n">pinvh</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span> 
+<span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<div class="viewcode-block" id="RegressionARD">
+<a class="viewcode-back" href="../../modules/ARD.html#shapleyx.ARD.RegressionARD">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">RegressionARD</span><span class="p">(</span><span class="n">RegressorMixin</span><span class="p">,</span> <span class="n">LinearModel</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Regression with Automatic Relevance Determination (ARD) using Sparse Bayesian Learning.</span>
+
+<span class="sd">    This class implements a fast version of ARD regression, which is a Bayesian approach</span>
+<span class="sd">    to regression that automatically determines the relevance of each feature. It is based</span>
+<span class="sd">    on the Sparse Bayesian Learning (SBL) algorithm, which promotes sparsity in the model</span>
+<span class="sd">    by estimating the precision of the coefficients.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_iter : int, optional (default=300)</span>
+<span class="sd">        Maximum number of iterations for the optimization algorithm.</span>
+
+<span class="sd">    tol : float, optional (default=1e-3)</span>
+<span class="sd">        Convergence threshold. If the absolute change in the precision parameter for the</span>
+<span class="sd">        weights is below this threshold, the algorithm terminates.</span>
+
+<span class="sd">    fit_intercept : bool, optional (default=True)</span>
+<span class="sd">        Whether to calculate the intercept for this model. If set to False, no intercept</span>
+<span class="sd">        will be used in calculations (e.g., data is expected to be already centered).</span>
+
+<span class="sd">    copy_X : bool, optional (default=True)</span>
+<span class="sd">        If True, X will be copied; else, it may be overwritten.</span>
+
+<span class="sd">    verbose : bool, optional (default=False)</span>
+<span class="sd">        If True, the algorithm will print progress messages during fitting.</span>
+
+<span class="sd">    cv_tol : float, optional (default=0.1)</span>
+<span class="sd">        Tolerance for cross-validation. If the percentage change in cross-validation score</span>
+<span class="sd">        is below this threshold, the algorithm terminates.</span>
+
+<span class="sd">    cv : bool, optional (default=False)</span>
+<span class="sd">        If True, cross-validation will be used to determine the optimal number of features.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    coef_ : array, shape (n_features,)</span>
+<span class="sd">        Coefficients of the regression model (mean of the posterior distribution).</span>
+
+<span class="sd">    alpha_ : float</span>
+<span class="sd">        Estimated precision of the noise.</span>
+
+<span class="sd">    active_ : array, dtype=bool, shape (n_features,)</span>
+<span class="sd">        Boolean array indicating which features are active (non-zero coefficients).</span>
+
+<span class="sd">    lambda_ : array, shape (n_features,)</span>
+<span class="sd">        Estimated precisions of the coefficients.</span>
+
+<span class="sd">    sigma_ : array, shape (n_features, n_features)</span>
+<span class="sd">        Estimated covariance matrix of the weights, computed only for non-zero coefficients.</span>
+
+<span class="sd">    scores_ : list</span>
+<span class="sd">        List of cross-validation scores if `cv` is True.</span>
+
+<span class="sd">    Methods</span>
+<span class="sd">    -------</span>
+<span class="sd">    fit(X, y)</span>
+<span class="sd">        Fit the ARD regression model to the data.</span>
+
+<span class="sd">    predict_dist(X)</span>
+<span class="sd">        Compute the predictive distribution for the test set.</span>
+
+<span class="sd">    _center_data(X, y)</span>
+<span class="sd">        Center the data by subtracting the mean.</span>
+
+<span class="sd">    _posterior_dist(A, beta, XX, XY, full_covar=False)</span>
+<span class="sd">        Calculate the mean and covariance matrix of the posterior distribution of coefficients.</span>
+
+<span class="sd">    _sparsity_quality(XX, XXd, XY, XYa, Aa, Ri, active, beta, cholesky)</span>
+<span class="sd">        Calculate sparsity and quality parameters for each feature.</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    [1] Tipping, M. E., &amp; Faul, A. C. (2003). Fast marginal likelihood maximisation for</span>
+<span class="sd">        sparse Bayesian models. In Proceedings of the Ninth International Workshop on</span>
+<span class="sd">        Artificial Intelligence and Statistics (pp. 276-283).</span>
+<span class="sd">    [2] Tipping, M. E., &amp; Faul, A. C. (2001). Analysis of sparse Bayesian learning. In</span>
+<span class="sd">        Advances in Neural Information Processing Systems (pp. 383-389).</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    
+<div class="viewcode-block" id="RegressionARD.__init__">
+<a class="viewcode-back" href="../../modules/ARD.html#shapleyx.ARD.RegressionARD.__init__">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">n_iter</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">fit_intercept</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
+                  <span class="n">copy_X</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">cv_tol</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span>          <span class="o">=</span> <span class="n">n_iter</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tol</span>             <span class="o">=</span> <span class="n">tol</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scores_</span>         <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">fit_intercept</span>   <span class="o">=</span> <span class="n">fit_intercept</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">copy_X</span>          <span class="o">=</span> <span class="n">copy_X</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>         <span class="o">=</span> <span class="n">verbose</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv</span>              <span class="o">=</span> <span class="n">cv</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cv_tol</span>          <span class="o">=</span> <span class="n">cv_tol</span></div>
+
+        
+        
+<div class="viewcode-block" id="RegressionARD._center_data">
+<a class="viewcode-back" href="../../modules/ARD.html#shapleyx.ARD.RegressionARD._center_data">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_center_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39; Centers data&#39;&#39;&#39;</span>
+        <span class="n">X</span>     <span class="o">=</span> <span class="n">as_float_array</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">copy_X</span><span class="p">)</span>
+        <span class="c1"># normalisation should be done in preprocessing!</span>
+        <span class="n">X_std</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">fit_intercept</span><span class="p">:</span>
+            <span class="n">X_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">y_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">average</span><span class="p">(</span><span class="n">y</span><span class="p">,</span><span class="n">axis</span> <span class="o">=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">X</span>     <span class="o">-=</span> <span class="n">X_mean</span>
+            <span class="n">y</span>      <span class="o">=</span> <span class="n">y</span> <span class="o">-</span> <span class="n">y_mean</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">X_mean</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+            <span class="n">y_mean</span> <span class="o">=</span> <span class="mf">0.</span> <span class="k">if</span> <span class="n">y</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">y</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">,</span> <span class="n">X_mean</span><span class="p">,</span> <span class="n">y_mean</span><span class="p">,</span> <span class="n">X_std</span></div>
+
+        
+  
+<div class="viewcode-block" id="RegressionARD.fit">
+<a class="viewcode-back" href="../../modules/ARD.html#shapleyx.ARD.RegressionARD.fit">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Fit the ARD regression model to the data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : {array-like, sparse matrix}, shape (n_samples, n_features)</span>
+<span class="sd">            Training data, matrix of explanatory variables.</span>
+
+<span class="sd">        y : array-like, shape (n_samples,)</span>
+<span class="sd">            Target values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self : object</span>
+<span class="sd">            Returns the instance itself.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">check_X_y</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">y_numeric</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">X_mean</span><span class="p">,</span> <span class="n">y_mean</span><span class="p">,</span> <span class="n">X_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">cv_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">cv_score_history</span> <span class="o">=</span> <span class="p">[]</span> 
+        <span class="n">current_r</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1">#  precompute X&#39;*Y , X&#39;*X for faster iterations &amp; allocate memory for</span>
+        <span class="c1">#  sparsity &amp; quality vectors</span>
+        <span class="n">XY</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">XX</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">XXd</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">XX</span><span class="p">)</span>
+
+        <span class="c1">#  initialise precision of noise &amp; and coefficients</span>
+        <span class="n">var_y</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        
+        <span class="c1"># check that variance is non zero !!!</span>
+        <span class="k">if</span> <span class="n">var_y</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">:</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="mf">1e-2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+        
+        <span class="n">A</span>      <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">PINF</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_features</span><span class="p">)</span>
+        <span class="n">active</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_features</span> <span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">)</span>
+        
+        <span class="c1"># in case of almost perfect multicollinearity between some features</span>
+        <span class="c1"># start from feature 0</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">XXd</span> <span class="o">-</span> <span class="n">X_mean</span><span class="o">**</span><span class="mi">2</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>       <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+            <span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># start from a single basis vector with largest projection on targets</span>
+            <span class="n">proj</span>  <span class="o">=</span> <span class="n">XY</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">XXd</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">proj</span><span class="p">)</span>
+            <span class="n">active</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">A</span><span class="p">[</span><span class="n">start</span><span class="p">]</span>      <span class="o">=</span> <span class="n">XXd</span><span class="p">[</span><span class="n">start</span><span class="p">]</span><span class="o">/</span><span class="p">(</span> <span class="n">proj</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span> <span class="n">var_y</span><span class="p">)</span>
+ 
+        <span class="n">warning_flag</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span><span class="p">):</span>
+            <span class="n">XXa</span>     <span class="o">=</span> <span class="n">XX</span><span class="p">[</span><span class="n">active</span><span class="p">,:][:,</span><span class="n">active</span><span class="p">]</span>
+            <span class="n">XYa</span>     <span class="o">=</span> <span class="n">XY</span><span class="p">[</span><span class="n">active</span><span class="p">]</span>
+            <span class="n">Aa</span>      <span class="o">=</span>  <span class="n">A</span><span class="p">[</span><span class="n">active</span><span class="p">]</span>
+            
+            <span class="c1"># mean &amp; covariance of posterior distribution</span>
+            <span class="n">Mn</span><span class="p">,</span><span class="n">Ri</span><span class="p">,</span><span class="n">cholesky</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_posterior_dist</span><span class="p">(</span><span class="n">Aa</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">XXa</span><span class="p">,</span><span class="n">XYa</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cholesky</span><span class="p">:</span>
+                <span class="n">Sdiag</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ri</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Sdiag</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">Ri</span><span class="p">))</span> 
+                <span class="n">warning_flag</span> <span class="o">+=</span> <span class="mi">1</span>
+            
+            <span class="c1"># raise warning in case cholesky failes</span>
+            <span class="k">if</span> <span class="n">warning_flag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">((</span><span class="s2">&quot;Cholesky decomposition failed ! Algorithm uses pinvh, &quot;</span>
+                               <span class="s2">&quot;which is significantly slower, if you use RVR it &quot;</span>
+                               <span class="s2">&quot;is advised to change parameters of kernel&quot;</span><span class="p">))</span>
+                
+            <span class="c1"># compute quality &amp; sparsity parameters            </span>
+            <span class="n">s</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sparsity_quality</span><span class="p">(</span><span class="n">XX</span><span class="p">,</span><span class="n">XXd</span><span class="p">,</span><span class="n">XY</span><span class="p">,</span><span class="n">XYa</span><span class="p">,</span><span class="n">Aa</span><span class="p">,</span><span class="n">Ri</span><span class="p">,</span><span class="n">active</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">cholesky</span><span class="p">)</span>
+                
+            <span class="c1"># update precision parameter for noise distribution</span>
+            <span class="n">rss</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="p">(</span> <span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="n">active</span><span class="p">]</span> <span class="p">,</span> <span class="n">Mn</span><span class="p">)</span> <span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+            <span class="n">beta</span>    <span class="o">=</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">active</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Aa</span> <span class="o">*</span> <span class="n">Sdiag</span> <span class="p">)</span>
+            <span class="n">beta</span>   <span class="o">/=</span> <span class="p">(</span> <span class="n">rss</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="p">)</span>
+
+            <span class="c1"># update precision parameters of coefficients</span>
+            <span class="n">A</span><span class="p">,</span><span class="n">converged</span>  <span class="o">=</span> <span class="n">update_precisions</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">active</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span>
+                                             <span class="n">n_samples</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
+<span class="c1"># ***************************************            </span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="p">:</span>
+                <span class="c1"># Select features based on the &#39;active&#39; mask</span>
+                <span class="c1"># Assumes X is a numpy array for efficient slicing</span>
+                <span class="n">X_active</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">active</span><span class="p">]</span>
+
+                <span class="c1"># Define the model for cross-validation (instantiated fresh each time)</span>
+                <span class="n">cv_model</span> <span class="o">=</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">Ridge</span><span class="p">()</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="c1"># Perform 10-fold cross-validation, explicitly using R^2 scoring</span>
+                    <span class="c1"># Ensure &#39;y&#39; corresponds correctly to &#39;X_active&#39;</span>
+                    <span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">cv_model</span><span class="p">,</span> <span class="n">X_active</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s1">&#39;r2&#39;</span><span class="p">)</span>
+                    <span class="n">new_cv_score</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">cv_scores</span><span class="p">)</span> <span class="c1"># Use numpy mean for clarity</span>
+
+                    <span class="c1"># Calculate percentage change, handling division by zero</span>
+                    <span class="c1"># Assumes current_cv_score is initialized (e.g., to None or 0.0) before the loop</span>
+                    <span class="k">if</span> <span class="n">current_cv_score</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">current_cv_score</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="n">percentage_change</span> <span class="o">=</span> <span class="p">(</span><span class="n">new_cv_score</span> <span class="o">-</span> <span class="n">current_cv_score</span><span class="p">)</span> <span class="o">/</span> <span class="n">current_cv_score</span> <span class="o">*</span> <span class="mi">100</span>
+                    <span class="k">elif</span> <span class="n">new_cv_score</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="p">(</span><span class="n">current_cv_score</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">current_cv_score</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
+                        <span class="n">percentage_change</span> <span class="o">=</span> <span class="mf">0.0</span> <span class="c1"># No change if both old and new scores are zero</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Handle cases where current_cv_score is None (first iteration) or zero</span>
+                        <span class="n">percentage_change</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="c1"># Indicate a large change if starting from zero/None</span>
+
+                    <span class="c1"># Optional: Replace print with logging for better control in applications</span>
+                    <span class="c1"># Assumes &#39;i&#39; is an iteration counter from an outer loop</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iteration </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: CV Score = </span><span class="si">{</span><span class="n">new_cv_score</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, % Change = </span><span class="si">{</span><span class="n">percentage_change</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># Check for convergence based on the absolute percentage change</span>
+                    <span class="c1"># Assumes cv_tol is a positive threshold for the magnitude of change</span>
+                    <span class="c1"># Assumes &#39;converged&#39; is initialized (e.g., to False) before the loop</span>
+                    <span class="k">if</span> <span class="n">current_cv_score</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="nb">abs</span><span class="p">(</span><span class="n">percentage_change</span><span class="p">)</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_tol</span><span class="p">:</span>
+                        <span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
+                        <span class="c1"># Consider adding a &#39;break&#39; here if the loop should terminate immediately upon convergence</span>
+
+                    <span class="c1"># Update the current score and history</span>
+                    <span class="c1"># Assumes cv_score_history is initialized (e.g., as []) before the loop</span>
+                    <span class="n">current_cv_score</span> <span class="o">=</span> <span class="n">new_cv_score</span>
+                    <span class="n">cv_score_history</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_cv_score</span><span class="p">)</span>
+
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">ve</span><span class="p">:</span>
+                    <span class="c1"># Catch specific errors, e.g., if X_active becomes empty or has incompatible dimensions</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Cross-validation failed at iteration </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2"> due to ValueError: </span><span class="si">{</span><span class="n">ve</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="c1"># Decide how to handle: stop, skip, assign default score?</span>
+                    <span class="c1"># Example: Treat as no improvement or break</span>
+                    <span class="n">percentage_change</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span> <span class="c1"># Mark as invalid</span>
+                    <span class="c1"># converged = True # Option: Stop if CV fails</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="c1"># Catch other potential errors during cross-validation</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Warning: Cross-validation failed unexpectedly at iteration </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                    <span class="n">percentage_change</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span>
+                    <span class="c1"># converged = True # Option: Stop if CV fails</span>
+
+            
+            <span class="c1"># Calculate active features once per iteration</span>
+            <span class="n">num_active_features</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">active</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="c1"># Use logging (assuming logger is configured) and f-string for iteration progress</span>
+                <span class="c1"># import logging  # Ensure logging is imported at the top of the file</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iteration: </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, Active Features: </span><span class="si">{</span><span class="n">num_active_features</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="c1"># Check for convergence or max iterations to terminate</span>
+            <span class="k">if</span> <span class="n">converged</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="c1"># Construct the final status message</span>
+                <span class="n">final_status</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Finished at Iteration: </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">, Active Features: </span><span class="si">{</span><span class="n">num_active_features</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="k">if</span> <span class="n">converged</span><span class="p">:</span>
+                    <span class="n">log_level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span> <span class="c1"># Normal convergence</span>
+                    <span class="n">final_status</span> <span class="o">+=</span> <span class="s2">&quot; Algorithm converged.&quot;</span>
+                    <span class="c1"># The original code printed &quot;Algorithm converged !&quot; only if verbose.</span>
+                    <span class="c1"># Logging INFO level covers this sufficiently. Add DEBUG if more detail needed.</span>
+                    <span class="c1"># if self.verbose:</span>
+                    <span class="c1">#    logging.debug(&quot;Convergence details: ...&quot;)</span>
+                <span class="k">else</span><span class="p">:</span> <span class="c1"># i == self.n_iter - 1</span>
+                    <span class="n">log_level</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span> <span class="c1"># Reached max iterations without converging</span>
+                    <span class="n">final_status</span> <span class="o">+=</span> <span class="sa">f</span><span class="s2">&quot; Reached maximum iterations (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span><span class="si">}</span><span class="s2">).&quot;</span>
+
+                <span class="c1"># Log the final status</span>
+                <span class="n">logging</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">log_level</span><span class="p">,</span> <span class="n">final_status</span><span class="p">)</span>
+                <span class="k">break</span> <span class="c1"># Exit the loop</span>
+        
+        <span class="c1">#print((&#39;Iteration: {0}, number of features &#39;</span>
+        <span class="c1">#               &#39;in the model: {1}&#39;).format(i,np.sum(active)))      </span>
+          
+        <span class="c1"># after last update of alpha &amp; beta update parameters</span>
+        <span class="c1"># of posterior distribution</span>
+        <span class="n">XXa</span><span class="p">,</span><span class="n">XYa</span><span class="p">,</span><span class="n">Aa</span>         <span class="o">=</span> <span class="n">XX</span><span class="p">[</span><span class="n">active</span><span class="p">,:][:,</span><span class="n">active</span><span class="p">],</span><span class="n">XY</span><span class="p">[</span><span class="n">active</span><span class="p">],</span><span class="n">A</span><span class="p">[</span><span class="n">active</span><span class="p">]</span>
+        <span class="n">Mn</span><span class="p">,</span> <span class="n">Sn</span><span class="p">,</span> <span class="n">cholesky</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_posterior_dist</span><span class="p">(</span><span class="n">Aa</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">XXa</span><span class="p">,</span><span class="n">XYa</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span>         <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_features</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="n">active</span><span class="p">]</span> <span class="o">=</span> <span class="n">Mn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_</span>        <span class="o">=</span> <span class="n">Sn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_</span>       <span class="o">=</span> <span class="n">active</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_</span>       <span class="o">=</span> <span class="n">A</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_</span>        <span class="o">=</span> <span class="n">beta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_intercept</span><span class="p">(</span><span class="n">X_mean</span><span class="p">,</span><span class="n">y_mean</span><span class="p">,</span><span class="n">X_std</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="p">:</span>
+        <span class="c1">#    print(max(enumerate(cv_list), key=lambda x: x[1]))</span>
+            <span class="nb">print</span><span class="p">((</span><span class="s1">&#39;Iteration: </span><span class="si">{0}</span><span class="s1">, number of features &#39;</span>
+                       <span class="s1">&#39;in the model: </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">active</span><span class="p">)))</span> 
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+        
+        
+<div class="viewcode-block" id="RegressionARD._posterior_dist">
+<a class="viewcode-back" href="../../modules/ARD.html#shapleyx.ARD.RegressionARD._posterior_dist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_posterior_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">XX</span><span class="p">,</span><span class="n">XY</span><span class="p">,</span><span class="n">full_covar</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Calculate the mean and covariance matrix of the posterior distribution of coefficients.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        A : array, shape (n_features,)</span>
+<span class="sd">            Precision parameters for the coefficients.</span>
+
+<span class="sd">        beta : float</span>
+<span class="sd">            Precision of the noise.</span>
+
+<span class="sd">        XX : array, shape (n_features, n_features)</span>
+<span class="sd">            X&#39; * X matrix.</span>
+
+<span class="sd">        XY : array, shape (n_features,)</span>
+<span class="sd">            X&#39; * y vector.</span>
+
+<span class="sd">        full_covar : bool, optional (default=False)</span>
+<span class="sd">            If True, return the full covariance matrix; otherwise, return the inverse of the</span>
+<span class="sd">            lower triangular matrix from the Cholesky decomposition.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        Mn : array, shape (n_features,)</span>
+<span class="sd">            Mean of the posterior distribution.</span>
+
+<span class="sd">        Sn : array, shape (n_features, n_features)</span>
+<span class="sd">            Covariance matrix of the posterior distribution.</span>
+
+<span class="sd">        cholesky : bool</span>
+<span class="sd">            Whether the Cholesky decomposition was successful.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="c1"># compute precision matrix for active features</span>
+        <span class="n">Sinv</span> <span class="o">=</span> <span class="n">beta</span> <span class="o">*</span> <span class="n">XX</span>
+        <span class="n">np</span><span class="o">.</span><span class="n">fill_diagonal</span><span class="p">(</span><span class="n">Sinv</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">Sinv</span><span class="p">)</span> <span class="o">+</span> <span class="n">A</span><span class="p">)</span>
+        <span class="n">cholesky</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="c1"># try cholesky, if it fails go back to pinvh</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># find posterior mean : R*R.T*mean = beta*X.T*Y</span>
+            <span class="c1"># solve(R*z = beta*X.T*Y) =&gt; find z =&gt; solve(R.T*mean = z) =&gt; find mean</span>
+            <span class="n">R</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">cholesky</span><span class="p">(</span><span class="n">Sinv</span><span class="p">)</span>
+            <span class="n">Z</span>    <span class="o">=</span> <span class="n">solve_triangular</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">beta</span><span class="o">*</span><span class="n">XY</span><span class="p">,</span> <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lower</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span>
+            <span class="n">Mn</span>   <span class="o">=</span> <span class="n">solve_triangular</span><span class="p">(</span><span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">Z</span><span class="p">,</span> <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lower</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+            
+            <span class="c1"># invert lower triangular matrix from cholesky decomposition</span>
+            <span class="n">Ri</span>   <span class="o">=</span> <span class="n">solve_triangular</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">check_finite</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">full_covar</span><span class="p">:</span>
+                <span class="n">Sn</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Ri</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">Ri</span><span class="p">)</span>
+                <span class="k">return</span> <span class="n">Mn</span><span class="p">,</span><span class="n">Sn</span><span class="p">,</span><span class="n">cholesky</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">Mn</span><span class="p">,</span><span class="n">Ri</span><span class="p">,</span><span class="n">cholesky</span>
+        <span class="k">except</span> <span class="n">LinAlgError</span><span class="p">:</span>
+            <span class="n">cholesky</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">Sn</span>   <span class="o">=</span> <span class="n">pinvh</span><span class="p">(</span><span class="n">Sinv</span><span class="p">)</span>
+            <span class="n">Mn</span>   <span class="o">=</span> <span class="n">beta</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Sinv</span><span class="p">,</span><span class="n">XY</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">Mn</span><span class="p">,</span> <span class="n">Sn</span><span class="p">,</span> <span class="n">cholesky</span></div>
+
+    
+
+<div class="viewcode-block" id="RegressionARD._sparsity_quality">
+<a class="viewcode-back" href="../../modules/ARD.html#shapleyx.ARD.RegressionARD._sparsity_quality">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_sparsity_quality</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">XX</span><span class="p">,</span><span class="n">XXd</span><span class="p">,</span><span class="n">XY</span><span class="p">,</span><span class="n">XYa</span><span class="p">,</span><span class="n">Aa</span><span class="p">,</span><span class="n">Ri</span><span class="p">,</span><span class="n">active</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">cholesky</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Calculate sparsity and quality parameters for each feature.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        XX : array, shape (n_features, n_features)</span>
+<span class="sd">            X&#39; * X matrix.</span>
+
+<span class="sd">        XXd : array, shape (n_features,)</span>
+<span class="sd">            Diagonal of X&#39; * X matrix.</span>
+
+<span class="sd">        XY : array, shape (n_features,)</span>
+<span class="sd">            X&#39; * y vector.</span>
+
+<span class="sd">        XYa : array, shape (n_active_features,)</span>
+<span class="sd">            X&#39; * y vector for active features.</span>
+
+<span class="sd">        Aa : array, shape (n_active_features,)</span>
+<span class="sd">            Precision parameters for active features.</span>
+
+<span class="sd">        Ri : array, shape (n_active_features, n_active_features)</span>
+<span class="sd">            Inverse of the lower triangular matrix from the Cholesky decomposition or the</span>
+<span class="sd">            covariance matrix.</span>
+
+<span class="sd">        active : array, dtype=bool, shape (n_features,)</span>
+<span class="sd">            Boolean array indicating which features are active.</span>
+
+<span class="sd">        beta : float</span>
+<span class="sd">            Precision of the noise.</span>
+
+<span class="sd">        cholesky : bool</span>
+<span class="sd">            Whether the Cholesky decomposition was successful.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        si : array, shape (n_features,)</span>
+<span class="sd">            Sparsity parameters.</span>
+
+<span class="sd">        qi : array, shape (n_features,)</span>
+<span class="sd">            Quality parameters.</span>
+
+<span class="sd">        S : array, shape (n_features,)</span>
+<span class="sd">            Intermediate sparsity parameters.</span>
+
+<span class="sd">        Q : array, shape (n_features,)</span>
+<span class="sd">            Intermediate quality parameters.</span>
+
+<span class="sd">        Theoretical Note:</span>
+<span class="sd">        -----------------</span>
+<span class="sd">        Here we used Woodbury Identity for inverting covariance matrix</span>
+<span class="sd">        of target distribution </span>
+<span class="sd">        C    = 1/beta + 1/alpha * X&#39; * X</span>
+<span class="sd">        C^-1 = beta - beta^2 * X * Sn * X&#39;</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+
+        <span class="n">bxy</span>        <span class="o">=</span> <span class="n">beta</span><span class="o">*</span><span class="n">XY</span>
+        <span class="n">bxx</span>        <span class="o">=</span> <span class="n">beta</span><span class="o">*</span><span class="n">XXd</span>
+        <span class="k">if</span> <span class="n">cholesky</span><span class="p">:</span>
+            <span class="c1"># here Ri is inverse of lower triangular matrix obtained from cholesky decomp</span>
+            <span class="n">xxr</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XX</span><span class="p">[:,</span><span class="n">active</span><span class="p">],</span><span class="n">Ri</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
+            <span class="n">rxy</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">Ri</span><span class="p">,</span><span class="n">XYa</span><span class="p">)</span>
+            <span class="n">S</span>      <span class="o">=</span> <span class="n">bxx</span> <span class="o">-</span> <span class="n">beta</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">xxr</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">Q</span>      <span class="o">=</span> <span class="n">bxy</span> <span class="o">-</span> <span class="n">beta</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span> <span class="n">xxr</span><span class="p">,</span> <span class="n">rxy</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># here Ri is covariance matrix</span>
+            <span class="n">XXa</span>    <span class="o">=</span> <span class="n">XX</span><span class="p">[:,</span><span class="n">active</span><span class="p">]</span>
+            <span class="n">XS</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XXa</span><span class="p">,</span><span class="n">Ri</span><span class="p">)</span>
+            <span class="n">S</span>      <span class="o">=</span> <span class="n">bxx</span> <span class="o">-</span> <span class="n">beta</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">XS</span><span class="o">*</span><span class="n">XXa</span><span class="p">,</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">Q</span>      <span class="o">=</span> <span class="n">bxy</span> <span class="o">-</span> <span class="n">beta</span><span class="o">**</span><span class="mi">2</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">XS</span><span class="p">,</span><span class="n">XYa</span><span class="p">)</span>
+        <span class="c1"># Use following:</span>
+        <span class="c1"># (EQ 1) q = A*Q/(A - S) ; s = A*S/(A-S), so if A = np.PINF q = Q, s = S</span>
+        <span class="n">qi</span>         <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">Q</span><span class="p">)</span>
+        <span class="n">si</span>         <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">S</span><span class="p">)</span> 
+        <span class="c1">#  If A is not np.PINF, then it should be &#39;active&#39; feature =&gt; use (EQ 1)</span>
+        <span class="n">Qa</span><span class="p">,</span><span class="n">Sa</span>      <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="n">active</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">active</span><span class="p">]</span>
+        <span class="n">qi</span><span class="p">[</span><span class="n">active</span><span class="p">]</span> <span class="o">=</span> <span class="n">Aa</span> <span class="o">*</span> <span class="n">Qa</span> <span class="o">/</span> <span class="p">(</span><span class="n">Aa</span> <span class="o">-</span> <span class="n">Sa</span> <span class="p">)</span>
+        <span class="n">si</span><span class="p">[</span><span class="n">active</span><span class="p">]</span> <span class="o">=</span> <span class="n">Aa</span> <span class="o">*</span> <span class="n">Sa</span> <span class="o">/</span> <span class="p">(</span><span class="n">Aa</span> <span class="o">-</span> <span class="n">Sa</span> <span class="p">)</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">si</span><span class="p">,</span><span class="n">qi</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">Q</span><span class="p">]</span></div>
+
+    
+<div class="viewcode-block" id="RegressionARD.predict_dist">
+<a class="viewcode-back" href="../../modules/ARD.html#shapleyx.ARD.RegressionARD.predict_dist">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Computes predictive distribution for test set.</span>
+<span class="sd">        Predictive distribution for each data point is one dimensional</span>
+<span class="sd">        Gaussian and therefore is characterised by mean and variance.</span>
+<span class="sd">        </span>
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : {array-like, sparse matrix}, shape (n_samples_test, n_features)</span>
+<span class="sd">            Test data, matrix of explanatory variables.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        y_hat : array, shape (n_samples_test,)</span>
+<span class="sd">            Estimated values of targets on the test set (mean of the predictive distribution).</span>
+
+<span class="sd">        var_hat : array, shape (n_samples_test,)</span>
+<span class="sd">            Variance of the predictive distribution.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">y_hat</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">var_hat</span>   <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_</span>
+        <span class="n">var_hat</span>  <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">active_</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_</span><span class="p">)</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">active_</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">y_hat</span><span class="p">,</span> <span class="n">var_hat</span></div>
+</div>
+
+
+
+
+
+<div class="viewcode-block" id="update_precisions">
+<a class="viewcode-back" href="../../modules/ARD.html#shapleyx.ARD.update_precisions">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">update_precisions</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">active</span><span class="p">,</span><span class="n">tol</span><span class="p">,</span><span class="n">n_samples</span><span class="p">,</span><span class="n">clf_bias</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Updates the precision parameters (alpha) for features in a sparse Bayesian learning model</span>
+<span class="sd">    by selecting a feature to add, recompute, or delete based on its impact on the log marginal</span>
+<span class="sd">    likelihood. The function also checks for convergence.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    Q : numpy.ndarray</span>
+<span class="sd">        Quality parameters for all features.</span>
+<span class="sd">    S : numpy.ndarray</span>
+<span class="sd">        Sparsity parameters for all features.</span>
+<span class="sd">    q : numpy.ndarray</span>
+<span class="sd">        Quality parameters for features currently in the model.</span>
+<span class="sd">    s : numpy.ndarray</span>
+<span class="sd">        Sparsity parameters for features currently in the model.</span>
+<span class="sd">    A : numpy.ndarray</span>
+<span class="sd">        Precision parameters (alpha) for all features.</span>
+<span class="sd">    active : numpy.ndarray (bool)</span>
+<span class="sd">        Boolean array indicating whether each feature is currently in the model.</span>
+<span class="sd">    tol : float</span>
+<span class="sd">        Tolerance threshold for determining convergence based on changes in precision.</span>
+<span class="sd">    n_samples : int</span>
+<span class="sd">        Number of samples in the dataset, used to normalize the change in log marginal likelihood.</span>
+<span class="sd">    clf_bias : bool</span>
+<span class="sd">        Flag indicating whether the model includes a bias term (used in classification tasks).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">    list</span>
+<span class="sd">        A list containing two elements:</span>
+<span class="sd">        - Updated precision parameters (A) for all features.</span>
+<span class="sd">        - A boolean flag indicating whether the model has converged.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">    ------</span>
+<span class="sd">    The function performs the following steps:</span>
+<span class="sd">    1. Computes the change in log marginal likelihood for adding, recomputing, or deleting features.</span>
+<span class="sd">    2. Identifies the feature that causes the largest change in likelihood.</span>
+<span class="sd">    3. Updates the precision parameter (alpha) for the selected feature.</span>
+<span class="sd">    4. Checks for convergence based on whether no features are added/deleted and changes in precision</span>
+<span class="sd">       are below the specified tolerance.</span>
+<span class="sd">    5. Returns the updated precision parameters and convergence status.</span>
+
+<span class="sd">    Convergence is determined by two conditions:</span>
+<span class="sd">    - No features are added or deleted.</span>
+<span class="sd">    - The change in precision for features already in the model is below the tolerance threshold.</span>
+
+<span class="sd">    The function ensures that the bias term is not removed in classification tasks.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># initialise vector holding changes in log marginal likelihood</span>
+    <span class="n">deltaL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    
+    <span class="c1"># identify features that can be added , recomputed and deleted in model</span>
+    <span class="n">theta</span>        <span class="o">=</span>  <span class="n">q</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">s</span> 
+    <span class="n">add</span>          <span class="o">=</span>  <span class="p">(</span><span class="n">theta</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">active</span> <span class="o">==</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">recompute</span>    <span class="o">=</span>  <span class="p">(</span><span class="n">theta</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">active</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">delete</span>       <span class="o">=</span> <span class="o">~</span><span class="p">(</span><span class="n">add</span> <span class="o">+</span> <span class="n">recompute</span><span class="p">)</span>
+    
+    <span class="c1"># compute sparsity &amp; quality parameters corresponding to features in </span>
+    <span class="c1"># three groups identified above</span>
+    <span class="n">Qadd</span><span class="p">,</span><span class="n">Sadd</span>      <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="n">add</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">add</span><span class="p">]</span>
+    <span class="n">Qrec</span><span class="p">,</span><span class="n">Srec</span><span class="p">,</span><span class="n">Arec</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="n">recompute</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">recompute</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="n">recompute</span><span class="p">]</span>
+    <span class="n">Qdel</span><span class="p">,</span><span class="n">Sdel</span><span class="p">,</span><span class="n">Adel</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="n">delete</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">delete</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="n">delete</span><span class="p">]</span>
+    
+    <span class="c1"># compute new alpha&#39;s (precision parameters) for features that are </span>
+    <span class="c1"># currently in model and will be recomputed</span>
+    <span class="n">Anew</span>           <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">recompute</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span> <span class="p">(</span> <span class="n">theta</span><span class="p">[</span><span class="n">recompute</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+    <span class="n">delta_alpha</span>    <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">Anew</span> <span class="o">-</span> <span class="mf">1.</span><span class="o">/</span><span class="n">Arec</span><span class="p">)</span>
+    
+    <span class="c1"># compute change in log marginal likelihood </span>
+    <span class="n">deltaL</span><span class="p">[</span><span class="n">add</span><span class="p">]</span>       <span class="o">=</span> <span class="p">(</span> <span class="n">Qadd</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">Sadd</span> <span class="p">)</span> <span class="o">/</span> <span class="n">Sadd</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Sadd</span><span class="o">/</span><span class="n">Qadd</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+    <span class="n">deltaL</span><span class="p">[</span><span class="n">recompute</span><span class="p">]</span> <span class="o">=</span> <span class="n">Qrec</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">Srec</span> <span class="o">+</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">delta_alpha</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">Srec</span><span class="o">*</span><span class="n">delta_alpha</span><span class="p">)</span>
+    <span class="n">deltaL</span><span class="p">[</span><span class="n">delete</span><span class="p">]</span>    <span class="o">=</span> <span class="n">Qdel</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">Sdel</span> <span class="o">-</span> <span class="n">Adel</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">Sdel</span> <span class="o">/</span> <span class="n">Adel</span><span class="p">)</span>
+    <span class="n">deltaL</span>            <span class="o">=</span> <span class="n">deltaL</span>  <span class="o">/</span> <span class="n">n_samples</span>
+    
+    <span class="c1"># find feature which caused largest change in likelihood</span>
+    <span class="n">feature_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">deltaL</span><span class="p">)</span>
+             
+    <span class="c1"># no deletions or additions</span>
+    <span class="n">same_features</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">theta</span><span class="p">[</span><span class="o">~</span><span class="n">recompute</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+    
+    <span class="c1"># changes in precision for features already in model is below threshold</span>
+    <span class="n">no_delta</span>       <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="nb">abs</span><span class="p">(</span> <span class="n">Anew</span> <span class="o">-</span> <span class="n">Arec</span> <span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span> <span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+    
+    <span class="c1"># check convergence: if no features to add or delete and small change in </span>
+    <span class="c1">#                    precision for current features then terminate</span>
+    <span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">same_features</span> <span class="ow">and</span> <span class="n">no_delta</span><span class="p">:</span>
+        <span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span><span class="n">converged</span><span class="p">]</span>
+    
+    <span class="c1"># if not converged update precision parameter of weights and return</span>
+    <span class="k">if</span> <span class="n">theta</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">theta</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">active</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">active</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># at least two active features</span>
+        <span class="k">if</span> <span class="n">active</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">active</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># do not remove bias term in classification </span>
+            <span class="c1"># (in regression it is factored in through centering)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">feature_index</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">clf_bias</span><span class="p">):</span>
+               <span class="n">active</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+               <span class="n">A</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span>      <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">PINF</span>
+                
+    <span class="k">return</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span><span class="n">converged</span><span class="p">]</span></div>
+
+</pre></div>
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          
+          
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2025, Frederick Bennett
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer no-toc">
+      
+      
+      
+    </aside>
+  </div>
+</div><script src="../../_static/documentation_options.js?v=01f34227"></script>
+    <script src="../../_static/doctools.js?v=9a2dae69"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/scripts/furo.js?v=5fa4622c"></script>
+    </body>
+</html>
