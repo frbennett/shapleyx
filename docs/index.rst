@@ -29,5 +29,5 @@ Indices and tables
 API Reference
 =============
 
-.. automodule:: my_python_package
+.. automodule:: shapleyx
    :members:
