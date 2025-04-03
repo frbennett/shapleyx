@@ -13,85 +13,55 @@ import numpy as np
 import warnings
 import logging
 class RegressionARD(RegressorMixin, LinearModel):
-    '''
-    Regression with Automatic Relevance Determination (ARD) using Sparse Bayesian Learning.
+    """Regression with Automatic Relevance Determination (ARD) using Sparse Bayesian Learning.
 
     This class implements a fast version of ARD regression, which is a Bayesian approach
     to regression that automatically determines the relevance of each feature. It is based
     on the Sparse Bayesian Learning (SBL) algorithm, which promotes sparsity in the model
     by estimating the precision of the coefficients.
 
-    Parameters
-    ----------
-    n_iter : int, optional (default=300)
-        Maximum number of iterations for the optimization algorithm.
+    Args:
+        n_iter (int, optional): Maximum number of iterations for the optimization algorithm.
+            Defaults to 300.
+        tol (float, optional): Convergence threshold. If the absolute change in the precision
+            parameter for the weights is below this threshold, the algorithm terminates.
+            Defaults to 1e-3.
+        fit_intercept (bool, optional): Whether to calculate the intercept for this model.
+            If set to False, no intercept will be used in calculations (e.g., data is expected
+            to be already centered). Defaults to True.
+        copy_X (bool, optional): If True, X will be copied; else, it may be overwritten.
+            Defaults to True.
+        verbose (bool, optional): If True, the algorithm will print progress messages during
+            fitting. Defaults to False.
+        cv_tol (float, optional): Tolerance for cross-validation. If the percentage change in
+            cross-validation score is below this threshold, the algorithm terminates.
+            Defaults to 0.1.
+        cv (bool, optional): If True, cross-validation will be used to determine the optimal
+            number of features. Defaults to False.
 
-    tol : float, optional (default=1e-3)
-        Convergence threshold. If the absolute change in the precision parameter for the
-        weights is below this threshold, the algorithm terminates.
+    Attributes:
+        coef_ (array): Coefficients of the regression model (mean of the posterior distribution).
+            Shape (n_features,).
+        alpha_ (float): Estimated precision of the noise.
+        active_ (array): Boolean array indicating which features are active (non-zero coefficients).
+            Shape (n_features,), dtype=bool.
+        lambda_ (array): Estimated precisions of the coefficients. Shape (n_features,).
+        sigma_ (array): Estimated covariance matrix of the weights, computed only for non-zero
+            coefficients. Shape (n_features, n_features).
+        scores_ (list): List of cross-validation scores if `cv` is True.
 
-    fit_intercept : bool, optional (default=True)
-        Whether to calculate the intercept for this model. If set to False, no intercept
-        will be used in calculations (e.g., data is expected to be already centered).
+    References:
+        [1] Tipping, M. E., & Faul, A. C. (2003). Fast marginal likelihood maximisation for
+            sparse Bayesian models. In Proceedings of the Ninth International Workshop on
+            Artificial Intelligence and Statistics (pp. 276-283).
+            
+        [2] Tipping, M. E., & Faul, A. C. (2001). Analysis of sparse Bayesian learning. In
+            Advances in Neural Information Processing Systems (pp. 383-389).
 
-    copy_X : bool, optional (default=True)
-        If True, X will be copied; else, it may be overwritten.
-
-    verbose : bool, optional (default=False)
-        If True, the algorithm will print progress messages during fitting.
-
-    cv_tol : float, optional (default=0.1)
-        Tolerance for cross-validation. If the percentage change in cross-validation score
-        is below this threshold, the algorithm terminates.
-
-    cv : bool, optional (default=False)
-        If True, cross-validation will be used to determine the optimal number of features.
-
-    Attributes
-    ----------
-    coef_ : array, shape (n_features,)
-        Coefficients of the regression model (mean of the posterior distribution).
-
-    alpha_ : float
-        Estimated precision of the noise.
-
-    active_ : array, dtype=bool, shape (n_features,)
-        Boolean array indicating which features are active (non-zero coefficients).
-
-    lambda_ : array, shape (n_features,)
-        Estimated precisions of the coefficients.
-
-    sigma_ : array, shape (n_features, n_features)
-        Estimated covariance matrix of the weights, computed only for non-zero coefficients.
-
-    scores_ : list
-        List of cross-validation scores if `cv` is True.
-
-    Methods
-    -------
-    fit(X, y)
-        Fit the ARD regression model to the data.
-
-    predict_dist(X)
-        Compute the predictive distribution for the test set.
-
-    _center_data(X, y)
-        Center the data by subtracting the mean.
-
-    _posterior_dist(A, beta, XX, XY, full_covar=False)
-        Calculate the mean and covariance matrix of the posterior distribution of coefficients.
-
-    _sparsity_quality(XX, XXd, XY, XYa, Aa, Ri, active, beta, cholesky)
-        Calculate sparsity and quality parameters for each feature.
-
-    References
-    ----------
-    [1] Tipping, M. E., & Faul, A. C. (2003). Fast marginal likelihood maximisation for
-        sparse Bayesian models. In Proceedings of the Ninth International Workshop on
-        Artificial Intelligence and Statistics (pp. 276-283).
-    [2] Tipping, M. E., & Faul, A. C. (2001). Analysis of sparse Bayesian learning. In
-        Advances in Neural Information Processing Systems (pp. 383-389).
-    '''
+    Note:
+        The RegressionARD class code has been adapted from the original implementation by Amazasp Shaumyan
+        https://github.com/AmazaspShumik/sklearn-bayes
+    """
     
     def __init__( self, n_iter = 300, tol = 1e-3, fit_intercept = True, 
                   copy_X = True, verbose = False, cv_tol = 0.1, cv=False):

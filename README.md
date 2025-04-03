@@ -44,10 +44,11 @@ python setup.py develop
 
 ## Documentation
 
-Full documentation is available in the `docs/` directory:
-- [Quick Start Guide](docs/quick_start.md)
-- [Theory Background](docs/theory.md)
-- [API Reference](docs/api.md)
+Full documentation is available at:
+- [Document Home](https://frbennett.github.io/shapleyx/)
+- [Quick Start Guide](https://frbennett.github.io/shapleyx/getting-started/quickstart/)
+- [Theory Background](https://frbennett.github.io/shapleyx/explanation/theory/)
+- [API Reference](https://frbennett.github.io/shapleyx/reference/api/)
 
 ## Examples
 

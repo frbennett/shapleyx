@@ -101,14 +101,6 @@
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#shapleyx.ARD.RegressionARD">RegressionARD</a>
         <ul>
-    <li class="toctree-l4"><a class="reference internal" href="#shapleyx.ARD.RegressionARD--parameters">Parameters</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#shapleyx.ARD.RegressionARD--attributes">Attributes</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#shapleyx.ARD.RegressionARD--methods">Methods</a>
-    </li>
-    <li class="toctree-l4"><a class="reference internal" href="#shapleyx.ARD.RegressionARD--references">References</a>
-    </li>
     <li class="toctree-l4"><a class="reference internal" href="#shapleyx.ARD.RegressionARD.fit">fit</a>
     </li>
     <li class="toctree-l4"><a class="reference internal" href="#shapleyx.ARD.RegressionARD.predict_dist">predict_dist</a>
@@ -191,40 +183,323 @@
 <li>Group Method of Data Handling (GMDH) for parameter selection</li>
 <li>Linear regression for parameter refinement</li>
 </ul>
-<p>Args:
-    data_file (str or pd.DataFrame): Input data file path or DataFrame.
-    polys (list, optional): Polynomial orders for expansion. Defaults to [10, 5].
-    n_jobs (int, optional): Number of parallel jobs. Defaults to -1.
-    test_size (float, optional): Test set size ratio. Defaults to 0.25.
-    limit (float, optional): Coefficient limit. Defaults to 2.0.
-    k_best (int, optional): Number of best features. Defaults to 1.
-    p_average (int, optional): Parameter for averaging. Defaults to 2.
-    n_iter (int, optional): Number of iterations. Defaults to 300.
-    verbose (bool, optional): Verbosity flag. Defaults to False.
-    method (str, optional): Regression method ('ard', 'omp', etc.). Defaults to 'ard'.
-    starting_iter (int, optional): Starting iteration. Defaults to 5.
-    resampling (bool, optional): Enable bootstrap resampling. Defaults to True.
-    CI (float, optional): Confidence interval percentage. Defaults to 95.0.
-    number_of_resamples (int, optional): Number of bootstrap samples. Defaults to 1000.
-    cv_tol (float, optional): Cross-validation tolerance. Defaults to 0.05.</p>
-<p>Attributes:
-    X (pd.DataFrame): Input features dataframe.
-    Y (pd.Series): Target variable series.
-    X_T (pd.DataFrame): Transformed features in unit hypercube.
-    ranges (list): Ranges of transformed data.
-    X_T_L (pd.DataFrame): Expanded features with Legendre polynomials.
-    coef_ (np.array): Regression coefficients.
-    y_pred (np.array): Predicted values.
-    evs (dict): Model evaluation statistics.
-    results (pd.DataFrame): Sobol indices results.
-    non_zero_coefficients (pd.DataFrame): Non-zero coefficients.
-    shap (pd.DataFrame): Shapley effects.
-    total (pd.DataFrame): Total sensitivity indices.
-    surrogate_model: Trained surrogate model for predictions.
-    primitive_variables: Primitive variables from Legendre expansion.
-    poly_orders: Polynomial orders used in Legendre expansion.
-    delta_instance: Instance of pawn.DeltaX or pawn.hX for delta/h indices calculation.</p>
-<p><strong>Examples:</strong></p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>data_file</code></b>
+                  (<code><span title="str">str</span> or <span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Input data file path or DataFrame.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>polys</code></b>
+                  (<code><span title="list">list</span></code>, default:
+                      <code>[10, 5]</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Polynomial orders for expansion. Defaults to [10, 5].</p>
+              </div>
+            </li>
+            <li>
+              <b><code>n_jobs</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>-1</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Number of parallel jobs. Defaults to -1.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>test_size</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.25</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Test set size ratio. Defaults to 0.25.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>limit</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>2.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Coefficient limit. Defaults to 2.0.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>k_best</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>1</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Number of best features. Defaults to 1.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>p_average</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>2</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Parameter for averaging. Defaults to 2.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>n_iter</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>300</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Number of iterations. Defaults to 300.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>verbose</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Verbosity flag. Defaults to False.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>method</code></b>
+                  (<code><span title="str">str</span></code>, default:
+                      <code>&#39;ard&#39;</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Regression method ('ard', 'omp', etc.). Defaults to 'ard'. 
+can take values</p>
+<ul>
+<li>'ard' - Automatic Relevance Determination</li>
+<li>'omp' - Orthogonal Matching Pursuit from sklearn.linear_model</li>
+<li>'ard_cv' - Automatic Relevance Determination with cross-validation</li>
+<li>'omp_cv' - Orthogonal Matching Pursuit with cross-validation from sklearn.linear_model</li>
+<li>'ard_sk' - Automatic Relevance Determination from sklearn.linear_model</li>
+</ul>
+              </div>
+            </li>
+            <li>
+              <b><code>starting_iter</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>5</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Starting iteration. Defaults to 5.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>resampling</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Enable bootstrap resampling. Defaults to True.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>CI</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>95.0</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Confidence interval percentage. Defaults to 95.0.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>number_of_resamples</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>1000</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Number of bootstrap samples. Defaults to 1000.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>cv_tol</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.05</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Cross-validation tolerance. Defaults to 0.05.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>X</code></b>
+                  (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Input features dataframe.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>Y</code></b>
+                  (<code><span title="pandas.Series">Series</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Target variable series.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>X_T</code></b>
+                  (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Transformed features in unit hypercube.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ranges</code></b>
+                  (<code><span title="list">list</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Ranges of transformed data.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>X_T_L</code></b>
+                  (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Expanded features with Legendre polynomials.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>coef_</code></b>
+                  (<code><span title="np.array">array</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Regression coefficients.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>y_pred</code></b>
+                  (<code><span title="np.array">array</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Predicted values.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>evs</code></b>
+                  (<code><span title="dict">dict</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Model evaluation statistics.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>results</code></b>
+                  (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Sobol indices results.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>non_zero_coefficients</code></b>
+                  (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Non-zero coefficients.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>shap</code></b>
+                  (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Shapley effects.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>total</code></b>
+                  (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Total sensitivity indices.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>surrogate_model</code></b>
+                  (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Trained surrogate model for predictions.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>primitive_variables</code></b>
+                  (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Primitive variables from Legendre expansion.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>poly_orders</code></b>
+                  (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Polynomial orders used in Legendre expansion.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>delta_instance</code></b>
+                  (<code><span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Instance of pawn.DeltaX or pawn.hX for delta/h indices calculation.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>        <p><strong>Examples:</strong></p>
 <div class="highlight"><pre><span></span><code><span class="c1"># Initialize analyzer</span>
 <span class="n">analyzer</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;input.csv&#39;</span><span class="p">,</span> <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span><span class="mi">5</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ard&#39;</span><span class="p">)</span>
 
@@ -237,6 +512,10 @@
 <span class="c1"># Get sensitivity indices</span>
 <span class="n">pawn_results</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_pawn</span><span class="p">(</span><span class="n">S</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 </code></pre></div>
+<p><strong>Todo:</strong></p>
+<ul>
+<li>Improve memory management for large expansions</li>
+</ul>
 
 
 
@@ -246,21 +525,7 @@
 
                   <details class="quote">
                     <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">125</span>
 <span class="normal">126</span>
 <span class="normal">127</span>
 <span class="normal">128</span>
@@ -276,7 +541,21 @@
 <span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
-<span class="normal">141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data_file</span><span class="p">,</span> <span class="n">polys</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">data_file</span><span class="p">,</span> <span class="n">polys</span> <span class="o">=</span> <span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
              <span class="n">n_jobs</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
              <span class="n">test_size</span> <span class="o">=</span> <span class="mf">0.25</span><span class="p">,</span>
              <span class="n">limit</span> <span class="o">=</span> <span class="mf">2.0</span><span class="p">,</span>
@@ -335,32 +614,35 @@
 
         <p>Evaluates Sobol indices, Shapley effects, and total sensitivity indices.</p>
 <p>Uses the <code>indicies.eval_indices</code> utility.</p>
-<p>Updates the following attributes:
-    self.results (pd.DataFrame): DataFrame containing Sobol indices results.
-    self.non_zero_coefficients (pd.DataFrame): DataFrame of non-zero coefficients.
-    self.shap (pd.DataFrame): DataFrame containing Shapley effects.
-    self.total (pd.DataFrame): DataFrame containing total sensitivity indices.</p>
 
+
+<details class="updates-the-following-attributes" open>
+  <summary>Updates the following attributes</summary>
+  <p>self.results (pd.DataFrame): DataFrame containing Sobol indices results.
+self.non_zero_coefficients (pd.DataFrame): DataFrame of non-zero coefficients.
+self.shap (pd.DataFrame): DataFrame containing Shapley effects.
+self.total (pd.DataFrame): DataFrame containing total sensitivity indices.</p>
+</details>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
-<span class="normal">245</span>
-<span class="normal">246</span>
-<span class="normal">247</span>
-<span class="normal">248</span>
-<span class="normal">249</span>
-<span class="normal">250</span>
-<span class="normal">251</span>
-<span class="normal">252</span>
-<span class="normal">253</span>
-<span class="normal">254</span>
-<span class="normal">255</span>
-<span class="normal">256</span>
-<span class="normal">257</span>
-<span class="normal">258</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">258</span>
 <span class="normal">259</span>
-<span class="normal">260</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">eval_all_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">eval_all_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Evaluates Sobol indices, Shapley effects, and total sensitivity indices.</span>
 
 <span class="sd">    Uses the `indicies.eval_indices` utility.</span>
@@ -398,33 +680,83 @@
 <p>This method initializes a DeltaX instance using the provided data and parameters,
 then computes the delta indices based on the specified number of unconditioned variables
 and delta samples.</p>
-<p>Args:
-    num_unconditioned (int): The number of unconditioned variables.
-    delta_samples (int): The number of delta samples to generate.</p>
-<p>Returns:
-    pd.DataFrame: A DataFrame containing the computed delta indices.</p>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>num_unconditioned</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The number of unconditioned variables.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>delta_samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The number of delta samples to generate.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+              –
+              <div class="doc-md-description">
+                <p>pd.DataFrame: A DataFrame containing the computed delta indices.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">384</span>
-<span class="normal">385</span>
-<span class="normal">386</span>
-<span class="normal">387</span>
-<span class="normal">388</span>
-<span class="normal">389</span>
-<span class="normal">390</span>
-<span class="normal">391</span>
-<span class="normal">392</span>
-<span class="normal">393</span>
-<span class="normal">394</span>
-<span class="normal">395</span>
-<span class="normal">396</span>
-<span class="normal">397</span>
-<span class="normal">398</span>
-<span class="normal">399</span>
-<span class="normal">400</span>
-<span class="normal">401</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_deltax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_unconditioned</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">delta_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>      
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_deltax</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_unconditioned</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">delta_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>      
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate delta indices for the given number of unconditioned variables and delta samples.</span>
 
@@ -463,33 +795,83 @@ and delta samples.</p>
 <p>This method initializes a DeltaX instance using the provided data and parameters,
 then computes the delta indices based on the specified number of unconditioned variables
 and delta samples.</p>
-<p>Args:
-    num_unconditioned (int): The number of unconditioned variables.
-    delta_samples (int): The number of delta samples to generate.</p>
-<p>Returns:
-    pd.DataFrame: A DataFrame containing the computed delta indices.</p>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>num_unconditioned</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The number of unconditioned variables.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>delta_samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>The number of delta samples to generate.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+              –
+              <div class="doc-md-description">
+                <p>pd.DataFrame: A DataFrame containing the computed delta indices.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">403</span>
-<span class="normal">404</span>
-<span class="normal">405</span>
-<span class="normal">406</span>
-<span class="normal">407</span>
-<span class="normal">408</span>
-<span class="normal">409</span>
-<span class="normal">410</span>
-<span class="normal">411</span>
-<span class="normal">412</span>
-<span class="normal">413</span>
-<span class="normal">414</span>
-<span class="normal">415</span>
-<span class="normal">416</span>
-<span class="normal">417</span>
-<span class="normal">418</span>
-<span class="normal">419</span>
-<span class="normal">420</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_hx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_unconditioned</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">delta_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>      
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">419</span>
+<span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_hx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_unconditioned</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">delta_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>      
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Calculate delta indices for the given number of unconditioned variables and delta samples.</span>
 
@@ -526,29 +908,73 @@ and delta samples.</p>
 
         <p>Estimates PAWN sensitivity indices directly from data.</p>
 <p>Uses the <code>pawn.estimate_pawn</code> utility.</p>
-<p>Args:
-    S (int, optional): Number of slices/intervals for the PAWN estimation. Defaults to 10.</p>
-<p>Returns:
-    dict: Dictionary containing the PAWN sensitivity indices for each feature.</p>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>S</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>10</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Number of slices/intervals for the PAWN estimation. Defaults to 10.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>dict</code></b>              –
+              <div class="doc-md-description">
+                <p>Dictionary containing the PAWN sensitivity indices for each feature.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">441</span>
-<span class="normal">442</span>
-<span class="normal">443</span>
-<span class="normal">444</span>
-<span class="normal">445</span>
-<span class="normal">446</span>
-<span class="normal">447</span>
-<span class="normal">448</span>
-<span class="normal">449</span>
-<span class="normal">450</span>
-<span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_pawn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">S</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_pawn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">S</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span> <span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Estimates PAWN sensitivity indices directly from data.</span>
 
 <span class="sd">    Uses the `pawn.estimate_pawn` utility.</span>
@@ -582,34 +1008,100 @@ and delta samples.</p>
 
         <p>Calculates PAWN sensitivity indices using the surrogate model.</p>
 <p>Uses the <code>pawn.pawnx</code> utility.</p>
-<p>Args:
-    num_unconditioned (int): Number of unconditioned samples for PAWN.
-    num_conditioned (int): Number of conditioned samples for PAWN.
-    num_ks_samples (int): Number of samples for the Kolmogorov-Smirnov test.
-    alpha (float, optional): Significance level for the KS test. Defaults to 0.05.</p>
-<p>Returns:
-    pd.DataFrame: DataFrame containing the PAWN sensitivity indices.</p>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>num_unconditioned</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of unconditioned samples for PAWN.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>num_conditioned</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of conditioned samples for PAWN.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>num_ks_samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of samples for the Kolmogorov-Smirnov test.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>alpha</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.05</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Significance level for the KS test. Defaults to 0.05.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="pandas.DataFrame">DataFrame</span></code>
+              –
+              <div class="doc-md-description">
+                <p>pd.DataFrame: DataFrame containing the PAWN sensitivity indices.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">423</span>
-<span class="normal">424</span>
-<span class="normal">425</span>
-<span class="normal">426</span>
-<span class="normal">427</span>
-<span class="normal">428</span>
-<span class="normal">429</span>
-<span class="normal">430</span>
-<span class="normal">431</span>
-<span class="normal">432</span>
-<span class="normal">433</span>
-<span class="normal">434</span>
-<span class="normal">435</span>
-<span class="normal">436</span>
-<span class="normal">437</span>
-<span class="normal">438</span>
-<span class="normal">439</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_pawnx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_unconditioned</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_conditioned</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_ks_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_pawnx</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_unconditioned</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_conditioned</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">num_ks_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.05</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates PAWN sensitivity indices using the surrogate model.</span>
 
 <span class="sd">    Uses the `pawn.pawnx` utility.</span>
@@ -647,28 +1139,48 @@ and delta samples.</p>
 <p>This method creates a new DataFrame that includes only the columns from the original
 dataset (<code>X_T_L</code>) that correspond to the labels with non-zero coefficients. Additionally,
 it includes the target variable (<code>Y</code>).</p>
-<p>Returns:
-    pd.DataFrame: A DataFrame containing the pruned data with selected features and the target variable.</p>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              –
+              <div class="doc-md-description">
+                <p>pd.DataFrame: A DataFrame containing the pruned data with selected features and the target variable.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">263</span>
-<span class="normal">264</span>
-<span class="normal">265</span>
-<span class="normal">266</span>
-<span class="normal">267</span>
-<span class="normal">268</span>
-<span class="normal">269</span>
-<span class="normal">270</span>
-<span class="normal">271</span>
-<span class="normal">272</span>
-<span class="normal">273</span>
-<span class="normal">274</span>
-<span class="normal">275</span>
-<span class="normal">276</span>
-<span class="normal">277</span>
-<span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_pruned_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_pruned_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Generates a pruned dataset containing only the features with non-zero coefficients.</span>
 
@@ -703,30 +1215,33 @@ it includes the target variable (<code>Y</code>).</p>
 
         <p>Performs Legendre polynomial expansion on the transformed data <code>self.X_T</code>.</p>
 <p>Uses the <code>legendre.legendre_expand</code> utility.</p>
-<p>Updates the following attributes:
-    self.primitive_variables: Primitive variables from the expansion.
-    self.poly_orders: Polynomial orders used in the expansion.
-    self.X_T_L (pd.DataFrame): The expanded data matrix including Legendre terms.</p>
 
+
+<details class="updates-the-following-attributes" open>
+  <summary>Updates the following attributes</summary>
+  <p>self.primitive_variables: Primitive variables from the expansion.
+self.poly_orders: Polynomial orders used in the expansion.
+self.X_T_L (pd.DataFrame): The expanded data matrix including Legendre terms.</p>
+</details>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">182</span>
-<span class="normal">183</span>
-<span class="normal">184</span>
-<span class="normal">185</span>
-<span class="normal">186</span>
-<span class="normal">187</span>
-<span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
-<span class="normal">194</span>
-<span class="normal">195</span>
-<span class="normal">196</span>
-<span class="normal">197</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">legendre_expand</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">legendre_expand</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Performs Legendre polynomial expansion on the transformed data `self.X_T`.</span>
 
 <span class="sd">    Uses the `legendre.legendre_expand` utility.</span>
@@ -762,23 +1277,43 @@ it includes the target variable (<code>Y</code>).</p>
         <p>Plots the High-Dimensional Model Representation (HDMR) of the model's predictions.</p>
 <p>This method uses the <code>plot_hdmr</code> function from the <code>stats</code> module to visualize the 
 HDMR of the actual values (<code>self.Y</code>) against the predicted values (<code>self.y_pred</code>).</p>
-<p>Returns:
-    None</p>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              –
+              <div class="doc-md-description">
+                <p>None</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">230</span>
-<span class="normal">231</span>
-<span class="normal">232</span>
-<span class="normal">233</span>
-<span class="normal">234</span>
-<span class="normal">235</span>
-<span class="normal">236</span>
-<span class="normal">237</span>
-<span class="normal">238</span>
-<span class="normal">239</span>
-<span class="normal">240</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hdmr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">plot_hdmr</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Plots the High-Dimensional Model Representation (HDMR) of the model&#39;s predictions.</span>
 
@@ -809,32 +1344,74 @@ HDMR of the actual values (<code>self.Y</code>) against the predicted values (<c
         <p>Predicts output for new input data using the trained surrogate model.</p>
 <p>If the surrogate model (<code>self.surrogate_model</code>) doesn't exist, it first
 creates and fits one using <code>predictor.surrogate</code>.</p>
-<p>Args:
-    X (array-like): Input data for which predictions are to be made.
-        Should have the same features as the original training data.</p>
-<p>Returns:
-    array-like: Predicted output values.</p>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>X</code></b>
+                  (<code><span title="array">array</span> - <span title="like">like</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Input data for which predictions are to be made.
+Should have the same features as the original training data.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              –
+              <div class="doc-md-description">
+                <p>array-like: Predicted output values.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">366</span>
-<span class="normal">367</span>
-<span class="normal">368</span>
-<span class="normal">369</span>
-<span class="normal">370</span>
-<span class="normal">371</span>
-<span class="normal">372</span>
-<span class="normal">373</span>
-<span class="normal">374</span>
-<span class="normal">375</span>
-<span class="normal">376</span>
-<span class="normal">377</span>
-<span class="normal">378</span>
-<span class="normal">379</span>
-<span class="normal">380</span>
-<span class="normal">381</span>
-<span class="normal">382</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">382</span>
+<span class="normal">383</span>
+<span class="normal">384</span>
+<span class="normal">385</span>
+<span class="normal">386</span>
+<span class="normal">387</span>
+<span class="normal">388</span>
+<span class="normal">389</span>
+<span class="normal">390</span>
+<span class="normal">391</span>
+<span class="normal">392</span>
+<span class="normal">393</span>
+<span class="normal">394</span>
+<span class="normal">395</span>
+<span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Predicts output for new input data using the trained surrogate model.</span>
 
 <span class="sd">    If the surrogate model (`self.surrogate_model`) doesn&#39;t exist, it first</span>
@@ -870,29 +1447,58 @@ creates and fits one using <code>predictor.surrogate</code>.</p>
 
         <p>Reads data from a file or DataFrame.</p>
 <p>Initializes the <code>self.X</code> (features) and <code>self.Y</code> (target) attributes.</p>
-<p>Args:
-    data_file (str or pd.DataFrame): Path to the data file (CSV) or a pandas DataFrame.</p>
-<p>Raises:
-    ValueError: If <code>data_file</code> is not a string path or a DataFrame.</p>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>data_file</code></b>
+                  (<code><span title="str">str</span> or <span title="pandas.DataFrame">DataFrame</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Path to the data file (CSV) or a pandas DataFrame.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Raises:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="ValueError">ValueError</span></code>
+              –
+              <div class="doc-md-description">
+                <p>If <code>data_file</code> is not a string path or a DataFrame.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
-<span class="normal">155</span>
-<span class="normal">156</span>
-<span class="normal">157</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">157</span>
 <span class="normal">158</span>
 <span class="normal">159</span>
 <span class="normal">160</span>
@@ -901,7 +1507,21 @@ creates and fits one using <code>predictor.surrogate</code>.</p>
 <span class="normal">163</span>
 <span class="normal">164</span>
 <span class="normal">165</span>
-<span class="normal">166</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_file</span><span class="p">):</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">read_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_file</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reads data from a file or DataFrame.</span>
 
 <span class="sd">    Initializes the `self.X` (features) and `self.Y` (target) attributes.</span>
@@ -943,50 +1563,74 @@ creates and fits one using <code>predictor.surrogate</code>.</p>
     <div class="doc doc-contents ">
 
         <p>Execute a complete sequence of steps for RS-HDMR (Random Sampling High-Dimensional Model Representation) analysis.</p>
-<p>This method performs the following steps in sequence:
-1. Transforms the input data to a unit hypercube.
-2. Builds basis functions using Legendre polynomials.
-3. Runs regression analysis to fit the model.
-4. Calculates and displays RS-HDMR model performance statistics.
-5. Evaluates Sobol indices to quantify the contribution of each input variable to the output variance.
-6. Calculates Shapley effects to measure the importance of each input variable.
-7. Computes the total index to assess the overall impact of input variables.
-8. If resampling is enabled, performs bootstrap resampling to estimate confidence intervals for Sobol indices and Shapley effects.
-9. Prints a completion message with a randomly selected quote.</p>
-<p>Returns:
-    tuple: A tuple containing three elements:
-        - sobol_indices (pd.DataFrame): A DataFrame containing Sobol indices for each input variable.
-        - shapley_effects (pd.DataFrame): A DataFrame containing Shapley effects for each input variable.
-        - total_index (pd.DataFrame): A DataFrame containing the total index for each input variable.</p>
-<p>Notes:
-    - The method assumes that the necessary data and configurations are already set in the class instance.
-    - If resampling is enabled (<code>self.resampling</code> is True), confidence intervals (CIs) are calculated for Sobol indices and Shapley effects.
-    - The method uses helper functions like <code>transform_data</code>, <code>legendre_expand</code>, <code>run_regression</code>, <code>stats</code>, <code>plot_hdmr</code>, <code>eval_sobol_indices</code>, <code>get_shapley</code>, and <code>get_total_index</code> to perform specific tasks.
-    - The completion message includes a randomly selected quote for a touch of inspiration.</p>
-<p>Example:
-    &gt;&gt;&gt; sobol_indices, shapley_effects, total_index = instance.run_all()
-    &gt;&gt;&gt; print(sobol_indices)
-    &gt;&gt;&gt; print(shapley_effects)
-    &gt;&gt;&gt; print(total_index)</p>
+<p>This method performs the following steps in sequence:</p>
+<ol>
+<li>Transforms the input data to a unit hypercube.</li>
+<li>Builds basis functions using Legendre polynomials.</li>
+<li>Runs regression analysis to fit the model.</li>
+<li>Calculates and displays RS-HDMR model performance statistics.</li>
+<li>Evaluates Sobol indices to quantify the contribution of each input variable to the output variance.</li>
+<li>Calculates Shapley effects to measure the importance of each input variable.</li>
+<li>Computes the total index to assess the overall impact of input variables.</li>
+<li>If resampling is enabled, performs bootstrap resampling to estimate confidence intervals for Sobol indices and Shapley effects.</li>
+<li>Prints a completion message with a randomly selected quote.</li>
+</ol>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+<b><code>tuple</code></b>              –
+              <div class="doc-md-description">
+                <p>A tuple containing three elements:</p>
+<ul>
+<li>sobol_indices (pd.DataFrame): A DataFrame containing Sobol indices for each input variable.</li>
+<li>shapley_effects (pd.DataFrame): A DataFrame containing Shapley effects for each input variable.</li>
+<li>total_index (pd.DataFrame): A DataFrame containing the total index for each input variable.</li>
+</ul>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<details class="notes" open>
+  <summary>Notes</summary>
+  <ul>
+<li>The method assumes that the necessary data and configurations are already set in the class instance.</li>
+<li>If resampling is enabled (<code>self.resampling</code> is True), confidence intervals (CIs) are calculated for Sobol indices and Shapley effects.</li>
+<li>The method uses helper functions like <code>transform_data</code>, <code>legendre_expand</code>, <code>run_regression</code>, <code>stats</code>, <code>plot_hdmr</code>, <code>eval_sobol_indices</code>, <code>get_shapley</code>, and <code>get_total_index</code> to perform specific tasks.</li>
+<li>The completion message includes a randomly selected quote for a touch of inspiration.</li>
+</ul>
+</details>
+
+<details class="example" open>
+  <summary>Example</summary>
+  <blockquote>
+<blockquote>
+<blockquote>
+<p>sobol_indices, shapley_effects, total_index = instance.run_all()
+print(sobol_indices)
+print(shapley_effects)
+print(total_index)</p>
+</blockquote>
+</blockquote>
+</blockquote>
+</details>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">294</span>
 <span class="normal">295</span>
 <span class="normal">296</span>
 <span class="normal">297</span>
@@ -1056,11 +1700,28 @@ creates and fits one using <code>predictor.surrogate</code>.</p>
 <span class="normal">361</span>
 <span class="normal">362</span>
 <span class="normal">363</span>
-<span class="normal">364</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span>
+<span class="normal">374</span>
+<span class="normal">375</span>
+<span class="normal">376</span>
+<span class="normal">377</span>
+<span class="normal">378</span>
+<span class="normal">379</span>
+<span class="normal">380</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Execute a complete sequence of steps for RS-HDMR (Random Sampling High-Dimensional Model Representation) analysis.</span>
 
 <span class="sd">This method performs the following steps in sequence:</span>
+
 <span class="sd">1. Transforms the input data to a unit hypercube.</span>
 <span class="sd">2. Builds basis functions using Legendre polynomials.</span>
 <span class="sd">3. Runs regression analysis to fit the model.</span>
@@ -1073,6 +1734,7 @@ creates and fits one using <code>predictor.surrogate</code>.</p>
 
 <span class="sd">Returns:</span>
 <span class="sd">    tuple: A tuple containing three elements:</span>
+
 <span class="sd">        - sobol_indices (pd.DataFrame): A DataFrame containing Sobol indices for each input variable.</span>
 <span class="sd">        - shapley_effects (pd.DataFrame): A DataFrame containing Shapley effects for each input variable.</span>
 <span class="sd">        - total_index (pd.DataFrame): A DataFrame containing the total index for each input variable.</span>
@@ -1160,32 +1822,35 @@ creates and fits one using <code>predictor.surrogate</code>.</p>
 
         <p>Runs the regression analysis using the specified method.</p>
 <p>Uses the <code>regression.regression</code> utility based on <code>self.method</code>.</p>
-<p>Updates the following attributes:
-    self.coef_ (np.array): The regression coefficients obtained from the fit.
-    self.y_pred (np.array): The predicted values based on the fitted model.</p>
 
+
+<details class="updates-the-following-attributes" open>
+  <summary>Updates the following attributes</summary>
+  <p>self.coef_ (np.array): The regression coefficients obtained from the fit.
+self.y_pred (np.array): The predicted values based on the fitted model.</p>
+</details>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">200</span>
-<span class="normal">201</span>
-<span class="normal">202</span>
-<span class="normal">203</span>
-<span class="normal">204</span>
-<span class="normal">205</span>
-<span class="normal">206</span>
-<span class="normal">207</span>
-<span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
-<span class="normal">214</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
 <span class="normal">217</span>
-<span class="normal">218</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_regression</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_regression</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Runs the regression analysis using the specified method.</span>
 
 <span class="sd">    Uses the `regression.regression` utility based on `self.method`.</span>
@@ -1223,21 +1888,24 @@ creates and fits one using <code>predictor.surrogate</code>.</p>
 
         <p>Calculates and stores evaluation statistics for the fitted model.</p>
 <p>Uses the <code>stats.stats</code> utility.</p>
-<p>Updates the following attributes:
-    self.evs (dict): A dictionary containing evaluation statistics (e.g., R^2, MSE).</p>
 
+
+<details class="updates-the-following-attributes" open>
+  <summary>Updates the following attributes</summary>
+  <p>self.evs (dict): A dictionary containing evaluation statistics (e.g., R^2, MSE).</p>
+</details>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
-<span class="normal">225</span>
-<span class="normal">226</span>
-<span class="normal">227</span>
-<span class="normal">228</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">stats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Calculates and stores evaluation statistics for the fitted model.</span>
 
 <span class="sd">    Uses the `stats.stats` utility.</span>
@@ -1264,24 +1932,27 @@ creates and fits one using <code>predictor.surrogate</code>.</p>
     <div class="doc doc-contents ">
 
         <p>Transforms the input data <code>self.X</code> into a unit hypercube.</p>
-<p>Updates the following attributes:
-    self.ranges (list): The ranges (min, max) of the original data features.
-    self.X_T (pd.DataFrame): The transformed data matrix within the unit hypercube.</p>
 
+
+<details class="updates-the-following-attributes" open>
+  <summary>Updates the following attributes</summary>
+  <p>self.ranges (list): The ranges (min, max) of the original data features.
+self.X_T (pd.DataFrame): The transformed data matrix within the unit hypercube.</p>
+</details>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\shapleyx.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">169</span>
-<span class="normal">170</span>
-<span class="normal">171</span>
-<span class="normal">172</span>
-<span class="normal">173</span>
-<span class="normal">174</span>
-<span class="normal">175</span>
-<span class="normal">176</span>
-<span class="normal">177</span>
-<span class="normal">178</span>
-<span class="normal">179</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">transform_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">transform_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Transforms the input data `self.X` into a unit hypercube.</span>
 
 <span class="sd">    Updates the following attributes:</span>
@@ -1355,55 +2026,185 @@ creates and fits one using <code>predictor.surrogate</code>.</p>
 to regression that automatically determines the relevance of each feature. It is based
 on the Sparse Bayesian Learning (SBL) algorithm, which promotes sparsity in the model
 by estimating the precision of the coefficients.</p>
-<h6 id="shapleyx.ARD.RegressionARD--parameters">Parameters</h6>
-<p>n_iter : int, optional (default=300)
-    Maximum number of iterations for the optimization algorithm.</p>
-<p>tol : float, optional (default=1e-3)
-    Convergence threshold. If the absolute change in the precision parameter for the
-    weights is below this threshold, the algorithm terminates.</p>
-<p>fit_intercept : bool, optional (default=True)
-    Whether to calculate the intercept for this model. If set to False, no intercept
-    will be used in calculations (e.g., data is expected to be already centered).</p>
-<p>copy_X : bool, optional (default=True)
-    If True, X will be copied; else, it may be overwritten.</p>
-<p>verbose : bool, optional (default=False)
-    If True, the algorithm will print progress messages during fitting.</p>
-<p>cv_tol : float, optional (default=0.1)
-    Tolerance for cross-validation. If the percentage change in cross-validation score
-    is below this threshold, the algorithm terminates.</p>
-<p>cv : bool, optional (default=False)
-    If True, cross-validation will be used to determine the optimal number of features.</p>
-<h6 id="shapleyx.ARD.RegressionARD--attributes">Attributes</h6>
-<p>coef_ : array, shape (n_features,)
-    Coefficients of the regression model (mean of the posterior distribution).</p>
-<p>alpha_ : float
-    Estimated precision of the noise.</p>
-<p>active_ : array, dtype=bool, shape (n_features,)
-    Boolean array indicating which features are active (non-zero coefficients).</p>
-<p>lambda_ : array, shape (n_features,)
-    Estimated precisions of the coefficients.</p>
-<p>sigma_ : array, shape (n_features, n_features)
-    Estimated covariance matrix of the weights, computed only for non-zero coefficients.</p>
-<p>scores_ : list
-    List of cross-validation scores if <code>cv</code> is True.</p>
-<h6 id="shapleyx.ARD.RegressionARD--methods">Methods</h6>
-<p>fit(X, y)
-    Fit the ARD regression model to the data.</p>
-<p>predict_dist(X)
-    Compute the predictive distribution for the test set.</p>
-<p>_center_data(X, y)
-    Center the data by subtracting the mean.</p>
-<p>_posterior_dist(A, beta, XX, XY, full_covar=False)
-    Calculate the mean and covariance matrix of the posterior distribution of coefficients.</p>
-<p>_sparsity_quality(XX, XXd, XY, XYa, Aa, Ri, active, beta, cholesky)
-    Calculate sparsity and quality parameters for each feature.</p>
-<h6 id="shapleyx.ARD.RegressionARD--references">References</h6>
-<p>[1] Tipping, M. E., &amp; Faul, A. C. (2003). Fast marginal likelihood maximisation for
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>n_iter</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>300</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Maximum number of iterations for the optimization algorithm.
+Defaults to 300.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>tol</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.001</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Convergence threshold. If the absolute change in the precision
+parameter for the weights is below this threshold, the algorithm terminates.
+Defaults to 1e-3.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>fit_intercept</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Whether to calculate the intercept for this model.
+If set to False, no intercept will be used in calculations (e.g., data is expected
+to be already centered). Defaults to True.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>copy_X</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If True, X will be copied; else, it may be overwritten.
+Defaults to True.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>verbose</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If True, the algorithm will print progress messages during
+fitting. Defaults to False.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>cv_tol</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.1</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Tolerance for cross-validation. If the percentage change in
+cross-validation score is below this threshold, the algorithm terminates.
+Defaults to 0.1.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>cv</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If True, cross-validation will be used to determine the optimal
+number of features. Defaults to False.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>coef_</code></b>
+                  (<code><span title="array">array</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Coefficients of the regression model (mean of the posterior distribution).
+Shape (n_features,).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>alpha_</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Estimated precision of the noise.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>active_</code></b>
+                  (<code><span title="array">array</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Boolean array indicating which features are active (non-zero coefficients).
+Shape (n_features,), dtype=bool.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>lambda_</code></b>
+                  (<code><span title="array">array</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Estimated precisions of the coefficients. Shape (n_features,).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>sigma_</code></b>
+                  (<code><span title="array">array</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Estimated covariance matrix of the weights, computed only for non-zero
+coefficients. Shape (n_features, n_features).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>scores_</code></b>
+                  (<code><span title="list">list</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>List of cross-validation scores if <code>cv</code> is True.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>[1] Tipping, M. E., &amp; Faul, A. C. (2003). Fast marginal likelihood maximisation for
     sparse Bayesian models. In Proceedings of the Ninth International Workshop on
     Artificial Intelligence and Statistics (pp. 276-283).
 [2] Tipping, M. E., &amp; Faul, A. C. (2001). Analysis of sparse Bayesian learning. In
     Advances in Neural Information Processing Systems (pp. 383-389).</p>
+</details>
 
+<details class="note" open>
+  <summary>Note</summary>
+  <p>This code has been adapted from the original implementation by Amazasp Shaumyan
+https://github.com/AmazaspShumik/sklearn-bayes</p>
+</details>
 
 
 
@@ -1412,16 +2213,16 @@ by estimating the precision of the coefficients.</p>
 
                   <details class="quote">
                     <summary>Source code in <code>shapleyx\ARD.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">n_iter</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">fit_intercept</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">n_iter</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">fit_intercept</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
               <span class="n">copy_X</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">cv_tol</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span>          <span class="o">=</span> <span class="n">n_iter</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">tol</span>             <span class="o">=</span> <span class="n">tol</span>
@@ -1461,16 +2262,50 @@ by estimating the precision of the coefficients.</p>
 <h6 id="shapleyx.ARD.RegressionARD.fit--parameters">Parameters</h6>
 <p>X : {array-like, sparse matrix}, shape (n_samples, n_features)
     Training data, matrix of explanatory variables.</p>
-<p>y : array-like, shape (n_samples,)
-    Target values.</p>
-<h6 id="shapleyx.ARD.RegressionARD.fit--returns">Returns</h6>
+
+
+<details class="y-" open>
+  <summary>array-like, shape (n_samples,)</summary>
+  <p>Target values.</p>
+</details>        <h6 id="shapleyx.ARD.RegressionARD.fit--returns">Returns</h6>
 <p>self : object
     Returns the instance itself.</p>
 
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\ARD.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">124</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
 <span class="normal">125</span>
 <span class="normal">126</span>
 <span class="normal">127</span>
@@ -1624,38 +2459,7 @@ by estimating the precision of the coefficients.</p>
 <span class="normal">275</span>
 <span class="normal">276</span>
 <span class="normal">277</span>
-<span class="normal">278</span>
-<span class="normal">279</span>
-<span class="normal">280</span>
-<span class="normal">281</span>
-<span class="normal">282</span>
-<span class="normal">283</span>
-<span class="normal">284</span>
-<span class="normal">285</span>
-<span class="normal">286</span>
-<span class="normal">287</span>
-<span class="normal">288</span>
-<span class="normal">289</span>
-<span class="normal">290</span>
-<span class="normal">291</span>
-<span class="normal">292</span>
-<span class="normal">293</span>
-<span class="normal">294</span>
-<span class="normal">295</span>
-<span class="normal">296</span>
-<span class="normal">297</span>
-<span class="normal">298</span>
-<span class="normal">299</span>
-<span class="normal">300</span>
-<span class="normal">301</span>
-<span class="normal">302</span>
-<span class="normal">303</span>
-<span class="normal">304</span>
-<span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span></pre></div></td><td class="code"><div><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+<span class="normal">278</span></pre></div></td><td class="code"><div><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">        Fit the ARD regression model to the data.</span>
 
@@ -1867,35 +2671,38 @@ Gaussian and therefore is characterised by mean and variance.</p>
 <h6 id="shapleyx.ARD.RegressionARD.predict_dist--returns">Returns</h6>
 <p>y_hat : array, shape (n_samples_test,)
     Estimated values of targets on the test set (mean of the predictive distribution).</p>
-<p>var_hat : array, shape (n_samples_test,)
-    Variance of the predictive distribution.</p>
 
+
+<details class="var_hat-" open>
+  <summary>array, shape (n_samples_test,)</summary>
+  <p>Variance of the predictive distribution.</p>
+</details>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\ARD.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">451</span>
-<span class="normal">452</span>
-<span class="normal">453</span>
-<span class="normal">454</span>
-<span class="normal">455</span>
-<span class="normal">456</span>
-<span class="normal">457</span>
-<span class="normal">458</span>
-<span class="normal">459</span>
-<span class="normal">460</span>
-<span class="normal">461</span>
-<span class="normal">462</span>
-<span class="normal">463</span>
-<span class="normal">464</span>
-<span class="normal">465</span>
-<span class="normal">466</span>
-<span class="normal">467</span>
-<span class="normal">468</span>
-<span class="normal">469</span>
-<span class="normal">470</span>
-<span class="normal">471</span>
-<span class="normal">472</span>
-<span class="normal">473</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">):</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">420</span>
+<span class="normal">421</span>
+<span class="normal">422</span>
+<span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Computes predictive distribution for test set.</span>
 <span class="sd">    Predictive distribution for each data point is one dimensional</span>
@@ -1987,7 +2794,38 @@ clf_bias : bool
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\ARD.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">478</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
 <span class="normal">479</span>
 <span class="normal">480</span>
 <span class="normal">481</span>
@@ -2062,38 +2900,7 @@ clf_bias : bool
 <span class="normal">550</span>
 <span class="normal">551</span>
 <span class="normal">552</span>
-<span class="normal">553</span>
-<span class="normal">554</span>
-<span class="normal">555</span>
-<span class="normal">556</span>
-<span class="normal">557</span>
-<span class="normal">558</span>
-<span class="normal">559</span>
-<span class="normal">560</span>
-<span class="normal">561</span>
-<span class="normal">562</span>
-<span class="normal">563</span>
-<span class="normal">564</span>
-<span class="normal">565</span>
-<span class="normal">566</span>
-<span class="normal">567</span>
-<span class="normal">568</span>
-<span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span>
-<span class="normal">572</span>
-<span class="normal">573</span>
-<span class="normal">574</span>
-<span class="normal">575</span>
-<span class="normal">576</span>
-<span class="normal">577</span>
-<span class="normal">578</span>
-<span class="normal">579</span>
-<span class="normal">580</span>
-<span class="normal">581</span>
-<span class="normal">582</span>
-<span class="normal">583</span>
-<span class="normal">584</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_precisions</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">active</span><span class="p">,</span><span class="n">tol</span><span class="p">,</span><span class="n">n_samples</span><span class="p">,</span><span class="n">clf_bias</span><span class="p">):</span>
+<span class="normal">553</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_precisions</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">active</span><span class="p">,</span><span class="n">tol</span><span class="p">,</span><span class="n">n_samples</span><span class="p">,</span><span class="n">clf_bias</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
 <span class="sd">    Updates the precision parameters (alpha) for features in a sparse Bayesian learning model</span>
 <span class="sd">    by selecting a feature to add, recompute, or delete based on its impact on the log marginal</span>
@@ -2256,12 +3063,62 @@ clf_bias : bool
     <div class="doc doc-contents ">
 
         <p>Generate a Latin Hypercube sample scaled to the specified ranges.</p>
-<p>Args:
-    num_samples (int): Number of samples to generate.
-    ranges (dict): A dictionary where keys are feature names and values are tuples of (lower, upper) bounds.</p>
-<p>Returns:
-    np.ndarray: A scaled Latin Hypercube sample of shape (num_samples, num_features).</p>
 
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>num_samples</code></b>
+                  (<code><span title="int">int</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Number of samples to generate.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>ranges</code></b>
+                  (<code><span title="dict">dict</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>A dictionary where keys are feature names and values are tuples of (lower, upper) bounds.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Returns:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+                  <code><span title="numpy.ndarray">ndarray</span></code>
+              –
+              <div class="doc-md-description">
+                <p>np.ndarray: A scaled Latin Hypercube sample of shape (num_samples, num_features).</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
 
             <details class="quote">
               <summary>Source code in <code>shapleyx\xsampler.py</code></summary>

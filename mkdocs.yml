@@ -27,6 +27,8 @@ theme:
 
 plugins:
   - search
+  - mkdocs-jupyter:
+     ignore_h1_titles: False
   - mkdocstrings:
       handlers:
         python:
@@ -44,6 +46,7 @@ nav:
     - Quickstart: getting-started/quickstart.md
   - Tutorials:
     - Basic Usage: tutorials/basic-usage.md
+    - Example Workflow: tutorials/owen_product_function.ipynb
   - How-to Guides:
     - Common Tasks: how-to-guides/common-tasks.md
   - Reference:
