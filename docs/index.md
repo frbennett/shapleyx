@@ -20,3 +20,6 @@ analyzer = shapleyx.rshdmr(data_file='input_data.csv', polys=[10, 5], method='ar
 
 # Run the entire analysis pipeline
 sobol_indices, shapley_effects, total_index = analyzer.run_all()
+```
+
+

@@ -42,66 +42,82 @@ def print_heading(text):
     
 
 class rshdmr():
+    """Global Sensitivity Analysis using RS-HDMR with GMDH and linear regression.
+    **Examples:**
+
+    This class implements a global sensitivity analysis framework combining:
+
+    - Sparse Random Sampling (SRS)
+    - High Dimensional Model Representation (HDMR)
+    - Group Method of Data Handling (GMDH) for parameter selection
+    - Linear regression for parameter refinement
+
+    Args:
+        data_file (str or pd.DataFrame): Input data file path or DataFrame.
+        polys (list, optional): Polynomial orders for expansion. Defaults to [10, 5].
+        n_jobs (int, optional): Number of parallel jobs. Defaults to -1.
+        test_size (float, optional): Test set size ratio. Defaults to 0.25.
+        limit (float, optional): Coefficient limit. Defaults to 2.0.
+        k_best (int, optional): Number of best features. Defaults to 1.
+        p_average (int, optional): Parameter for averaging. Defaults to 2.
+        n_iter (int, optional): Number of iterations. Defaults to 300.
+        verbose (bool, optional): Verbosity flag. Defaults to False.
+        method (str, optional): Regression method ('ard', 'omp', etc.). Defaults to 'ard'. 
+            can take values
+
+            - 'ard' - Automatic Relevance Determination
+            - 'omp' - Orthogonal Matching Pursuit from sklearn.linear_model
+            - 'ard_cv' - Automatic Relevance Determination with cross-validation
+            - 'omp_cv' - Orthogonal Matching Pursuit with cross-validation from sklearn.linear_model
+            - 'ard_sk' - Automatic Relevance Determination from sklearn.linear_model
+
+        starting_iter (int, optional): Starting iteration. Defaults to 5.
+        resampling (bool, optional): Enable bootstrap resampling. Defaults to True.
+        CI (float, optional): Confidence interval percentage. Defaults to 95.0.
+        number_of_resamples (int, optional): Number of bootstrap samples. Defaults to 1000.
+        cv_tol (float, optional): Cross-validation tolerance. Defaults to 0.05.
+
+    Attributes:
+        X (pd.DataFrame): Input features dataframe.
+        Y (pd.Series): Target variable series.
+        X_T (pd.DataFrame): Transformed features in unit hypercube.
+        ranges (list): Ranges of transformed data.
+        X_T_L (pd.DataFrame): Expanded features with Legendre polynomials.
+        coef_ (np.array): Regression coefficients.
+        y_pred (np.array): Predicted values.
+        evs (dict): Model evaluation statistics.
+        results (pd.DataFrame): Sobol indices results.
+        non_zero_coefficients (pd.DataFrame): Non-zero coefficients.
+        shap (pd.DataFrame): Shapley effects.
+        total (pd.DataFrame): Total sensitivity indices.
+        surrogate_model: Trained surrogate model for predictions.
+        primitive_variables: Primitive variables from Legendre expansion.
+        poly_orders: Polynomial orders used in Legendre expansion.
+        delta_instance: Instance of pawn.DeltaX or pawn.hX for delta/h indices calculation.
+
+    **Examples:**
+
+    ```python
+    # Initialize analyzer
+    analyzer = rshdmr(data_file='input.csv', polys=[10,5], method='ard')
+    
+    # Run analysis
+    sobol, shapley, total = analyzer.run_all()
+    
+    # Make predictions
+    predictions = analyzer.predict(new_data)
+    
+    # Get sensitivity indices
+    pawn_results = analyzer.get_pawn(S=10)
+    ```
+
+     **Todo:**
+
+     - Improve memory management for large expansions
+
 
     """
-    *******************************************************************************
-    Global Sensitivity Analysis using Sparse Random Sampling - High Dimensional 
-    Model Representation (HDMR) with Group Method of Data Handling (GMDH) for 
-    parameter selection and linear regression for parameter refinement.
-    *******************************************************************************
-    
-    This module implements a global sensitivity analysis (GSA) framework using 
-    Sparse Random Sampling (SRS) combined with High Dimensional Model Representation 
-    (HDMR). The method employs the Group Method of Data Handling (GMDH) for parameter 
-    selection and linear regression for parameter refinement. The framework is designed 
-    to analyze the sensitivity of model outputs to input parameters, providing insights 
-    into the relative importance of each parameter and their interactions.
-    
-    The module includes functionality for:
-    - Reading and preprocessing input data.
-    - Transforming data to a unit hypercube.
-    - Building basis functions using Legendre polynomials.
-    - Running regression analysis using various methods (ARD, OMP, etc.).
-    - Evaluating Sobol indices, Shapley effects, and total indices.
-    - Performing bootstrap resampling for confidence intervals.
-    - Calculating PAWN indices for sensitivity analysis.
-    - Predicting model outputs based on input parameters.
-    
-    Author: Frederick Bennett
-    
-    Classes:
-        rshdmr: Main class for performing global sensitivity analysis using RS-HDMR.
-    
-    Methods:
-        __init__: Initializes the RS-HDMR object with input data and parameters.
-        read_data: Reads and preprocesses input data.
-        transform_data: Transforms input data to a unit hypercube.
-        legendre_expand: Expands the input data using Legendre polynomials.
-        run_regression: Runs regression analysis using specified method.
-        stats: Computes and prints model performance statistics.
-        plot_hdmr: Plots predicted vs. experimental values.
-        eval_sobol_indices: Evaluates Sobol indices for sensitivity analysis.
-        get_shapley: Computes Shapley effects for sensitivity analysis.
-        get_total_index: Computes total sensitivity indices.
-        get_pruned_data: Returns pruned dataset based on non-zero coefficients.
-        get_pawn: Computes PAWN indices for sensitivity analysis.
-        run_all: Runs the entire RS-HDMR analysis pipeline.
-        predict: Predicts model outputs based on input parameters.
-        get_pawnx: Computes PAWN indices with additional statistical analysis.
-    
-    Example:
-        # Initialize RS-HDMR object
-        analyzer = rshdmr(data_file='input_data.csv', polys=[10, 5], method='ard')
-        
-        # Run the entire analysis pipeline
-        sobol_indices, shapley_effects, total_index = analyzer.run_all()
-        
-        # Predict model outputs for new input data
-        predictions = analyzer.predict(new_input_data)
-        
-        # Compute PAWN indices
-        pawn_results = analyzer.get_pawn(S=10)
-    """
+
     
     # Rest of the code...
     
@@ -139,8 +155,15 @@ class rshdmr():
         self.cv_tol = cv_tol 
         
     def read_data(self, data_file):
-        """
-        Reads data from a file or DataFrame and initializes the X and Y attributes.
+        """Reads data from a file or DataFrame.
+
+        Initializes the `self.X` (features) and `self.Y` (target) attributes.
+
+        Args:
+            data_file (str or pd.DataFrame): Path to the data file (CSV) or a pandas DataFrame.
+
+        Raises:
+            ValueError: If `data_file` is not a string path or a DataFrame.
         """
         if isinstance(data_file, pd.DataFrame):
             print('Found a DataFrame')
@@ -158,20 +181,11 @@ class rshdmr():
         
         
     def transform_data(self):
-        """
-        Transforms the data using into a unit hypercube.
+        """Transforms the input data `self.X` into a unit hypercube.
 
-        This method applies a transformation to the data stored in `self.X`, 
-        updates the transformed data, and retrieves the ranges and transformed 
-        data matrix.
-
-        Attributes:
-            self.X (DataFrame or ndarray): The original data to be transformed.
-            self.ranges (list): The ranges of the transformed data.
-            self.X_T (DataFrame or ndarray): The transformed data matrix.
-
-        Returns:
-            None
+        Updates the following attributes:
+            self.ranges (list): The ranges (min, max) of the original data features.
+            self.X_T (pd.DataFrame): The transformed data matrix within the unit hypercube.
         """
         transformed_data = transformation.transformation(self.X)
         transformed_data.do_transform()
@@ -180,17 +194,14 @@ class rshdmr():
        
             
     def legendre_expand(self):
-        """
-        Perform Legendre expansion on the input data.
-        This method uses the `legendre_expand` function from the `legendre` module to
-        expand the input data `X` and `X_T` up to the specified maximum order `max_1st`
-        using the provided polynomial basis `polys` and target values `Y`.
-        The expanded data is then stored in the instance variables:
-        - `primitive_variables`: The primitive variables obtained from the expansion.
-        - `poly_orders`: The polynomial orders used in the expansion.
-        - `X_T_L`: The expanded data.
-        Returns:
-            None
+        """Performs Legendre polynomial expansion on the transformed data `self.X_T`.
+
+        Uses the `legendre.legendre_expand` utility.
+
+        Updates the following attributes:
+            self.primitive_variables: Primitive variables from the expansion.
+            self.poly_orders: Polynomial orders used in the expansion.
+            self.X_T_L (pd.DataFrame): The expanded data matrix including Legendre terms.
         """
         expansion_data = legendre.legendre_expand(self.X_T, self.polys)
         expansion_data.build_basis_set() 
@@ -201,25 +212,13 @@ class rshdmr():
 
 
     def run_regression(self):
-        """
-        Runs the regression using the specified method and parameters.
+        """Runs the regression analysis using the specified method.
 
-        This method initializes a regression instance with the provided
-        parameters and runs the regression to obtain the coefficients and
-        predicted values.
+        Uses the `regression.regression` utility based on `self.method`.
 
-        Attributes:
-            X_T_L (array-like): The transformed feature matrix.
-            Y (array-like): The target variable.
-            method (str): The regression method to use.
-            n_iter (int): The number of iterations for the regression algorithm.
-            verbose (bool): If True, enables verbose output.
-            cv_tol (float): The tolerance for cross-validation.
-            starting_iter (int): The starting iteration for the regression algorithm.
-
-        Returns:
-            None: The method updates the instance attributes `coef_` and `y_pred`
-            with the regression coefficients and predicted values, respectively.
+        Updates the following attributes:
+            self.coef_ (np.array): The regression coefficients obtained from the fit.
+            self.y_pred (np.array): The predicted values based on the fitted model.
         """
         regression_instance = regression.regression(
             X_T_L=self.X_T_L,
@@ -233,15 +232,12 @@ class rshdmr():
         self.coef_, self.y_pred = regression_instance.run_regression()
 
     def stats(self):
-        """
-        Calculate and store evaluation statistics for the model.
+        """Calculates and stores evaluation statistics for the fitted model.
 
-        This method computes evaluation statistics using the actual target values (self.Y),
-        the predicted values (self.y_pred), and the model coefficients (self.coef_). The
-        results are stored in the instance variable `self.evs`.
+        Uses the `stats.stats` utility.
 
-        Returns:
-            None
+        Updates the following attributes:
+            self.evs (dict): A dictionary containing evaluation statistics (e.g., R^2, MSE).
         """
         self.evs = stats.stats(self.Y, self.y_pred, self.coef_)
 
@@ -260,16 +256,15 @@ class rshdmr():
 
 
     def eval_all_indices(self):
-        """
-        Evaluate all indices and store the results.
-        This method performs the following evaluations:
-        1. Evaluates indices using the provided data and model coefficients.
-        2. Retrieves Sobol indices and stores them in `self.results`.
-        3. Retrieves non-zero coefficients and stores them in `self.non_zero_coefficients`.
-        4. Evaluates Shapley values for the features and stores them in `self.shap`.
-        5. Evaluates the total index for the features and stores it in `self.total`.
-        Returns:
-            None
+        """Evaluates Sobol indices, Shapley effects, and total sensitivity indices.
+
+        Uses the `indicies.eval_indices` utility.
+
+        Updates the following attributes:
+            self.results (pd.DataFrame): DataFrame containing Sobol indices results.
+            self.non_zero_coefficients (pd.DataFrame): DataFrame of non-zero coefficients.
+            self.shap (pd.DataFrame): DataFrame containing Shapley effects.
+            self.total (pd.DataFrame): DataFrame containing total sensitivity indices.
         """
         eval_indicies = indicies.eval_indices(self.X_T_L, self.Y, self.coef_, self.evs) 
         self.results = eval_indicies.get_sobol_indicies()
@@ -301,6 +296,7 @@ class rshdmr():
     Execute a complete sequence of steps for RS-HDMR (Random Sampling High-Dimensional Model Representation) analysis.
 
     This method performs the following steps in sequence:
+
     1. Transforms the input data to a unit hypercube.
     2. Builds basis functions using Legendre polynomials.
     3. Runs regression analysis to fit the model.
@@ -313,6 +309,7 @@ class rshdmr():
 
     Returns:
         tuple: A tuple containing three elements:
+
             - sobol_indices (pd.DataFrame): A DataFrame containing Sobol indices for each input variable.
             - shapley_effects (pd.DataFrame): A DataFrame containing Shapley effects for each input variable.
             - total_index (pd.DataFrame): A DataFrame containing the total index for each input variable.
@@ -383,18 +380,17 @@ class rshdmr():
         return sobol_indices, shapley_effects, total_index
 
     def predict(self, X):
-        """
-        Predict the output for the given input data using the surrogate model.
+        """Predicts output for new input data using the trained surrogate model.
 
-        Parameters:
-        X (array-like): Input data for which predictions are to be made.
+        If the surrogate model (`self.surrogate_model`) doesn't exist, it first
+        creates and fits one using `predictor.surrogate`.
+
+        Args:
+            X (array-like): Input data for which predictions are to be made.
+                Should have the same features as the original training data.
 
         Returns:
-        array-like: Predicted output for the input data.
-
-        Notes:
-        If the predictive-surrogate model does not exist, it will be created and trained using
-        the non-zero coefficients and ranges provided during initialization.
+            array-like: Predicted output values.
         """
         if not hasattr(self, 'surrogate_model'):
             self.surrogate_model = predictor.surrogate(self.non_zero_coefficients, self.ranges)
@@ -441,40 +437,33 @@ class rshdmr():
     
     
     def get_pawnx(self, num_unconditioned: int, num_conditioned: int, num_ks_samples: int, alpha: float = 0.05) -> pd.DataFrame:
-        """
-        Calculate the PAWN sensitivity indices for the RS-HDMR surrogate model.
+        """Calculates PAWN sensitivity indices using the surrogate model.
 
-        Parameters:
-        -----------
-        num_unconditioned : int
-            The number of unconditioned samples to be used in the PAWN analysis.
-        num_conditioned : int
-            The number of conditioned samples to be used in the PAWN analysis.
-        num_ks_samples : int
-            The number of samples to be used in the Kolmogorov-Smirnov test.
-        alpha : float, optional
-            The significance level for the Kolmogorov-Smirnov test (default is 0.05).
+        Uses the `pawn.pawnx` utility.
+
+        Args:
+            num_unconditioned (int): Number of unconditioned samples for PAWN.
+            num_conditioned (int): Number of conditioned samples for PAWN.
+            num_ks_samples (int): Number of samples for the Kolmogorov-Smirnov test.
+            alpha (float, optional): Significance level for the KS test. Defaults to 0.05.
 
         Returns:
-        --------
-        pd.DataFrame
-            A DataFrame containing the PAWN sensitivity indices.
+            pd.DataFrame: DataFrame containing the PAWN sensitivity indices.
         """
         pawn_instance = pawn.pawnx(self.X, self.Y, self.ranges, self.non_zero_coefficients)
         pawn_indices = pawn_instance.get_pawnx(num_unconditioned, num_conditioned, num_ks_samples, alpha) 
         return pawn_indices 
     
     def get_pawn(self, S=10) :
-        """
-        Estimate the PAWN sensitivity indices for the features in the dataset.
-        Parameters:
-        -----------
-        S : int, optional
-            The number of slides to use for the estimation. Default is 10.
+        """Estimates PAWN sensitivity indices directly from data.
+
+        Uses the `pawn.estimate_pawn` utility.
+
+        Args:
+            S (int, optional): Number of slices/intervals for the PAWN estimation. Defaults to 10.
+
         Returns:
-        --------
-        pawn_results : dict
-            A dictionary containing the PAWN sensitivity indices for each feature.
+            dict: Dictionary containing the PAWN sensitivity indices for each feature.
         """
 
         num_features = self.X.shape[1] 

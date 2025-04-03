@@ -1,9 +1,9 @@
 site_name: ShapleyX Documentation
-site_url: https://frederickbennett.github.io/shapleyx/
-repo_url: https://github.com/frederickbennett/shapleyx
+site_url: https://frbennett.github.io/shapleyx/
+repo_url: https://github.com/frbennett/shapleyx
 
 theme:
-  name: material
+  name: readthedocs
   features:
     - navigation.tabs
     - navigation.indexes
@@ -31,10 +31,11 @@ plugins:
       handlers:
         python:
           options:
-            docstring_style: numpy
+            docstring_style: google
             show_root_heading: true
             show_source: true
             heading_level: 3
+            merge_init_into_class: true
 
 nav:
   - Home: index.md
@@ -59,3 +60,9 @@ markdown_extensions:
   - pymdownx.tabbed
   - pymdownx.snippets
   - attr_list
+  - pymdownx.arithmatex:
+      generic: true
+
+
+extra_javascript:
+  - https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML

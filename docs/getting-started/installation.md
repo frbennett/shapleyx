@@ -16,7 +16,7 @@ pip install shapleyx
 Or install from source:
 
 ```bash
-git clone https://github.com/frederickbennett/shapleyx.git
+git clone https://github.com/frbennett/shapleyx.git
 cd shapleyx
 pip install .
 ```

@@ -9,8 +9,17 @@ Shapley values originate from cooperative game theory and provide a principled w
 3. Provide unique attribution under certain axioms
 
 ## Mathematical Formulation
+For a model output \( Y = f(X_1, X_2, \dots, X_d)\) , the Shapley effect \(\phi_i\) for parameter \(X_i\) is:
 
-For a model output $Y = f(X_1, X_2, ..., X_d)$, the Shapley effect $\phi_i$ for parameter $X_i$ is:
+$$
+\phi_i = \sum_{S \subseteq D \setminus \{i\}} \frac{|S|!(d-|S|-1)!}{d!} \left[\text{Var}\big(E[Y|X_S \cup \{i\}]\big) - \text{Var}\big(E[Y|X_S]\big)\right]
+$$
+
+where:
+- \(D\) is the set of all parameters
+- \(S\) is a subset of parameters excluding \(i\)
+- \(X_S\) represents the parameters in subset \(S\)
+For a model output $$ Y = f(X_1, X_2, \ldots, X_d) $$, the Shapley effect $$\phi_i$$ for parameter $$X_i$$ is:
 
 $$
 \phi_i = \sum_{S \subseteq D \setminus \{i\}} \frac{|S|!(d-|S|-1)!}{d!} [\text{Var}(E[Y|X_S \cup \{i\}]) - \text{Var}(E[Y|X_S])]
