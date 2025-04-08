@@ -1,4 +1,6 @@
 import pandas as pd 
+from itertools import combinations
+import numpy as np
 
 class eval_indices():
 
@@ -150,5 +152,46 @@ class eval_indices():
         return self.non_zero_coefficients 
 
 
+def calculate_owen_interactions(p_set, sob_df, interaction_size=2):
+    """
+    Calculate Owen product function interactions with error propagation.
+    
+    Args:
+        p_set: List of variable names (e.g., ['X1', 'X2', ..., 'X6'])
+        sob_df: DataFrame containing 'derived_labels', 'index', and 'sd' columns
+        interaction_size: Size of interactions to calculate (default: 4)
+        
+    Returns:
+        DataFrame with columns: interaction, shapley_value, lower_ci, upper_ci, error
+    """
+    results = []
+    errors = False
+
+    if {'upper', 'lower'}.issubset(sob_df.columns):
+        errors = True
+        sob_df['error'] = (sob_df['upper']-sob_df['lower'])/2
+    
+    for interact in combinations(p_set, interaction_size):
+        interact = set(interact)
+        mask = sob_df['derived_labels'].apply(
+            lambda x: interact.issubset(set(x.split('_')))
+        )
+        
+        filtered = sob_df[mask]
+        n_values = filtered['derived_labels'].apply(lambda x: len(set(x.split('_'))) - len(interact) + 1)
+        
+        sum_val = (filtered['index'] / n_values).sum()
+        
+        results.append({
+            'interaction': interact,
+            'shapley_value': sum_val,
+        })
+        
+        if errors :
+            error = np.sqrt((filtered['error'] / n_values).pow(2).sum())
+            results[len(results)-1]['lower_ci'] = sum_val - error
+            results[len(results)-1]['upper_ci'] = sum_val + error
+    
+    return pd.DataFrame(results)
 
 

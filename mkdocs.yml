@@ -51,6 +51,7 @@ nav:
     - Common Tasks: how-to-guides/common-tasks.md
   - Reference:
     - API: reference/api.md
+    - ARD: reference/ard.md
   - Explanation:
     - Theory: explanation/theory.md
 

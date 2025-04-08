@@ -12,20 +12,22 @@ author: 'Frederick Bennett'
 import pandas as pd
 from scipy import stats 
 
-from .pyquotegen import quotes
+from shapleyx.pyquotegen import quotes
 import textwrap
 
-from .utilities import ( 
+from shapleyx.utilities import (
     legendre,
     predictor,
-    transformation,
-    regression, 
-    stats,
-    indicies,  
-    resampling, 
+    indicies,
+
     pawn,
 )
 
+from shapleyx.utilities.transformation import transformation
+from shapleyx.utilities.regression import regression
+from shapleyx.utilities.stats import stats as model_stats
+from shapleyx.utilities.stats import plot_hdmr
+from shapleyx.utilities.resampling import resampling as resample
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -187,7 +189,7 @@ class rshdmr():
             self.ranges (list): The ranges (min, max) of the original data features.
             self.X_T (pd.DataFrame): The transformed data matrix within the unit hypercube.
         """
-        transformed_data = transformation.transformation(self.X)
+        transformed_data = transformation(self.X)
         transformed_data.do_transform()
         self.ranges = transformed_data.get_ranges()
         self.X_T = transformed_data.get_X_T()
@@ -220,7 +222,7 @@ class rshdmr():
             self.coef_ (np.array): The regression coefficients obtained from the fit.
             self.y_pred (np.array): The predicted values based on the fitted model.
         """
-        regression_instance = regression.regression(
+        regression_instance = regression(
             X_T_L=self.X_T_L,
             Y=self.Y,
             method=self.method,
@@ -231,7 +233,7 @@ class rshdmr():
         )
         self.coef_, self.y_pred = regression_instance.run_regression()
 
-    def stats(self):
+    def run_stats(self):
         """Calculates and stores evaluation statistics for the fitted model.
 
         Uses the `stats.stats` utility.
@@ -239,9 +241,9 @@ class rshdmr():
         Updates the following attributes:
             self.evs (dict): A dictionary containing evaluation statistics (e.g., R^2, MSE).
         """
-        self.evs = stats.stats(self.Y, self.y_pred, self.coef_)
+        self.evs = model_stats(self.Y, self.y_pred, self.coef_)
 
-    def plot_hdmr(self):
+    def run_plot_hdmr(self):
         """
         Plots the High-Dimensional Model Representation (HDMR) of the model's predictions.
 
@@ -251,7 +253,7 @@ class rshdmr():
         Returns:
             None
         """
-        stats.plot_hdmr(self.Y, self.y_pred)
+        plot_hdmr(self.Y, self.y_pred)
  
 
 
@@ -344,9 +346,9 @@ class rshdmr():
 
         # Step 4: Calculate RS-HDMR model performance statistics
         print_step('RS-HDMR model performance statistics')
-        self.stats() 
+        self.run_stats() 
         print()
-        self.plot_hdmr()
+        self.run_plot_hdmr()
         
         # Step 5: Evaluate Sobol indices
         self.eval_all_indices()
@@ -361,7 +363,7 @@ class rshdmr():
         # Step 8: Perform resampling if enabled
         if self.resampling:
             print_step(f'Running bootstrap resampling {self.number_of_resamples} samples for {self.CI}% CI') 
-            do_resampling = resampling.resampling(self.get_pruned_data(), self.number_of_resamples, self.X.columns)
+            do_resampling = resample(self.get_pruned_data(), self.number_of_resamples, self.X.columns)
             do_resampling.do_resampling() 
             sobol_indices = do_resampling.get_sobol_quantiles(sobol_indices, self.CI)
             # Calculate quantiles for Shapley effects
@@ -469,6 +471,14 @@ class rshdmr():
         num_features = self.X.shape[1] 
         pawn_results = pawn.estimate_pawn(self.X.columns, num_features, self.X.values, self.Y, S=S)
         return pawn_results
+    
+    def get_interactions(self, order):
+        p_set = self.X.columns
+        sob_df = self.results
+        interactions = indicies.calculate_owen_interactions(p_set, sob_df, interaction_size=order)
+        return interactions
+    
+
 
 
     
