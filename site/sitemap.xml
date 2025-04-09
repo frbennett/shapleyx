@@ -2,34 +2,42 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://frbennett.github.io/shapleyx/</loc>
-         <lastmod>2025-04-03</lastmod>
+         <lastmod>2025-04-09</lastmod>
     </url>
     <url>
          <loc>https://frbennett.github.io/shapleyx/explanation/theory/</loc>
-         <lastmod>2025-04-03</lastmod>
+         <lastmod>2025-04-09</lastmod>
     </url>
     <url>
          <loc>https://frbennett.github.io/shapleyx/getting-started/deployment/</loc>
-         <lastmod>2025-04-03</lastmod>
+         <lastmod>2025-04-09</lastmod>
     </url>
     <url>
          <loc>https://frbennett.github.io/shapleyx/getting-started/installation/</loc>
-         <lastmod>2025-04-03</lastmod>
+         <lastmod>2025-04-09</lastmod>
     </url>
     <url>
          <loc>https://frbennett.github.io/shapleyx/getting-started/quickstart/</loc>
-         <lastmod>2025-04-03</lastmod>
+         <lastmod>2025-04-09</lastmod>
     </url>
     <url>
          <loc>https://frbennett.github.io/shapleyx/how-to-guides/common-tasks/</loc>
-         <lastmod>2025-04-03</lastmod>
+         <lastmod>2025-04-09</lastmod>
     </url>
     <url>
          <loc>https://frbennett.github.io/shapleyx/reference/api/</loc>
-         <lastmod>2025-04-03</lastmod>
+         <lastmod>2025-04-09</lastmod>
+    </url>
+    <url>
+         <loc>https://frbennett.github.io/shapleyx/reference/ard/</loc>
+         <lastmod>2025-04-09</lastmod>
     </url>
     <url>
          <loc>https://frbennett.github.io/shapleyx/tutorials/basic-usage/</loc>
-         <lastmod>2025-04-03</lastmod>
+         <lastmod>2025-04-09</lastmod>
+    </url>
+    <url>
+         <loc>https://frbennett.github.io/shapleyx/tutorials/owen_product_function/</loc>
+         <lastmod>2025-04-09</lastmod>
     </url>
 </urlset>

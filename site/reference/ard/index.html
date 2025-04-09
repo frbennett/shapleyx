@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/reference/ard/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>ARD - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "ARD";
+        var mkdocs_page_input_path = "reference\\ard.md";
+        var mkdocs_page_url = "/shapleyx/reference/ard/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../api/">API</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">ARD</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#shapleyx.utilities.ARD">ARD</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#shapleyx.utilities.ARD.RegressionARD">RegressionARD</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#shapleyx.utilities.ARD.RegressionARD.fit">fit</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#shapleyx.utilities.ARD.RegressionARD.predict_dist">predict_dist</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#shapleyx.utilities.ARD.update_precisions">update_precisions</a>
+        <ul>
+    <li class="toctree-l4"><a class="reference internal" href="#shapleyx.utilities.ARD.update_precisions--parameters">Parameters:</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#shapleyx.utilities.ARD.update_precisions--returns">Returns:</a>
+    </li>
+    <li class="toctree-l4"><a class="reference internal" href="#shapleyx.utilities.ARD.update_precisions--notes">Notes:</a>
+    </li>
+        </ul>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/theory/">Theory</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+      <li class="breadcrumb-item active">ARD</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/reference/ard.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="ard-reference">ARD Reference</h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h3 id="shapleyx.utilities.ARD" class="doc doc-heading">
+            <code>shapleyx.utilities.ARD</code>
+
+
+</h3>
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h4 id="shapleyx.utilities.ARD.RegressionARD" class="doc doc-heading">
+              <code class="highlight language-python"><span class="n">RegressionARD</span><span class="p">(</span><span class="n">n_iter</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">tol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">fit_intercept</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">copy_X</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">cv_tol</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="sklearn.base.RegressorMixin">RegressorMixin</span></code>, <code><span title="sklearn.linear_model._base.LinearModel">LinearModel</span></code></p>
+
+
+        <p>Regression with Automatic Relevance Determination (ARD) using Sparse Bayesian Learning.</p>
+<p>This class implements a fast version of ARD regression, which is a Bayesian approach
+to regression that automatically determines the relevance of each feature. It is based
+on the Sparse Bayesian Learning (SBL) algorithm, which promotes sparsity in the model
+by estimating the precision of the coefficients.</p>
+
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Parameters:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>n_iter</code></b>
+                  (<code><span title="int">int</span></code>, default:
+                      <code>300</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Maximum number of iterations for the optimization algorithm.
+Defaults to 300.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>tol</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.001</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Convergence threshold. If the absolute change in the precision
+parameter for the weights is below this threshold, the algorithm terminates.
+Defaults to 1e-3.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>fit_intercept</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Whether to calculate the intercept for this model.
+If set to False, no intercept will be used in calculations (e.g., data is expected
+to be already centered). Defaults to True.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>copy_X</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>True</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If True, X will be copied; else, it may be overwritten.
+Defaults to True.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>verbose</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If True, the algorithm will print progress messages during
+fitting. Defaults to False.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>cv_tol</code></b>
+                  (<code><span title="float">float</span></code>, default:
+                      <code>0.1</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>Tolerance for cross-validation. If the percentage change in
+cross-validation score is below this threshold, the algorithm terminates.
+Defaults to 0.1.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>cv</code></b>
+                  (<code><span title="bool">bool</span></code>, default:
+                      <code>False</code>
+)
+              –
+              <div class="doc-md-description">
+                <p>If True, cross-validation will be used to determine the optimal
+number of features. Defaults to False.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<table class="field-list">
+  <colgroup>
+    <col class="field-name" />
+    <col class="field-body" />
+  </colgroup>
+  <tbody valign="top">
+    <tr class="field">
+      <th class="field-name">Attributes:</th>
+      <td class="field-body">
+        <ul class="first simple">
+            <li>
+              <b><code>coef_</code></b>
+                  (<code><span title="array">array</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Coefficients of the regression model (mean of the posterior distribution).
+Shape (n_features,).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>alpha_</code></b>
+                  (<code><span title="float">float</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Estimated precision of the noise.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>active_</code></b>
+                  (<code><span title="array">array</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Boolean array indicating which features are active (non-zero coefficients).
+Shape (n_features,), dtype=bool.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>lambda_</code></b>
+                  (<code><span title="array">array</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Estimated precisions of the coefficients. Shape (n_features,).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>sigma_</code></b>
+                  (<code><span title="array">array</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>Estimated covariance matrix of the weights, computed only for non-zero
+coefficients. Shape (n_features, n_features).</p>
+              </div>
+            </li>
+            <li>
+              <b><code>scores_</code></b>
+                  (<code><span title="list">list</span></code>)
+              –
+              <div class="doc-md-description">
+                <p>List of cross-validation scores if <code>cv</code> is True.</p>
+              </div>
+            </li>
+        </ul>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<details class="references" open>
+  <summary>References</summary>
+  <p>[1] Tipping, M. E., &amp; Faul, A. C. (2003). Fast marginal likelihood maximisation for
+    sparse Bayesian models. In Proceedings of the Ninth International Workshop on
+    Artificial Intelligence and Statistics (pp. 276-283).</p>
+<p>[2] Tipping, M. E., &amp; Faul, A. C. (2001). Analysis of sparse Bayesian learning. In
+    Advances in Neural Information Processing Systems (pp. 383-389).</p>
+</details>
+
+<details class="note" open>
+  <summary>Note</summary>
+  <p>The RegressionARD class code has been adapted from the original implementation by Amazasp Shaumyan
+https://github.com/AmazaspShumik/sklearn-bayes</p>
+</details>
+
+
+
+
+
+
+                  <details class="quote">
+                    <summary>Source code in <code>shapleyx\utilities\ARD.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span> <span class="bp">self</span><span class="p">,</span> <span class="n">n_iter</span> <span class="o">=</span> <span class="mi">300</span><span class="p">,</span> <span class="n">tol</span> <span class="o">=</span> <span class="mf">1e-3</span><span class="p">,</span> <span class="n">fit_intercept</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> 
+              <span class="n">copy_X</span> <span class="o">=</span> <span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span> <span class="n">cv_tol</span> <span class="o">=</span> <span class="mf">0.1</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span>          <span class="o">=</span> <span class="n">n_iter</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tol</span>             <span class="o">=</span> <span class="n">tol</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">scores_</span>         <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">fit_intercept</span>   <span class="o">=</span> <span class="n">fit_intercept</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">copy_X</span>          <span class="o">=</span> <span class="n">copy_X</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span>         <span class="o">=</span> <span class="n">verbose</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cv</span>              <span class="o">=</span> <span class="n">cv</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cv_tol</span>          <span class="o">=</span> <span class="n">cv_tol</span>
+</code></pre></div></td></tr></table></div>
+                  </details>
+
+
+
+  <div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="shapleyx.utilities.ARD.RegressionARD.fit" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span></code>
+
+</h5>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Fit the ARD regression model to the data.</p>
+<h6 id="shapleyx.utilities.ARD.RegressionARD.fit--parameters">Parameters</h6>
+<p>X : {array-like, sparse matrix}, shape (n_samples, n_features)
+    Training data, matrix of explanatory variables.</p>
+
+
+<details class="y-" open>
+  <summary>array-like, shape (n_samples,)</summary>
+  <p>Target values.</p>
+</details>        <h6 id="shapleyx.utilities.ARD.RegressionARD.fit--returns">Returns</h6>
+<p>self : object
+    Returns the instance itself.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>shapleyx\utilities\ARD.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span></pre></div></td><td class="code"><div><pre><span></span><code>    <span class="k">def</span><span class="w"> </span><span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">y</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">        Fit the ARD regression model to the data.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        X : {array-like, sparse matrix}, shape (n_samples, n_features)</span>
+<span class="sd">            Training data, matrix of explanatory variables.</span>
+
+<span class="sd">        y : array-like, shape (n_samples,)</span>
+<span class="sd">            Target values.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        self : object</span>
+<span class="sd">            Returns the instance itself.</span>
+<span class="sd">        &#39;&#39;&#39;</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">check_X_y</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">,</span> <span class="n">y_numeric</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">X_mean</span><span class="p">,</span> <span class="n">y_mean</span><span class="p">,</span> <span class="n">X_std</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_center_data</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+        <span class="n">n_samples</span><span class="p">,</span> <span class="n">n_features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span>
+        <span class="n">cv_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">current_r</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="c1">#  precompute X&#39;*Y , X&#39;*X for faster iterations &amp; allocate memory for</span>
+        <span class="c1">#  sparsity &amp; quality vectors</span>
+        <span class="n">XY</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+        <span class="n">XX</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">XXd</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">XX</span><span class="p">)</span>
+
+        <span class="c1">#  initialise precision of noise &amp; and coefficients</span>
+        <span class="n">var_y</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="c1"># check that variance is non zero !!!</span>
+        <span class="k">if</span> <span class="n">var_y</span> <span class="o">==</span> <span class="mi">0</span> <span class="p">:</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="mf">1e-2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">beta</span> <span class="o">=</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+
+        <span class="n">A</span>      <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">PINF</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_features</span><span class="p">)</span>
+        <span class="n">active</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_features</span> <span class="p">,</span> <span class="n">dtype</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">)</span>
+
+        <span class="c1"># in case of almost perfect multicollinearity between some features</span>
+        <span class="c1"># start from feature 0</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">XXd</span> <span class="o">-</span> <span class="n">X_mean</span><span class="o">**</span><span class="mi">2</span> <span class="o">&lt;</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>       <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float16</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span>
+            <span class="n">active</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># start from a single basis vector with largest projection on targets</span>
+            <span class="n">proj</span>  <span class="o">=</span> <span class="n">XY</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">XXd</span>
+            <span class="n">start</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">proj</span><span class="p">)</span>
+            <span class="n">active</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">A</span><span class="p">[</span><span class="n">start</span><span class="p">]</span>      <span class="o">=</span> <span class="n">XXd</span><span class="p">[</span><span class="n">start</span><span class="p">]</span><span class="o">/</span><span class="p">(</span> <span class="n">proj</span><span class="p">[</span><span class="n">start</span><span class="p">]</span> <span class="o">-</span> <span class="n">var_y</span><span class="p">)</span>
+
+        <span class="n">warning_flag</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span><span class="p">):</span>
+            <span class="n">XXa</span>     <span class="o">=</span> <span class="n">XX</span><span class="p">[</span><span class="n">active</span><span class="p">,:][:,</span><span class="n">active</span><span class="p">]</span>
+            <span class="n">XYa</span>     <span class="o">=</span> <span class="n">XY</span><span class="p">[</span><span class="n">active</span><span class="p">]</span>
+            <span class="n">Aa</span>      <span class="o">=</span>  <span class="n">A</span><span class="p">[</span><span class="n">active</span><span class="p">]</span>
+
+            <span class="c1"># mean &amp; covariance of posterior distribution</span>
+            <span class="n">Mn</span><span class="p">,</span><span class="n">Ri</span><span class="p">,</span><span class="n">cholesky</span>  <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_posterior_dist</span><span class="p">(</span><span class="n">Aa</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">XXa</span><span class="p">,</span><span class="n">XYa</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">cholesky</span><span class="p">:</span>
+                <span class="n">Sdiag</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Ri</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">Sdiag</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">Ri</span><span class="p">))</span> 
+                <span class="n">warning_flag</span> <span class="o">+=</span> <span class="mi">1</span>
+
+            <span class="c1"># raise warning in case cholesky failes</span>
+            <span class="k">if</span> <span class="n">warning_flag</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">((</span><span class="s2">&quot;Cholesky decomposition failed ! Algorithm uses pinvh, &quot;</span>
+                               <span class="s2">&quot;which is significantly slower, if you use RVR it &quot;</span>
+                               <span class="s2">&quot;is advised to change parameters of kernel&quot;</span><span class="p">))</span>
+
+            <span class="c1"># compute quality &amp; sparsity parameters            </span>
+            <span class="n">s</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">Q</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sparsity_quality</span><span class="p">(</span><span class="n">XX</span><span class="p">,</span><span class="n">XXd</span><span class="p">,</span><span class="n">XY</span><span class="p">,</span><span class="n">XYa</span><span class="p">,</span><span class="n">Aa</span><span class="p">,</span><span class="n">Ri</span><span class="p">,</span><span class="n">active</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">cholesky</span><span class="p">)</span>
+
+            <span class="c1"># update precision parameter for noise distribution</span>
+            <span class="n">rss</span>     <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="p">(</span> <span class="n">y</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="n">active</span><span class="p">]</span> <span class="p">,</span> <span class="n">Mn</span><span class="p">)</span> <span class="p">)</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+            <span class="n">beta</span>    <span class="o">=</span> <span class="n">n_samples</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">active</span><span class="p">)</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">Aa</span> <span class="o">*</span> <span class="n">Sdiag</span> <span class="p">)</span>
+            <span class="n">beta</span>   <span class="o">/=</span> <span class="p">(</span> <span class="n">rss</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="p">)</span>
+
+            <span class="c1"># update precision parameters of coefficients</span>
+            <span class="n">A</span><span class="p">,</span><span class="n">converged</span>  <span class="o">=</span> <span class="n">update_precisions</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">active</span><span class="p">,</span><span class="bp">self</span><span class="o">.</span><span class="n">tol</span><span class="p">,</span>
+                                             <span class="n">n_samples</span><span class="p">,</span><span class="kc">False</span><span class="p">)</span>
+<span class="c1"># ***************************************            </span>
+            <span class="c1"># --- Cross-validation based early stopping (if enabled) ---</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span><span class="p">:</span>
+                <span class="c1"># Select active features for CV - use direct slicing for efficiency</span>
+                <span class="n">X_active_cv</span> <span class="o">=</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">active</span><span class="p">]</span>
+
+                <span class="c1"># Define and run cross-validation</span>
+                <span class="c1"># TODO: Consider making Ridge alpha and cv folds class attributes (e.g., self.ridge_alpha, self.cv_folds)</span>
+                <span class="n">cv_folds</span> <span class="o">=</span> <span class="mi">10</span>  <span class="c1"># Or ideally use a configurable parameter like self.cv_folds</span>
+                <span class="n">cv_model</span> <span class="o">=</span> <span class="n">linear_model</span><span class="o">.</span><span class="n">Ridge</span><span class="p">()</span> <span class="c1"># Consider specifying alpha or making it configurable</span>
+
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">cv_scores</span> <span class="o">=</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">cv_model</span><span class="p">,</span> <span class="n">X_active_cv</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">cv_folds</span><span class="p">)</span>
+                    <span class="n">mean_cv_score</span> <span class="o">=</span> <span class="n">cv_scores</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+                    <span class="c1"># Calculate percentage change in CV score, handling potential division by zero</span>
+                    <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">current_r</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">:</span> <span class="c1"># Check if previous score is non-zero</span>
+                        <span class="n">percentage_change</span> <span class="o">=</span> <span class="p">(</span><span class="n">mean_cv_score</span> <span class="o">-</span> <span class="n">current_r</span><span class="p">)</span> <span class="o">/</span> <span class="n">current_r</span> <span class="o">*</span> <span class="mf">100.0</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Handle case where previous score was zero (e.g., first iteration)</span>
+                        <span class="n">percentage_change</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">inf</span> <span class="k">if</span> <span class="n">mean_cv_score</span> <span class="o">&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span> <span class="k">else</span> <span class="mf">0.0</span>
+                        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iteration: </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">&lt;4</span><span class="si">}</span><span class="s2">  Previous CV score was zero, setting change to </span><span class="si">{</span><span class="n">percentage_change</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%.&quot;</span><span class="p">)</span>
+
+                    <span class="c1"># Check for CV convergence (early stopping based on CV score improvement)</span>
+                    <span class="c1"># This provides an *additional* condition to the main ARD convergence</span>
+                    <span class="n">cv_based_convergence</span> <span class="o">=</span> <span class="n">percentage_change</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv_tol</span>
+                    <span class="k">if</span> <span class="n">cv_based_convergence</span><span class="p">:</span>
+                        <span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span> <span class="c1"># Trigger early stopping if CV improvement is below tolerance</span>
+
+                    <span class="c1"># Update history and print CV status</span>
+                    <span class="n">current_r</span> <span class="o">=</span> <span class="n">mean_cv_score</span>
+                    <span class="n">cv_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">mean_cv_score</span><span class="p">)</span> <span class="c1"># Assuming cv_list is used elsewhere</span>
+
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iteration: </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">&lt;4</span><span class="si">}</span><span class="s2">  Mean CV Score: </span><span class="si">{</span><span class="n">mean_cv_score</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, Percentage Change: </span><span class="si">{</span><span class="n">percentage_change</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2">%&quot;</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">cv_based_convergence</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iteration: </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s2">&lt;4</span><span class="si">}</span><span class="s2">  Convergence detected based on CV tolerance (</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">cv_tol</span><span class="si">}</span><span class="s2">%).&quot;</span><span class="p">)</span>
+
+                <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                    <span class="c1"># Handle potential errors during cross_val_score (e.g., if X_active_cv becomes empty)</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Iteration </span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">: Cross-validation failed with error: </span><span class="si">{</span><span class="n">e</span><span class="si">}</span><span class="s2">. Skipping CV check for this iteration.&quot;</span><span class="p">)</span>
+                    <span class="c1"># Decide how to proceed: continue without CV check? Stop?</span>
+                    <span class="c1"># Here, we&#39;ll just skip the CV check for this iteration.</span>
+                    <span class="k">pass</span> <span class="c1"># Or add more specific handling</span>
+
+            <span class="c1"># --- Verbose output for main iteration progress ---</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                <span class="c1"># Use f-string for consistency and clarity</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Iteration: </span><span class="si">{</span><span class="n">i</span><span class="si">:</span><span class="s1">&lt;5</span><span class="si">}</span><span class="s1">, number of features remaining: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">active</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+
+            <span class="c1"># --- Check for final convergence or max iterations reached ---</span>
+            <span class="k">if</span> <span class="n">converged</span> <span class="ow">or</span> <span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Finished ARD iterations at iteration </span><span class="si">{</span><span class="n">i</span><span class="o">+</span><span class="mi">1</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span> <span class="c1"># Use i+1 for 1-based iteration count in message</span>
+                <span class="k">if</span> <span class="n">converged</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="c1"># Indicate if convergence was due to CV if that flag was set</span>
+                    <span class="n">reason</span> <span class="o">=</span> <span class="s2">&quot;(CV tolerance)&quot;</span> <span class="k">if</span> <span class="s1">&#39;cv_based_convergence&#39;</span> <span class="ow">in</span> <span class="nb">locals</span><span class="p">()</span> <span class="ow">and</span> <span class="n">cv_based_convergence</span> <span class="k">else</span> <span class="s2">&quot;(ARD criteria)&quot;</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Algorithm converged </span><span class="si">{</span><span class="n">reason</span><span class="si">}</span><span class="s1">.&#39;</span><span class="p">)</span>
+                <span class="k">elif</span> <span class="n">i</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">n_iter</span> <span class="o">-</span> <span class="mi">1</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">verbose</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Reached maximum number of iterations without full convergence.&#39;</span><span class="p">)</span>
+                <span class="k">break</span> <span class="c1"># Exit the main loop</span>
+
+
+        <span class="c1"># after last update of alpha &amp; beta update parameters</span>
+        <span class="c1"># of posterior distribution</span>
+        <span class="n">XXa</span><span class="p">,</span><span class="n">XYa</span><span class="p">,</span><span class="n">Aa</span>         <span class="o">=</span> <span class="n">XX</span><span class="p">[</span><span class="n">active</span><span class="p">,:][:,</span><span class="n">active</span><span class="p">],</span><span class="n">XY</span><span class="p">[</span><span class="n">active</span><span class="p">],</span><span class="n">A</span><span class="p">[</span><span class="n">active</span><span class="p">]</span>
+        <span class="n">Mn</span><span class="p">,</span> <span class="n">Sn</span><span class="p">,</span> <span class="n">cholesky</span>   <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_posterior_dist</span><span class="p">(</span><span class="n">Aa</span><span class="p">,</span><span class="n">beta</span><span class="p">,</span><span class="n">XXa</span><span class="p">,</span><span class="n">XYa</span><span class="p">,</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span>         <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_features</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">coef_</span><span class="p">[</span><span class="n">active</span><span class="p">]</span> <span class="o">=</span> <span class="n">Mn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sigma_</span>        <span class="o">=</span> <span class="n">Sn</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">active_</span>       <span class="o">=</span> <span class="n">active</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">lambda_</span>       <span class="o">=</span> <span class="n">A</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">alpha_</span>        <span class="o">=</span> <span class="n">beta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_intercept</span><span class="p">(</span><span class="n">X_mean</span><span class="p">,</span><span class="n">y_mean</span><span class="p">,</span><span class="n">X_std</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">cv</span> <span class="p">:</span>
+            <span class="nb">print</span><span class="p">((</span><span class="s1">&#39;Number of features &#39;</span>
+                       <span class="s1">&#39;in the model: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">active</span><span class="p">)))</span>    
+        <span class="k">return</span> <span class="bp">self</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h5 id="shapleyx.utilities.ARD.RegressionARD.predict_dist" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">predict_dist</span><span class="p">(</span><span class="n">X</span><span class="p">)</span></code>
+
+</h5>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Computes predictive distribution for test set.
+Predictive distribution for each data point is one dimensional
+Gaussian and therefore is characterised by mean and variance.</p>
+<h6 id="shapleyx.utilities.ARD.RegressionARD.predict_dist--parameters">Parameters</h6>
+<p>X : {array-like, sparse matrix}, shape (n_samples_test, n_features)
+    Test data, matrix of explanatory variables.</p>
+<h6 id="shapleyx.utilities.ARD.RegressionARD.predict_dist--returns">Returns</h6>
+<p>y_hat : array, shape (n_samples_test,)
+    Estimated values of targets on the test set (mean of the predictive distribution).</p>
+
+
+<details class="var_hat-" open>
+  <summary>array, shape (n_samples_test,)</summary>
+  <p>Variance of the predictive distribution.</p>
+</details>
+
+            <details class="quote">
+              <summary>Source code in <code>shapleyx\utilities\ARD.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">396</span>
+<span class="normal">397</span>
+<span class="normal">398</span>
+<span class="normal">399</span>
+<span class="normal">400</span>
+<span class="normal">401</span>
+<span class="normal">402</span>
+<span class="normal">403</span>
+<span class="normal">404</span>
+<span class="normal">405</span>
+<span class="normal">406</span>
+<span class="normal">407</span>
+<span class="normal">408</span>
+<span class="normal">409</span>
+<span class="normal">410</span>
+<span class="normal">411</span>
+<span class="normal">412</span>
+<span class="normal">413</span>
+<span class="normal">414</span>
+<span class="normal">415</span>
+<span class="normal">416</span>
+<span class="normal">417</span>
+<span class="normal">418</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">predict_dist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">X</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Computes predictive distribution for test set.</span>
+<span class="sd">    Predictive distribution for each data point is one dimensional</span>
+<span class="sd">    Gaussian and therefore is characterised by mean and variance.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    X : {array-like, sparse matrix}, shape (n_samples_test, n_features)</span>
+<span class="sd">        Test data, matrix of explanatory variables.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    y_hat : array, shape (n_samples_test,)</span>
+<span class="sd">        Estimated values of targets on the test set (mean of the predictive distribution).</span>
+
+<span class="sd">    var_hat : array, shape (n_samples_test,)</span>
+<span class="sd">        Variance of the predictive distribution.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">y_hat</span>     <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_decision_function</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+    <span class="n">var_hat</span>   <span class="o">=</span> <span class="mf">1.</span><span class="o">/</span><span class="bp">self</span><span class="o">.</span><span class="n">alpha_</span>
+    <span class="n">var_hat</span>  <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">X</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">active_</span><span class="p">],</span><span class="bp">self</span><span class="o">.</span><span class="n">sigma_</span><span class="p">)</span> <span class="o">*</span> <span class="n">X</span><span class="p">[:,</span><span class="bp">self</span><span class="o">.</span><span class="n">active_</span><span class="p">],</span> <span class="n">axis</span> <span class="o">=</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">y_hat</span><span class="p">,</span> <span class="n">var_hat</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="shapleyx.utilities.ARD.update_precisions" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">update_precisions</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">s</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">active</span><span class="p">,</span> <span class="n">tol</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">clf_bias</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Updates the precision parameters (alpha) for features in a sparse Bayesian learning model
+by selecting a feature to add, recompute, or delete based on its impact on the log marginal
+likelihood. The function also checks for convergence.</p>
+<h6 id="shapleyx.utilities.ARD.update_precisions--parameters">Parameters:</h6>
+<p>Q : numpy.ndarray
+    Quality parameters for all features.
+S : numpy.ndarray
+    Sparsity parameters for all features.
+q : numpy.ndarray
+    Quality parameters for features currently in the model.
+s : numpy.ndarray
+    Sparsity parameters for features currently in the model.
+A : numpy.ndarray
+    Precision parameters (alpha) for all features.
+active : numpy.ndarray (bool)
+    Boolean array indicating whether each feature is currently in the model.
+tol : float
+    Tolerance threshold for determining convergence based on changes in precision.
+n_samples : int
+    Number of samples in the dataset, used to normalize the change in log marginal likelihood.
+clf_bias : bool
+    Flag indicating whether the model includes a bias term (used in classification tasks).</p>
+<h6 id="shapleyx.utilities.ARD.update_precisions--returns">Returns:</h6>
+<p>list
+    A list containing two elements:
+    - Updated precision parameters (A) for all features.
+    - A boolean flag indicating whether the model has converged.</p>
+<h6 id="shapleyx.utilities.ARD.update_precisions--notes">Notes:</h6>
+<p>The function performs the following steps:
+1. Computes the change in log marginal likelihood for adding, recomputing, or deleting features.
+2. Identifies the feature that causes the largest change in likelihood.
+3. Updates the precision parameter (alpha) for the selected feature.
+4. Checks for convergence based on whether no features are added/deleted and changes in precision
+   are below the specified tolerance.
+5. Returns the updated precision parameters and convergence status.</p>
+<p>Convergence is determined by two conditions:
+- No features are added or deleted.
+- The change in precision for features already in the model is below the tolerance threshold.</p>
+<p>The function ensures that the bias term is not removed in classification tasks.</p>
+
+
+            <details class="quote">
+              <summary>Source code in <code>shapleyx\utilities\ARD.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">423</span>
+<span class="normal">424</span>
+<span class="normal">425</span>
+<span class="normal">426</span>
+<span class="normal">427</span>
+<span class="normal">428</span>
+<span class="normal">429</span>
+<span class="normal">430</span>
+<span class="normal">431</span>
+<span class="normal">432</span>
+<span class="normal">433</span>
+<span class="normal">434</span>
+<span class="normal">435</span>
+<span class="normal">436</span>
+<span class="normal">437</span>
+<span class="normal">438</span>
+<span class="normal">439</span>
+<span class="normal">440</span>
+<span class="normal">441</span>
+<span class="normal">442</span>
+<span class="normal">443</span>
+<span class="normal">444</span>
+<span class="normal">445</span>
+<span class="normal">446</span>
+<span class="normal">447</span>
+<span class="normal">448</span>
+<span class="normal">449</span>
+<span class="normal">450</span>
+<span class="normal">451</span>
+<span class="normal">452</span>
+<span class="normal">453</span>
+<span class="normal">454</span>
+<span class="normal">455</span>
+<span class="normal">456</span>
+<span class="normal">457</span>
+<span class="normal">458</span>
+<span class="normal">459</span>
+<span class="normal">460</span>
+<span class="normal">461</span>
+<span class="normal">462</span>
+<span class="normal">463</span>
+<span class="normal">464</span>
+<span class="normal">465</span>
+<span class="normal">466</span>
+<span class="normal">467</span>
+<span class="normal">468</span>
+<span class="normal">469</span>
+<span class="normal">470</span>
+<span class="normal">471</span>
+<span class="normal">472</span>
+<span class="normal">473</span>
+<span class="normal">474</span>
+<span class="normal">475</span>
+<span class="normal">476</span>
+<span class="normal">477</span>
+<span class="normal">478</span>
+<span class="normal">479</span>
+<span class="normal">480</span>
+<span class="normal">481</span>
+<span class="normal">482</span>
+<span class="normal">483</span>
+<span class="normal">484</span>
+<span class="normal">485</span>
+<span class="normal">486</span>
+<span class="normal">487</span>
+<span class="normal">488</span>
+<span class="normal">489</span>
+<span class="normal">490</span>
+<span class="normal">491</span>
+<span class="normal">492</span>
+<span class="normal">493</span>
+<span class="normal">494</span>
+<span class="normal">495</span>
+<span class="normal">496</span>
+<span class="normal">497</span>
+<span class="normal">498</span>
+<span class="normal">499</span>
+<span class="normal">500</span>
+<span class="normal">501</span>
+<span class="normal">502</span>
+<span class="normal">503</span>
+<span class="normal">504</span>
+<span class="normal">505</span>
+<span class="normal">506</span>
+<span class="normal">507</span>
+<span class="normal">508</span>
+<span class="normal">509</span>
+<span class="normal">510</span>
+<span class="normal">511</span>
+<span class="normal">512</span>
+<span class="normal">513</span>
+<span class="normal">514</span>
+<span class="normal">515</span>
+<span class="normal">516</span>
+<span class="normal">517</span>
+<span class="normal">518</span>
+<span class="normal">519</span>
+<span class="normal">520</span>
+<span class="normal">521</span>
+<span class="normal">522</span>
+<span class="normal">523</span>
+<span class="normal">524</span>
+<span class="normal">525</span>
+<span class="normal">526</span>
+<span class="normal">527</span>
+<span class="normal">528</span>
+<span class="normal">529</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">update_precisions</span><span class="p">(</span><span class="n">Q</span><span class="p">,</span><span class="n">S</span><span class="p">,</span><span class="n">q</span><span class="p">,</span><span class="n">s</span><span class="p">,</span><span class="n">A</span><span class="p">,</span><span class="n">active</span><span class="p">,</span><span class="n">tol</span><span class="p">,</span><span class="n">n_samples</span><span class="p">,</span><span class="n">clf_bias</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;</span>
+<span class="sd">    Updates the precision parameters (alpha) for features in a sparse Bayesian learning model</span>
+<span class="sd">    by selecting a feature to add, recompute, or delete based on its impact on the log marginal</span>
+<span class="sd">    likelihood. The function also checks for convergence.</span>
+
+<span class="sd">    Parameters:</span>
+<span class="sd">    -----------</span>
+<span class="sd">    Q : numpy.ndarray</span>
+<span class="sd">        Quality parameters for all features.</span>
+<span class="sd">    S : numpy.ndarray</span>
+<span class="sd">        Sparsity parameters for all features.</span>
+<span class="sd">    q : numpy.ndarray</span>
+<span class="sd">        Quality parameters for features currently in the model.</span>
+<span class="sd">    s : numpy.ndarray</span>
+<span class="sd">        Sparsity parameters for features currently in the model.</span>
+<span class="sd">    A : numpy.ndarray</span>
+<span class="sd">        Precision parameters (alpha) for all features.</span>
+<span class="sd">    active : numpy.ndarray (bool)</span>
+<span class="sd">        Boolean array indicating whether each feature is currently in the model.</span>
+<span class="sd">    tol : float</span>
+<span class="sd">        Tolerance threshold for determining convergence based on changes in precision.</span>
+<span class="sd">    n_samples : int</span>
+<span class="sd">        Number of samples in the dataset, used to normalize the change in log marginal likelihood.</span>
+<span class="sd">    clf_bias : bool</span>
+<span class="sd">        Flag indicating whether the model includes a bias term (used in classification tasks).</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">    --------</span>
+<span class="sd">    list</span>
+<span class="sd">        A list containing two elements:</span>
+<span class="sd">        - Updated precision parameters (A) for all features.</span>
+<span class="sd">        - A boolean flag indicating whether the model has converged.</span>
+
+<span class="sd">    Notes:</span>
+<span class="sd">    ------</span>
+<span class="sd">    The function performs the following steps:</span>
+<span class="sd">    1. Computes the change in log marginal likelihood for adding, recomputing, or deleting features.</span>
+<span class="sd">    2. Identifies the feature that causes the largest change in likelihood.</span>
+<span class="sd">    3. Updates the precision parameter (alpha) for the selected feature.</span>
+<span class="sd">    4. Checks for convergence based on whether no features are added/deleted and changes in precision</span>
+<span class="sd">       are below the specified tolerance.</span>
+<span class="sd">    5. Returns the updated precision parameters and convergence status.</span>
+
+<span class="sd">    Convergence is determined by two conditions:</span>
+<span class="sd">    - No features are added or deleted.</span>
+<span class="sd">    - The change in precision for features already in the model is below the tolerance threshold.</span>
+
+<span class="sd">    The function ensures that the bias term is not removed in classification tasks.</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="c1"># initialise vector holding changes in log marginal likelihood</span>
+    <span class="n">deltaL</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">Q</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="c1"># identify features that can be added , recomputed and deleted in model</span>
+    <span class="n">theta</span>        <span class="o">=</span>  <span class="n">q</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">s</span> 
+    <span class="n">add</span>          <span class="o">=</span>  <span class="p">(</span><span class="n">theta</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">active</span> <span class="o">==</span> <span class="kc">False</span><span class="p">)</span>
+    <span class="n">recompute</span>    <span class="o">=</span>  <span class="p">(</span><span class="n">theta</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">active</span> <span class="o">==</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="n">delete</span>       <span class="o">=</span> <span class="o">~</span><span class="p">(</span><span class="n">add</span> <span class="o">+</span> <span class="n">recompute</span><span class="p">)</span>
+
+    <span class="c1"># compute sparsity &amp; quality parameters corresponding to features in </span>
+    <span class="c1"># three groups identified above</span>
+    <span class="n">Qadd</span><span class="p">,</span><span class="n">Sadd</span>      <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="n">add</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">add</span><span class="p">]</span>
+    <span class="n">Qrec</span><span class="p">,</span><span class="n">Srec</span><span class="p">,</span><span class="n">Arec</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="n">recompute</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">recompute</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="n">recompute</span><span class="p">]</span>
+    <span class="n">Qdel</span><span class="p">,</span><span class="n">Sdel</span><span class="p">,</span><span class="n">Adel</span> <span class="o">=</span> <span class="n">Q</span><span class="p">[</span><span class="n">delete</span><span class="p">],</span> <span class="n">S</span><span class="p">[</span><span class="n">delete</span><span class="p">],</span> <span class="n">A</span><span class="p">[</span><span class="n">delete</span><span class="p">]</span>
+
+    <span class="c1"># compute new alpha&#39;s (precision parameters) for features that are </span>
+    <span class="c1"># currently in model and will be recomputed</span>
+    <span class="n">Anew</span>           <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">recompute</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span><span class="o">/</span> <span class="p">(</span> <span class="n">theta</span><span class="p">[</span><span class="n">recompute</span><span class="p">]</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">finfo</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span>
+    <span class="n">delta_alpha</span>    <span class="o">=</span> <span class="p">(</span><span class="mf">1.</span><span class="o">/</span><span class="n">Anew</span> <span class="o">-</span> <span class="mf">1.</span><span class="o">/</span><span class="n">Arec</span><span class="p">)</span>
+
+    <span class="c1"># compute change in log marginal likelihood </span>
+    <span class="n">deltaL</span><span class="p">[</span><span class="n">add</span><span class="p">]</span>       <span class="o">=</span> <span class="p">(</span> <span class="n">Qadd</span><span class="o">**</span><span class="mi">2</span> <span class="o">-</span> <span class="n">Sadd</span> <span class="p">)</span> <span class="o">/</span> <span class="n">Sadd</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">Sadd</span><span class="o">/</span><span class="n">Qadd</span><span class="o">**</span><span class="mi">2</span> <span class="p">)</span>
+    <span class="n">deltaL</span><span class="p">[</span><span class="n">recompute</span><span class="p">]</span> <span class="o">=</span> <span class="n">Qrec</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">Srec</span> <span class="o">+</span> <span class="mf">1.</span> <span class="o">/</span> <span class="n">delta_alpha</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">+</span> <span class="n">Srec</span><span class="o">*</span><span class="n">delta_alpha</span><span class="p">)</span>
+    <span class="n">deltaL</span><span class="p">[</span><span class="n">delete</span><span class="p">]</span>    <span class="o">=</span> <span class="n">Qdel</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">Sdel</span> <span class="o">-</span> <span class="n">Adel</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="mi">1</span> <span class="o">-</span> <span class="n">Sdel</span> <span class="o">/</span> <span class="n">Adel</span><span class="p">)</span>
+    <span class="n">deltaL</span>            <span class="o">=</span> <span class="n">deltaL</span>  <span class="o">/</span> <span class="n">n_samples</span>
+
+    <span class="c1"># find feature which caused largest change in likelihood</span>
+    <span class="n">feature_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">deltaL</span><span class="p">)</span>
+
+    <span class="c1"># no deletions or additions</span>
+    <span class="n">same_features</span>  <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="n">theta</span><span class="p">[</span><span class="o">~</span><span class="n">recompute</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+
+    <span class="c1"># changes in precision for features already in model is below threshold</span>
+    <span class="n">no_delta</span>       <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span> <span class="nb">abs</span><span class="p">(</span> <span class="n">Anew</span> <span class="o">-</span> <span class="n">Arec</span> <span class="p">)</span> <span class="o">&gt;</span> <span class="n">tol</span> <span class="p">)</span> <span class="o">==</span> <span class="mi">0</span>
+
+    <span class="c1"># check convergence: if no features to add or delete and small change in </span>
+    <span class="c1">#                    precision for current features then terminate</span>
+    <span class="n">converged</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="n">same_features</span> <span class="ow">and</span> <span class="n">no_delta</span><span class="p">:</span>
+        <span class="n">converged</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span><span class="n">converged</span><span class="p">]</span>
+
+    <span class="c1"># if not converged update precision parameter of weights and return</span>
+    <span class="k">if</span> <span class="n">theta</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span><span class="o">**</span><span class="mi">2</span> <span class="o">/</span> <span class="n">theta</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">active</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">==</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="n">active</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># at least two active features</span>
+        <span class="k">if</span> <span class="n">active</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">==</span> <span class="kc">True</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">active</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="c1"># do not remove bias term in classification </span>
+            <span class="c1"># (in regression it is factored in through centering)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">feature_index</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">clf_bias</span><span class="p">):</span>
+               <span class="n">active</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">False</span>
+               <span class="n">A</span><span class="p">[</span><span class="n">feature_index</span><span class="p">]</span>      <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">PINF</span>
+
+    <span class="k">return</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span><span class="n">converged</span><span class="p">]</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../api/" class="btn btn-neutral float-left" title="API"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../explanation/theory/" class="btn btn-neutral float-right" title="Theory">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../api/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../explanation/theory/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

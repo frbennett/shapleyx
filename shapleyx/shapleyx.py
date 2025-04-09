@@ -1,8 +1,9 @@
 """
 *******************************************************************************
 Global sensitivity analysis using a Sparse Random Sampling - High Dimensional 
-Model Representation (HDMR) using the Group Method of Data Handling (GMDH) for 
-parameter selection and linear regression for parameter refinement
+Model Representation (HDMR) using the Relevance Vector Machine (RVM) or 
+Orthogonal Matching Pursuit (OMP) for parameter selection and linear regression 
+for parameter refinement
 *******************************************************************************
 
 author: 'Frederick Bennett'
@@ -44,14 +45,14 @@ def print_heading(text):
     
 
 class rshdmr():
-    """Global Sensitivity Analysis using RS-HDMR with GMDH and linear regression.
+    """Global Sensitivity Analysis using RS-HDMR with RVM or OMP and linear regression.
     **Examples:**
 
     This class implements a global sensitivity analysis framework combining:
 
     - Sparse Random Sampling (SRS)
     - High Dimensional Model Representation (HDMR)
-    - Group Method of Data Handling (GMDH) for parameter selection
+    - RVM (Relevance Vector Machine) or OMP (Orthogonal Matching Pursuit) for parameter selection
     - Linear regression for parameter refinement
 
     Args:
@@ -366,6 +367,7 @@ class rshdmr():
             do_resampling = resample(self.get_pruned_data(), self.number_of_resamples, self.X.columns)
             do_resampling.do_resampling() 
             sobol_indices = do_resampling.get_sobol_quantiles(sobol_indices, self.CI)
+            self.sobol_indices = sobol_indices.copy()
             # Calculate quantiles for Shapley effects
             shapley_effects = do_resampling.get_shap_quantiles(shapley_effects, self.CI) 
             print_step('Completed bootstrap resampling')
@@ -474,7 +476,7 @@ class rshdmr():
     
     def get_interactions(self, order):
         p_set = self.X.columns
-        sob_df = self.results
+        sob_df = self.sobol_indices.copy()
         interactions = indicies.calculate_owen_interactions(p_set, sob_df, interaction_size=order)
         return interactions
     
