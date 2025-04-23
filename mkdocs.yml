@@ -54,6 +54,7 @@ nav:
     - ARD: reference/ard.md
   - Explanation:
     - Theory: explanation/theory.md
+    - ARD Theory : explanation/ard_theory.md
 
 markdown_extensions:
   - admonition

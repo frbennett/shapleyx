@@ -113,14 +113,15 @@ class RegressionARD(RegressorMixin, LinearModel):
         n_samples, n_features = X.shape
         cv_list = []
         cv_score_history = [] 
-        current_r = 0
+        
+
 
         #  precompute X'*Y , X'*X for faster iterations & allocate memory for
         #  sparsity & quality vectors
         XY     = np.dot(X.T,y)
         XX     = np.dot(X.T,X)
         XXd    = np.diag(XX)
-
+        YY= diagonalise XX
         #  initialise precision of noise & and coefficients
         var_y  = np.var(y)
         
@@ -245,6 +246,7 @@ class RegressionARD(RegressorMixin, LinearModel):
                 final_status = f"Finished at Iteration: {i}, Active Features: {num_active_features}."
                 if converged:
                     log_level = logging.INFO # Normal convergence
+    
                     final_status += " Algorithm converged."
                     # The original code printed "Algorithm converged !" only if verbose.
                     # Logging INFO level covers this sufficiently. Add DEBUG if more detail needed.
@@ -277,6 +279,7 @@ class RegressionARD(RegressorMixin, LinearModel):
             print(('Iteration: {0}, number of features '
                        'in the model: {1}').format(i,np.sum(active))) 
         return self
+    
         
         
     def _posterior_dist(self,A,beta,XX,XY,full_covar=False):
