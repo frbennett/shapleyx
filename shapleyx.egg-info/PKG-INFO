@@ -1,4 +1,4 @@
-Metadata-Version: 2.1
+Metadata-Version: 2.4
 Name: shapleyx
 Version: 0.2
 Summary: Python implementation RS-HDMR
@@ -20,9 +20,34 @@ Classifier: Topic :: Scientific/Engineering :: Mathematics
 Classifier: Operating System :: OS Independent
 Requires-Python: >=3.7
 Description-Content-Type: text/markdown
-Provides-Extra: dev
-Provides-Extra: docs
 License-File: LICENSE
+Requires-Dist: numpy
+Requires-Dist: pandas
+Requires-Dist: matplotlib
+Requires-Dist: scipy
+Provides-Extra: dev
+Requires-Dist: pytest>=6.0; extra == "dev"
+Requires-Dist: pytest-cov>=2.0; extra == "dev"
+Requires-Dist: mypy>=0.910; extra == "dev"
+Requires-Dist: flake8>=3.9; extra == "dev"
+Requires-Dist: jupyter>=1.0; extra == "dev"
+Requires-Dist: ipython>=7.0; extra == "dev"
+Provides-Extra: docs
+Requires-Dist: mkdocs>=1.2; extra == "docs"
+Requires-Dist: mkdocs-material>=7.0; extra == "docs"
+Dynamic: author
+Dynamic: author-email
+Dynamic: classifier
+Dynamic: description
+Dynamic: description-content-type
+Dynamic: keywords
+Dynamic: license
+Dynamic: license-file
+Dynamic: project-url
+Dynamic: provides-extra
+Dynamic: requires-dist
+Dynamic: requires-python
+Dynamic: summary
 
 # ShapleyX - Global Sensitivity Analysis with RS-HDMR
 

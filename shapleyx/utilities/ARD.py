@@ -129,7 +129,7 @@ class RegressionARD(RegressorMixin, LinearModel):
         else:
             beta = 1. / np.var(y)
         
-        A      = np.PINF * np.ones(n_features)
+        A      = np.inf * np.ones(n_features)
         active = np.zeros(n_features , dtype = bool)
         
         # in case of almost perfect multicollinearity between some features
@@ -384,10 +384,10 @@ class RegressionARD(RegressorMixin, LinearModel):
             S      = bxx - beta**2 * np.sum(XS*XXa,1)
             Q      = bxy - beta**2 * np.dot(XS,XYa)
         # Use following:
-        # (EQ 1) q = A*Q/(A - S) ; s = A*S/(A-S), so if A = np.PINF q = Q, s = S
+        # (EQ 1) q = A*Q/(A - S) ; s = A*S/(A-S), so if A = np.inf q = Q, s = S
         qi         = np.copy(Q)
         si         = np.copy(S) 
-        #  If A is not np.PINF, then it should be 'active' feature => use (EQ 1)
+        #  If A is not np.inf, then it should be 'active' feature => use (EQ 1)
         Qa,Sa      = Q[active], S[active]
         qi[active] = Aa * Qa / (Aa - Sa )
         si[active] = Aa * Sa / (Aa - Sa )
@@ -524,6 +524,6 @@ def update_precisions(Q,S,q,s,A,active,tol,n_samples,clf_bias):
             # (in regression it is factored in through centering)
             if not (feature_index == 0 and clf_bias):
                active[feature_index] = False
-               A[feature_index]      = np.PINF
+               A[feature_index]      = np.inf
                 
     return [A,converged]
