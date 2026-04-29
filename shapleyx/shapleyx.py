@@ -10,6 +10,7 @@ author: 'Frederick Bennett'
 
 """
 
+import numpy as np
 import pandas as pd
 from scipy import stats 
 
@@ -22,6 +23,12 @@ from shapleyx.utilities import (
     indicies,
 
     pawn,
+)
+from shapleyx.utilities.mc_shapley import (
+    GaussianCopulaUniform,
+    MultivariateNormal,
+    MCShapley,
+    _wrap_predict_fn,
 )
 
 from shapleyx.utilities.transformation import transformation
@@ -138,7 +145,8 @@ class rshdmr():
                  resampling = True,
                  CI=95.0,
                  number_of_resamples=1000,
-                 cv_tol = 0.05):
+                 cv_tol = 0.05,
+                 cv_method = 'ridge'):
 
         self.read_data(data_file)
         self.n_jobs = n_jobs
@@ -156,6 +164,7 @@ class rshdmr():
         self.CI = CI
         self.number_of_resamples = number_of_resamples
         self.cv_tol = cv_tol 
+        self.cv_method = cv_method 
         
     def read_data(self, data_file):
         """Reads data from a file or DataFrame.
@@ -230,7 +239,8 @@ class rshdmr():
             n_iter=self.n_iter,
             verbose=self.verbose,
             cv_tol=self.cv_tol,
-            starting_iter=self.starting_iter
+            starting_iter=self.starting_iter,
+            cv_method=self.cv_method 
         )
         self.coef_, self.y_pred = regression_instance.run_regression()
 
@@ -479,9 +489,113 @@ class rshdmr():
         sob_df = self.sobol_indices.copy()
         interactions = indicies.calculate_owen_interactions(p_set, sob_df, interaction_size=order)
         return interactions
-    
+
+    def get_mc_shapley(self, joint=None, corr=None, N=10000,
+                       method='exhaustive', n_perm=1000,
+                       B=0, alpha=0.05, random_state=None,
+                       f=None):
+        """Compute Shapley effects via Monte Carlo with correlated inputs.
+
+        Uses a Monte Carlo approach to estimate Shapley effects when
+        input variables may be correlated. The model function can be
+        the trained surrogate model (default) or an arbitrary user-defined
+        function.
+
+        Two computation methods are available:
+        - ``'exhaustive'``: Enumerates all 2^d - 1 non-empty subsets.
+          Exact but computationally expensive for large d.
+        - ``'permutation'``: Uses random permutations with lazy caching.
+          More scalable for higher dimensions.
+
+        Bootstrap confidence intervals are available for both methods.
+
+        Args:
+            joint: Distribution object with ``sample_joint(n)`` and
+                ``sample_conditional(u_indices, fixed_x)`` methods.
+                If ``None``, a :class:`GaussianCopulaUniform` is created
+                from ``corr`` and the ranges of the training data.
+            corr: Correlation matrix for the Gaussian copula, shape (d, d).
+                Only used when ``joint is None``. Defaults to the identity
+                matrix (independent inputs).
+            N: Monte Carlo sample size per subset. Defaults to 10000.
+            method: Computation method, ``'exhaustive'`` or
+                ``'permutation'``. Defaults to ``'exhaustive'``.
+            n_perm: Number of random permutations. Only used when
+                ``method='permutation'``. Defaults to 1000.
+            B: Number of bootstrap replications. Set to 0 to skip
+                confidence intervals. Defaults to 0.
+            alpha: Significance level for confidence intervals.
+                Defaults to 0.05 (95% CI).
+            random_state: Random seed for reproducibility.
+            f: Model function ``f(x)`` where ``x`` is a 1D array and
+                the return value is a scalar. If ``None``, the trained
+                surrogate model's :meth:`predict` method is used.
+                This allows both surrogate-based and user-defined
+                function evaluations.
+
+        Returns:
+            pd.DataFrame: DataFrame with columns:
+            - ``'variable'``: Variable names from the training data.
+            - ``'effect'``: Normalised Shapley effects (sum to 1).
+            - ``'shapley_value'``: Unscaled Shapley values.
+            - ``'total_variance'``: Estimated total output variance.
+            - ``'lower'``, ``'upper'``: Bootstrap CI bounds (if B > 0).
+
+        Examples:
+            Using the trained surrogate model with independent inputs:
+
+            >>> analyzer = rshdmr(data_file='data.csv', polys=[10, 5])
+            >>> sobol, shapley, total = analyzer.run_all()
+            >>> mc_results = analyzer.get_mc_shapley(N=5000, B=500)
+
+            Using the surrogate model with a correlation matrix:
+
+            >>> corr = np.array([[1.0, 0.5, 0.0],
+            ...                  [0.5, 1.0, 0.0],
+            ...                  [0.0, 0.0, 1.0]])
+            >>> mc_results = analyzer.get_mc_shapley(corr=corr, N=5000)
+
+            Using a user-defined function with a custom distribution:
+
+            >>> def my_model(x):
+            ...     return x[0]**2 + 2*x[1]
+            >>> joint = MultivariateNormal(
+            ...     mean=[0, 0], cov=[[1, 0.5], [0.5, 1]]
+            ... )
+            >>> mc_results = analyzer.get_mc_shapley(
+            ...     joint=joint, f=my_model, N=5000
+            ... )
+        """
+        # Determine the model function
+        if f is None:
+            _f = _wrap_predict_fn(self.predict)
+        else:
+            _f = f
+
+        # Build the distribution if not provided
+        if joint is None:
+            feature_names = list(self.X.columns)
+            d = len(feature_names)
+            lows = [self.ranges[name][0] for name in feature_names]
+            highs = [self.ranges[name][1] for name in feature_names]
+            if corr is None:
+                corr = np.eye(d)
+            joint = GaussianCopulaUniform(lows, highs, corr)
+
+        # Compute MC Shapley effects
+        mc = MCShapley(_f, joint)
+        df = mc.compute(
+            N=N, method=method, n_perm=n_perm,
+            B=B, alpha=alpha, random_state=random_state
+        )
+
+        # Replace generic variable names with actual feature names
+        feature_names = list(self.X.columns)
+        df['variable'] = feature_names
+
+        return df
 
 
 
-    
+
  

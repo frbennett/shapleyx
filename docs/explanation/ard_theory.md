@@ -83,7 +83,7 @@ The function `update_precisions` updates the precision parameters $(\alpha_i)$ b
 3. **Convergence Check**:
    - The algorithm stops if:
      - No features are added/deleted.
-     - The change in $\alpha_i$ for existing features is below a tolerance. $\alpha_i$ for existing features is below a tolerance.
+     - The change in $\alpha_i$ for existing features is below a tolerance.
 
 ---
 
@@ -105,13 +105,16 @@ $$
 
 ### **6. Key Equations and Intuition**
 - **Marginal Likelihood Maximization**:
-  The algorithm maximizes the marginal likelihood (evidence) with respect to $(\alpha_i)$ and $(\beta)$: 
-  $$ 
-  p(\mathbf{y} | \mathbf{X}, \alpha, \beta) = \int p(\mathbf{y} | \mathbf{X}, \mathbf{w}, \beta) p(\mathbf{w} | \alpha) d\mathbf{w} 
-  $$ This is done iteratively using the **Expectation-Maximization (EM)** framework.
+  The algorithm maximizes the marginal likelihood (evidence) with respect to $\alpha_i$ and $\beta$:
+
+  $$
+  p(\mathbf{y} \mid \mathbf{X}, \alpha, \beta) = \int p(\mathbf{y} \mid \mathbf{X}, \mathbf{w}, \beta)\, p(\mathbf{w} \mid \alpha)\, d\mathbf{w}
+  $$
+
+  This is done iteratively using the **Expectation-Maximization (EM)** framework.
 
 - **Automatic Relevance Determination (ARD)**:
-  The precision parameters $\alpha_i$ act as **regularization parameters**, automatically determining the relevance of each feature. Irrelevant features have $\alpha_i \to \infty$, and their weights are pruned. $\alpha_i$ act as **regularization parameters**, automatically determining the relevance of each feature. Irrelevant features have $\alpha_i \to \infty$, and their weights are pruned.
+  The precision parameters $\alpha_i$ act as **regularization parameters**, automatically determining the relevance of each feature. Irrelevant features have $\alpha_i \to \infty$, and their weights are pruned.
 
 ---
 

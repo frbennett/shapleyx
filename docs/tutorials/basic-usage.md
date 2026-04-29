@@ -49,18 +49,41 @@ print("\nTotal Indices:")
 print(total_index)
 ```
 
-## Step 4: Visualize Results
+## Step 4: Visualize and Explore Results
 
 ```python
 # Plot predicted vs actual
-analyzer.plot_hdmr()
+analyzer.run_plot_hdmr()
 
-# Plot sensitivity indices
-analyzer.plot_indices()
+# Examine Shapley effects
+print(analyzer.shap)
+
+# Compute PAWN sensitivity (distribution-based, no surrogate needed)
+pawn = analyzer.get_pawn(S=10)
+print(pawn)
+```
+
+## Step 5: MC Shapley for Correlated Inputs
+
+When inputs may be correlated, use the Monte Carlo Shapley method:
+
+```python
+# Independent inputs via the surrogate model
+mc_indep = analyzer.get_mc_shapley(N=2000, B=200)
+
+# With correlation
+import numpy as np
+corr = np.array([[1.0, 0.5, 0.0, 0.0, 0.0],
+                 [0.5, 1.0, 0.0, 0.0, 0.0],
+                 [0.0, 0.0, 1.0, 0.0, 0.0],
+                 [0.0, 0.0, 0.0, 1.0, 0.0],
+                 [0.0, 0.0, 0.0, 0.0, 1.0]])
+mc_corr = analyzer.get_mc_shapley(corr=corr, N=2000, B=200)
 ```
 
 ## Next Steps
 
 - Try with your own dataset
-- Experiment with different polynomial orders
-- Explore advanced configuration options
+- Experiment with different polynomial orders and regression methods
+- See the [MC Shapley guide](../how-to-guides/mc-shapley.md) for correlated inputs
+- Explore the [Common Tasks](../how-to-guides/common-tasks.md) for advanced usage

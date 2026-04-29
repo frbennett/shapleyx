@@ -17,7 +17,7 @@ from sklearn.model_selection import cross_val_score
 
 class regression():
 
-    def __init__(self, X_T_L, Y, method, n_iter, verbose, cv_tol, starting_iter):
+    def __init__(self, X_T_L, Y, method, n_iter, verbose, cv_tol, starting_iter,cv_method):
         self.X_T_L = X_T_L
         self.Y = Y
         self.method = method
@@ -25,6 +25,7 @@ class regression():
         self.verbose = verbose
         self.cv_tol = cv_tol
         self.starting_iter = starting_iter 
+        self.cv_method = cv_method 
 
     def run_regression(self):
         start_time = time.perf_counter()
@@ -34,7 +35,7 @@ class regression():
             
         if self.method == 'ard_cv':
             print('running ARD')
-            self.clf = RegressionARD(n_iter=self.n_iter, verbose=self.verbose, cv_tol=self.cv_tol, cv=True)
+            self.clf = RegressionARD(n_iter=self.n_iter, verbose=self.verbose, cv=True, cv_folds=10, cv_method=self.cv_method)
             
         elif self.method == 'omp':
             print('running OMP')
@@ -42,6 +43,7 @@ class regression():
         elif self.method == 'omp_cv':
             print('running OMP_CV')
             self.clf = OrthogonalMatchingPursuitCV(max_iter=self.n_iter, cv=10) 
+            
         elif self.method == 'ard_sk':
             print('running ARD_SK')
             self.clf = ARDRegression(max_iter=self.n_iter, compute_score=True) 

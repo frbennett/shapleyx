@@ -1,0 +1,15 @@
+# MC Shapley Reference
+
+::: shapleyx.utilities.mc_shapley
+    options:
+      show_root_heading: true
+      show_source: true
+      members:
+        - MultivariateNormal
+        - GaussianCopulaUniform
+        - shapley_effects
+        - MCShapley
+        - collect_shapley_data
+        - shapley_from_data
+        - bootstrap_shapley
+        - shapley_effects_permutation

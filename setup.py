@@ -10,7 +10,7 @@ with open('LICENSE') as f: # Assuming a LICENSE file will be added later
 
 setup(
     name='shapleyx',
-    version='0.2',
+    version='0.5',
     description='Python implementation RS-HDMR',
     long_description=long_description,
     long_description_content_type='text/markdown',

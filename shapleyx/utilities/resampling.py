@@ -100,6 +100,7 @@ class resampling():
         quantiles.columns = ['lower', 'mean', 'upper']
         sobol_indices['lower'] = quantiles['lower'].values - quantiles['mean'].values + sobol_indices['index'].values
         sobol_indices['upper'] = quantiles['upper'].values - quantiles['mean'].values + sobol_indices['index'].values
+        sobol_indices['std'] = self.resampling_results.std(axis=1).values
 
         return sobol_indices
     
@@ -112,4 +113,5 @@ class resampling():
 
         shapley_effects['lower'] = quantiles['lower'].values - quantiles['mean'].values + shapley_effects['scaled effect'].values
         shapley_effects['upper'] = quantiles['upper'].values - quantiles['mean'].values + shapley_effects['scaled effect'].values
+        shapley_effects['std'] = shaps.std(axis=1).values
         return shapley_effects 

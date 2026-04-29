@@ -10,6 +10,7 @@ This module contains various helper functions and utilities including:
 from .ARD import *
 from .indicies import *
 from .legendre import *
+from .mc_shapley import *
 from .pawn import *
 from .predictor import *
 from .pruned_model import *
@@ -22,6 +23,7 @@ __all__ = [
     'ARD',
     'indicies',
     'legendre',
+    'mc_shapley',
     'pawn',
     'predictor',
     'pruned_model',

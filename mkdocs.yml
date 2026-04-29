@@ -44,17 +44,21 @@ nav:
   - Getting Started:
     - Installation: getting-started/installation.md
     - Quickstart: getting-started/quickstart.md
+    - Deployment: getting-started/deployment.md
   - Tutorials:
     - Basic Usage: tutorials/basic-usage.md
     - Example Workflow: tutorials/owen_product_function.ipynb
+    - MC Shapley: tutorials/mc_shapley.ipynb
   - How-to Guides:
     - Common Tasks: how-to-guides/common-tasks.md
+    - MC Shapley: how-to-guides/mc-shapley.md
   - Reference:
     - API: reference/api.md
     - ARD: reference/ard.md
+    - MC Shapley: reference/mc_shapley.md
   - Explanation:
     - Theory: explanation/theory.md
-    - ARD Theory : explanation/ard_theory.md
+    - ARD Theory: explanation/ard_theory.md
 
 markdown_extensions:
   - admonition

@@ -50,10 +50,26 @@ print(total_index)
 
 ```python
 # Plot predicted vs actual
-analyzer.plot_hdmr()
+analyzer.run_plot_hdmr()
+```
+
+## Going Further
+
+```python
+# MC Shapley effects for correlated inputs
+mc_results = analyzer.get_mc_shapley(N=2000, B=200)
+print(mc_results[['variable', 'effect', 'lower', 'upper']])
+
+# Moment-free sensitivity indices
+pawn = analyzer.get_pawn(S=10)
+delta = analyzer.get_deltax(1000, 500)
+h_idx = analyzer.get_hx(1000, 500)
+
+# Owen-Shapley interaction values
+interactions = analyzer.get_interactions(order=1)
 ```
 
 ## Next Steps
 
 - See [Tutorials](../tutorials/basic-usage.md) for more detailed examples
-- Explore [How-to Guides](../how-to-guides/common-tasks.md) for customization options
+- Explore [How-to Guides](../how-to-guides/common-tasks.md) for customisation options

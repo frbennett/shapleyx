@@ -7,13 +7,11 @@
 
 ## Installing ShapleyX
 
-You can install ShapleyX directly from PyPI:
+Not currently available from PyPI:
 
-```bash
-pip install shapleyx
-```
 
-Or install from source:
+
+Install from source:
 
 ```bash
 git clone https://github.com/frbennett/shapleyx.git
@@ -30,7 +28,6 @@ ShapleyX requires the following Python packages:
 - pandas
 - scikit-learn
 - matplotlib
-- seaborn
 
 These will be installed automatically when installing ShapleyX.
 
