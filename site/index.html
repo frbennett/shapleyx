@@ -54,6 +54,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="getting-started/quickstart/">Quickstart</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="getting-started/deployment/">Deployment</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Tutorials</span></p>
               <ul>
@@ -61,10 +63,14 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="tutorials/owen_product_function/">Example Workflow</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">How-to Guides</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="how-to-guides/mc-shapley/">MC Shapley</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Reference</span></p>
@@ -73,10 +79,14 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="reference/ard/">ARD</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="reference/mc_shapley/">MC Shapley</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Explanation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="explanation/theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="explanation/ard_theory/">ARD Theory</a>
                   </li>
               </ul>
       </div>
@@ -104,13 +114,14 @@
             <div class="section" itemprop="articleBody">
               
                 <h1 id="shapleyx-documentation">ShapleyX Documentation</h1>
-<p>Welcome to the ShapleyX documentation! </p>
-<p>ShapleyX is a Python package for global sensitivity analysis using Sparse Random Sampling - High Dimensional Model Representation (HDMR) with Group Method of Data Handling (GMDH) for parameter selection and linear regression for parameter refinement.</p>
+<p>Welcome to the ShapleyX documentation!</p>
+<p>ShapleyX is a Python package for global sensitivity analysis using Sparse Random Sampling — High Dimensional Model Representation (RS-HDMR) with Automatic Relevance Determination (ARD) or Orthogonal Matching Pursuit (OMP) for parameter selection and linear regression for parameter refinement.</p>
+<p>It computes Sobol indices, Shapley effects, total sensitivity indices, and moment-free measures (PAWN, Delta, H-index). A Monte Carlo Shapley method handles correlated inputs via conditional sampling.</p>
 <h2 id="documentation-sections">Documentation Sections</h2>
 <ul>
 <li><strong>Getting Started</strong>: Installation and basic setup</li>
 <li><strong>Tutorials</strong>: Step-by-step guides for common tasks</li>
-<li><strong>How-to Guides</strong>: Solutions to specific problems</li>
+<li><strong>How-to Guides</strong>: Solutions to specific problems, including MC Shapley for correlated inputs</li>
 <li><strong>Reference</strong>: Complete API documentation</li>
 <li><strong>Explanation</strong>: Background and theory</li>
 </ul>
@@ -121,6 +132,9 @@
 
 <span class="c1"># Run the entire analysis pipeline</span>
 <span class="n">sobol_indices</span><span class="p">,</span> <span class="n">shapley_effects</span><span class="p">,</span> <span class="n">total_index</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+
+<span class="c1"># Compute MC Shapley effects for correlated inputs</span>
+<span class="n">mc_results</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 </code></pre></div>
               
             </div>
@@ -175,5 +189,5 @@
 
 <!--
 MkDocs version : 1.6.1
-Build Date UTC : 2025-04-09 01:39:47.075443+00:00
+Build Date UTC : 2026-04-29 03:41:24.842489+00:00
 -->

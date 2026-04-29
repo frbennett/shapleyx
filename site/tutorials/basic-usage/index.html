@@ -50,6 +50,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Tutorials</span></p>
               <ul class="current">
@@ -61,7 +63,9 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#step-3-run-the-analysis">Step 3: Run the Analysis</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#step-4-visualize-results">Step 4: Visualize Results</a>
+    <li class="toctree-l2"><a class="reference internal" href="#step-4-visualize-and-explore-results">Step 4: Visualize and Explore Results</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#step-5-mc-shapley-for-correlated-inputs">Step 5: MC Shapley for Correlated Inputs</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a>
     </li>
@@ -69,10 +73,14 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../owen_product_function/">Example Workflow</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mc_shapley/">MC Shapley</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">How-to Guides</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Reference</span></p>
@@ -81,10 +89,14 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Explanation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/ard_theory/">ARD Theory</a>
                   </li>
               </ul>
       </div>
@@ -152,24 +164,43 @@
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Total Indices:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">total_index</span><span class="p">)</span>
 </code></pre></div>
-<h2 id="step-4-visualize-results">Step 4: Visualize Results</h2>
+<h2 id="step-4-visualize-and-explore-results">Step 4: Visualize and Explore Results</h2>
 <div class="highlight"><pre><span></span><code><span class="c1"># Plot predicted vs actual</span>
-<span class="n">analyzer</span><span class="o">.</span><span class="n">plot_hdmr</span><span class="p">()</span>
+<span class="n">analyzer</span><span class="o">.</span><span class="n">run_plot_hdmr</span><span class="p">()</span>
 
-<span class="c1"># Plot sensitivity indices</span>
-<span class="n">analyzer</span><span class="o">.</span><span class="n">plot_indices</span><span class="p">()</span>
+<span class="c1"># Examine Shapley effects</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">shap</span><span class="p">)</span>
+
+<span class="c1"># Compute PAWN sensitivity (distribution-based, no surrogate needed)</span>
+<span class="n">pawn</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_pawn</span><span class="p">(</span><span class="n">S</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pawn</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="step-5-mc-shapley-for-correlated-inputs">Step 5: MC Shapley for Correlated Inputs</h2>
+<p>When inputs may be correlated, use the Monte Carlo Shapley method:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Independent inputs via the surrogate model</span>
+<span class="n">mc_indep</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+
+<span class="c1"># With correlation</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="n">corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                 <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                 <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                 <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+                 <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]])</span>
+<span class="n">mc_corr</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">corr</span><span class="o">=</span><span class="n">corr</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="next-steps">Next Steps</h2>
 <ul>
 <li>Try with your own dataset</li>
-<li>Experiment with different polynomial orders</li>
-<li>Explore advanced configuration options</li>
+<li>Experiment with different polynomial orders and regression methods</li>
+<li>See the <a href="../../how-to-guides/mc-shapley/">MC Shapley guide</a> for correlated inputs</li>
+<li>Explore the <a href="../../how-to-guides/common-tasks/">Common Tasks</a> for advanced usage</li>
 </ul>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../../getting-started/quickstart/" class="btn btn-neutral float-left" title="Quickstart"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../getting-started/deployment/" class="btn btn-neutral float-left" title="Deployment"><span class="icon icon-circle-arrow-left"></span> Previous</a>
         <a href="../owen_product_function/" class="btn btn-neutral float-right" title="Example Workflow">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
@@ -197,7 +228,7 @@
         </span>
     
     
-      <span><a href="../../getting-started/quickstart/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../../getting-started/deployment/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
       <span><a href="../owen_product_function/" style="color: #fcfcfc">Next &raquo;</a></span>

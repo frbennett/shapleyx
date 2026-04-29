@@ -58,9 +58,13 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#plotting-results">Plotting Results</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#going-further">Going Further</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#next-steps">Next Steps</a>
     </li>
     </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../deployment/">Deployment</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Tutorials</span></p>
@@ -69,10 +73,14 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">How-to Guides</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Reference</span></p>
@@ -81,10 +89,14 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Explanation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/ard_theory/">ARD Theory</a>
                   </li>
               </ul>
       </div>
@@ -150,19 +162,32 @@
 </code></pre></div>
 <h2 id="plotting-results">Plotting Results</h2>
 <div class="highlight"><pre><span></span><code><span class="c1"># Plot predicted vs actual</span>
-<span class="n">analyzer</span><span class="o">.</span><span class="n">plot_hdmr</span><span class="p">()</span>
+<span class="n">analyzer</span><span class="o">.</span><span class="n">run_plot_hdmr</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="going-further">Going Further</h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># MC Shapley effects for correlated inputs</span>
+<span class="n">mc_results</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">2000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">200</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mc_results</span><span class="p">[[</span><span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="s1">&#39;effect&#39;</span><span class="p">,</span> <span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">]])</span>
+
+<span class="c1"># Moment-free sensitivity indices</span>
+<span class="n">pawn</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_pawn</span><span class="p">(</span><span class="n">S</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="n">delta</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_deltax</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">h_idx</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_hx</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+
+<span class="c1"># Owen-Shapley interaction values</span>
+<span class="n">interactions</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_interactions</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="next-steps">Next Steps</h2>
 <ul>
 <li>See <a href="../../tutorials/basic-usage/">Tutorials</a> for more detailed examples</li>
-<li>Explore <a href="../../how-to-guides/common-tasks/">How-to Guides</a> for customization options</li>
+<li>Explore <a href="../../how-to-guides/common-tasks/">How-to Guides</a> for customisation options</li>
 </ul>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
         <a href="../installation/" class="btn btn-neutral float-left" title="Installation"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../../tutorials/basic-usage/" class="btn btn-neutral float-right" title="Basic Usage">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../deployment/" class="btn btn-neutral float-right" title="Deployment">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -192,7 +217,7 @@
       <span><a href="../installation/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../../tutorials/basic-usage/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../deployment/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

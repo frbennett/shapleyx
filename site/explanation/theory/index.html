@@ -50,6 +50,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Tutorials</span></p>
               <ul>
@@ -57,10 +59,14 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">How-to Guides</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">Reference</span></p>
@@ -69,6 +75,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Explanation</span></p>
               <ul class="current">
@@ -76,15 +84,27 @@
     <ul class="current">
     <li class="toctree-l2"><a class="reference internal" href="#shapley-values-in-sensitivity-analysis">Shapley Values in Sensitivity Analysis</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#mathematical-formulation">Mathematical Formulation</a>
+    <li class="toctree-l2"><a class="reference internal" href="#shapley-effects-mathematical-formulation">Shapley Effects — Mathematical Formulation</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#relationship-to-sobol-indices">Relationship to Sobol Indices</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#advantages">Advantages</a>
+    <li class="toctree-l2"><a class="reference internal" href="#advantages-of-shapley-effects">Advantages of Shapley Effects</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#implementation-in-shapleyx">Implementation in ShapleyX</a>
+    <li class="toctree-l2"><a class="reference internal" href="#implementation-via-rs-hdmr-independent-inputs">Implementation via RS-HDMR (Independent Inputs)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#shapley-effects-with-correlated-inputs">Shapley Effects with Correlated Inputs</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#the-covariance-based-formulation">The Covariance-Based Formulation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#distribution-classes">Distribution Classes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#computation-methods">Computation Methods</a>
+    </li>
+        </ul>
     </li>
     </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ard_theory/">ARD Theory</a>
                   </li>
               </ul>
       </div>
@@ -118,48 +138,117 @@
 <ol>
 <li>Fairly distribute the "payout" (output variance) among "players" (input parameters)</li>
 <li>Account for all possible interaction effects</li>
-<li>Provide unique attribution under certain axioms</li>
+<li>Provide unique attribution under certain axioms (efficiency, symmetry, dummy, additivity)</li>
 </ol>
-<h2 id="mathematical-formulation">Mathematical Formulation</h2>
-<p>For a model output <span class="arithmatex">\( Y = f(X_1, X_2, \dots, X_d)\)</span> , the Shapley effect <span class="arithmatex">\(\phi_i\)</span> for parameter <span class="arithmatex">\(X_i\)</span> is:</p>
+<h2 id="shapley-effects-mathematical-formulation">Shapley Effects — Mathematical Formulation</h2>
+<p>For a model output <span class="arithmatex">\(Y = f(X_1, X_2, \ldots, X_d)\)</span>, the Shapley effect <span class="arithmatex">\(\phi_i\)</span> for parameter <span class="arithmatex">\(X_i\)</span> is:</p>
 <div class="arithmatex">\[
-\phi_i = \sum_{S \subseteq D \setminus \{i\}} \frac{|S|!(d-|S|-1)!}{d!} \left[\text{Var}\big(E[Y|X_S \cup \{i\}]\big) - \text{Var}\big(E[Y|X_S]\big)\right]
+\phi_i = \sum_{S \subseteq D \setminus \{i\}} \frac{|S|!\,(d-|S|-1)!}{d!}\,
+\Big[\text{Var}\big(E[Y \mid X_{S \cup \{i\}}]\big) - \text{Var}\big(E[Y \mid X_S]\big)\Big]
 \]</div>
-<p>where:
-- <span class="arithmatex">\(D\)</span> is the set of all parameters
-- <span class="arithmatex">\(S\)</span> is a subset of parameters excluding <span class="arithmatex">\(i\)</span>
-- <span class="arithmatex">\(X_S\)</span> represents the parameters in subset <span class="arithmatex">\(S\)</span>
-For a model output $$ Y = f(X_1, X_2, \ldots, X_d) $$, the Shapley effect <span class="arithmatex">\(<span class="arithmatex">\(\phi_i\)</span>\)</span> for parameter <span class="arithmatex">\(<span class="arithmatex">\(X_i\)</span>\)</span> is:</p>
-<div class="arithmatex">\[
-\phi_i = \sum_{S \subseteq D \setminus \{i\}} \frac{|S|!(d-|S|-1)!}{d!} [\text{Var}(E[Y|X_S \cup \{i\}]) - \text{Var}(E[Y|X_S])]
-\]</div>
-<p>where:
-- <span class="arithmatex">\(D\)</span> is the set of all parameters
-- <span class="arithmatex">\(S\)</span> is a subset of parameters excluding <span class="arithmatex">\(i\)</span>
-- <span class="arithmatex">\(X_S\)</span> represents the parameters in subset <span class="arithmatex">\(S\)</span></p>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(D = \{1, 2, \ldots, d\}\)</span> is the set of all input parameters</li>
+<li><span class="arithmatex">\(S\)</span> is a subset of parameters excluding <span class="arithmatex">\(i\)</span></li>
+<li><span class="arithmatex">\(X_S\)</span> represents the parameters in subset <span class="arithmatex">\(S\)</span></li>
+<li>The weight <span class="arithmatex">\(\frac{|S|!\,(d-|S|-1)!}{d!}\)</span> ensures each coalition size is equally represented</li>
+</ul>
 <h2 id="relationship-to-sobol-indices">Relationship to Sobol Indices</h2>
-<p>Shapley effects generalize Sobol indices by:
-- Combining all order effects involving a parameter
-- Providing a complete decomposition where:
-  - <span class="arithmatex">\(\sum_{i=1}^d \phi_i = \text{Var}(Y)\)</span>
-  - Each <span class="arithmatex">\(\phi_i \geq 0\)</span></p>
-<h2 id="advantages">Advantages</h2>
+<p>Shapley effects generalise Sobol indices by combining all order effects involving a parameter:</p>
+<ul>
+<li>A Sobol index <span class="arithmatex">\(S_u\)</span> quantifies the contribution of subset <span class="arithmatex">\(u\)</span> <strong>alone</strong></li>
+<li>A Shapley effect <span class="arithmatex">\(\phi_i\)</span> redistributes every interaction term equally among its participating variables</li>
+</ul>
+<p>This yields a complete decomposition where:</p>
+<ul>
+<li><span class="arithmatex">\(\sum_{i=1}^d \phi_i = \text{Var}(Y)\)</span> (efficiency)</li>
+<li>Each <span class="arithmatex">\(\phi_i \geq 0\)</span> (non-negativity under independent inputs)</li>
+</ul>
+<h2 id="advantages-of-shapley-effects">Advantages of Shapley Effects</h2>
 <ol>
-<li><strong>Complete Attribution</strong>: Accounts for all interactions</li>
-<li><strong>Additivity</strong>: Effects sum to total variance</li>
-<li><strong>Interpretability</strong>: Direct measure of importance</li>
-<li><strong>Robustness</strong>: Works well with correlated inputs</li>
+<li><strong>Complete Attribution</strong>: Accounts for all interactions, unlike first-order Sobol indices</li>
+<li><strong>Additivity</strong>: Effects sum to total output variance</li>
+<li><strong>Interpretability</strong>: Direct measure of importance in variance units</li>
+<li><strong>Single number per input</strong>: Avoids the proliferation of <span class="arithmatex">\(2^d - 1\)</span> Sobol indices</li>
 </ol>
-<h2 id="implementation-in-shapleyx">Implementation in ShapleyX</h2>
-<p>The package uses:
-- Polynomial chaos expansions for efficient computation
-- Automatic Relevance Determination (ARD) for robust estimation
-- Legendre polynomials for orthogonal basis functions</p>
+<h2 id="implementation-via-rs-hdmr-independent-inputs">Implementation via RS-HDMR (Independent Inputs)</h2>
+<p>ShapleyX computes Shapley effects from a sparse polynomial surrogate model built by:</p>
+<ul>
+<li><strong>Polynomial chaos expansion</strong> using shifted Legendre polynomials (orthonormal on <span class="arithmatex">\([0, 1]\)</span>)</li>
+<li><strong>Automatic Relevance Determination (ARD)</strong> for sparse Bayesian regression — prunes irrelevant basis terms</li>
+<li><strong>Coefficient-based index extraction</strong>: squared coefficients are grouped by variable labels and distributed according to the Shapley weights</li>
+</ul>
+<p>Under independent inputs, the variance contributed by a basis term <span class="arithmatex">\(\psi_u(\mathbf{x})\)</span> is simply its squared coefficient. The Shapley effect for variable <span class="arithmatex">\(i\)</span> is then the sum of all coefficient-squared terms divided equally among the variables appearing in each term's label.</p>
+<h2 id="shapley-effects-with-correlated-inputs">Shapley Effects with Correlated Inputs</h2>
+<p>When inputs are correlated, the coefficient-based decomposition used by RS-HDMR breaks down because:</p>
+<ul>
+<li>The variance of a product term no longer factorises into independent contributions</li>
+<li>Conditional expectations <span class="arithmatex">\(E[Y \mid X_S]\)</span> depend on the joint distribution in a non-trivial way</li>
+</ul>
+<p>The <strong>Monte Carlo Shapley</strong> method addresses this by directly estimating the conditional variance terms from samples of the joint distribution.</p>
+<h3 id="the-covariance-based-formulation">The Covariance-Based Formulation</h3>
+<p>Owen &amp; Prieur (2017) showed that the Shapley value function can be written as:</p>
+<div class="arithmatex">\[
+v(u) = \text{Cov}\big[f(\mathbf{X}),\, f(\mathbf{X}_u)\big]
+\]</div>
+<p>where <span class="arithmatex">\(\mathbf{X}_u\)</span> is a random vector constructed by:</p>
+<ol>
+<li>Drawing a joint sample <span class="arithmatex">\(\mathbf{x} \sim P_{\mathbf{X}}\)</span></li>
+<li>Fixing the coordinates in <span class="arithmatex">\(u\)</span> to <span class="arithmatex">\(\mathbf{x}_u\)</span></li>
+<li>Drawing the remaining coordinates from the conditional distribution <span class="arithmatex">\(P(\mathbf{X}_{-u} \mid \mathbf{X}_u = \mathbf{x}_u)\)</span></li>
+</ol>
+<p>The MC Shapley algorithm estimates <span class="arithmatex">\(v(u)\)</span> for each subset by Monte Carlo, then assembles the Shapley effects via the standard coalition formula.</p>
+<h3 id="distribution-classes">Distribution Classes</h3>
+<p>ShapleyX provides two distribution families with built-in conditional sampling:</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GaussianCopulaUniform</code></td>
+<td>Uniform marginals <span class="arithmatex">\([a_i, b_i]\)</span> with dependence induced by a latent multivariate normal. Correlation matrix <span class="arithmatex">\(\mathbf{R}\)</span> controls dependence.</td>
+</tr>
+<tr>
+<td><code>MultivariateNormal</code></td>
+<td>Jointly normal with mean <span class="arithmatex">\(\boldsymbol{\mu}\)</span> and covariance <span class="arithmatex">\(\boldsymbol{\Sigma}\)</span>. Conditional distributions are analytically tractable.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="computation-methods">Computation Methods</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+<th>Complexity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>'exhaustive'</code></td>
+<td>Enumerates all <span class="arithmatex">\(2^d - 1\)</span> non-empty subsets. Each subset requires <span class="arithmatex">\(N\)</span> Monte Carlo iterations.</td>
+<td><span class="arithmatex">\(O(2^d \cdot N)\)</span></td>
+</tr>
+<tr>
+<td><code>'permutation'</code></td>
+<td>Evaluates only subsets encountered in random permutations, with lazy caching.</td>
+<td><span class="arithmatex">\(O(n_{\text{perm}} \cdot d \cdot N)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Bootstrap confidence intervals are available for both methods by resampling the stored output arrays.</p>
+<hr />
+<p><strong>Reference</strong>: Owen, A. B., &amp; Prieur, C. (2017). On Shapley value for measuring importance of dependent inputs. <em>SIAM/ASA Journal on Uncertainty Quantification</em>, 5(1), 986–1004.</p>
               
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../../reference/ard/" class="btn btn-neutral float-left" title="ARD"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../reference/mc_shapley/" class="btn btn-neutral float-left" title="MC Shapley"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../ard_theory/" class="btn btn-neutral float-right" title="ARD Theory">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -186,8 +275,10 @@ For a model output $$ Y = f(X_1, X_2, \ldots, X_d) $$, the Shapley effect <span 
         </span>
     
     
-      <span><a href="../../reference/ard/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../../reference/mc_shapley/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
+    
+      <span><a href="../ard_theory/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>

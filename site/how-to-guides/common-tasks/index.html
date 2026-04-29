@@ -50,12 +50,16 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Tutorials</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
                   </li>
               </ul>
               <p class="caption"><span class="caption-text">How-to Guides</span></p>
@@ -70,6 +74,10 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#comparing-different-methods">Comparing Different Methods</a>
     </li>
+    <li class="toctree-l2"><a class="reference internal" href="#computing-shapley-effects-for-correlated-inputs">Computing Shapley Effects for Correlated Inputs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#computing-additional-sensitivity-indices">Computing Additional Sensitivity Indices</a>
+    </li>
     <li class="toctree-l2"><a class="reference internal" href="#troubleshooting-common-issues">Troubleshooting Common Issues</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#memory-errors">Memory Errors</a>
@@ -80,6 +88,8 @@
     </li>
     </ul>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mc-shapley/">MC Shapley</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Reference</span></p>
               <ul>
@@ -87,10 +97,14 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Explanation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/ard_theory/">ARD Theory</a>
                   </li>
               </ul>
       </div>
@@ -151,12 +165,58 @@
     <span class="n">results</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="comparing-different-methods">Comparing Different Methods</h2>
-<div class="highlight"><pre><span></span><code><span class="c1"># Compare ARD and OLS methods</span>
+<div class="highlight"><pre><span></span><code><span class="c1"># Compare ARD and OMP methods</span>
 <span class="n">analyzer_ard</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;data.csv&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ard&#39;</span><span class="p">)</span>
-<span class="n">analyzer_ols</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;data.csv&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ols&#39;</span><span class="p">)</span>
+<span class="n">analyzer_omp</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;data.csv&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;omp&#39;</span><span class="p">)</span>
 
 <span class="n">ard_results</span> <span class="o">=</span> <span class="n">analyzer_ard</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
-<span class="n">ols_results</span> <span class="o">=</span> <span class="n">analyzer_ols</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+<span class="n">omp_results</span> <span class="o">=</span> <span class="n">analyzer_omp</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="computing-shapley-effects-for-correlated-inputs">Computing Shapley Effects for Correlated Inputs</h2>
+<p>When inputs are correlated, use the MC Shapley method instead of the default coefficient-based approach:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianCopulaUniform</span>
+
+<span class="c1"># Define correlation structure</span>
+<span class="n">corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+<span class="p">])</span>
+
+<span class="c1"># Using the surrogate model with a correlation matrix</span>
+<span class="n">mc_results</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">corr</span><span class="o">=</span><span class="n">corr</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mc_results</span><span class="p">[[</span><span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="s1">&#39;effect&#39;</span><span class="p">,</span> <span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">]])</span>
+
+<span class="c1"># Using a user-defined function with a custom distribution</span>
+<span class="n">joint</span> <span class="o">=</span> <span class="n">GaussianCopulaUniform</span><span class="p">(</span>
+    <span class="n">lows</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+    <span class="n">highs</span><span class="o">=</span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span>
+    <span class="n">corr</span><span class="o">=</span><span class="n">corr</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">my_model</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">7</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">mc_user</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">joint</span><span class="o">=</span><span class="n">joint</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">my_model</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</code></pre></div>
+<p>See the <a href="../mc-shapley/">MC Shapley guide</a> for full details.</p>
+<h2 id="computing-additional-sensitivity-indices">Computing Additional Sensitivity Indices</h2>
+<p>The trained surrogate supports moment-free sensitivity methods:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># PAWN (distribution-based) sensitivity</span>
+<span class="n">pawn_results</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_pawn</span><span class="p">(</span><span class="n">S</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># PAWN with surrogate model</span>
+<span class="n">pawnx_results</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_pawnx</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+
+<span class="c1"># Delta moment-free indices</span>
+<span class="n">delta_indices</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_deltax</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+
+<span class="c1"># H-index (KL divergence based)</span>
+<span class="n">h_indices</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_hx</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+
+<span class="c1"># Owen-Shapley interaction values</span>
+<span class="n">interactions</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_interactions</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 </code></pre></div>
 <h2 id="troubleshooting-common-issues">Troubleshooting Common Issues</h2>
 <h3 id="memory-errors">Memory Errors</h3>
@@ -175,8 +235,8 @@
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../../tutorials/owen_product_function/" class="btn btn-neutral float-left" title="Example Workflow"><span class="icon icon-circle-arrow-left"></span> Previous</a>
-        <a href="../../reference/api/" class="btn btn-neutral float-right" title="API">Next <span class="icon icon-circle-arrow-right"></span></a>
+        <a href="../../tutorials/mc_shapley/" class="btn btn-neutral float-left" title="MC Shapley"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../mc-shapley/" class="btn btn-neutral float-right" title="MC Shapley">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
   <hr/>
@@ -203,10 +263,10 @@
         </span>
     
     
-      <span><a href="../../tutorials/owen_product_function/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../../tutorials/mc_shapley/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
-      <span><a href="../../reference/api/" style="color: #fcfcfc">Next &raquo;</a></span>
+      <span><a href="../mc-shapley/" style="color: #fcfcfc">Next &raquo;</a></span>
     
   </span>
 </div>
