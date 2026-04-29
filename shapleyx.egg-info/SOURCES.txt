@@ -14,6 +14,7 @@ shapleyx/pyquotegen/__init__.py
 shapleyx/pyquotegen/all_quotes.py
 shapleyx/pyquotegen/quotes.py
 shapleyx/utilities/ARD.py
+shapleyx/utilities/ARD_old_cv.py
 shapleyx/utilities/__init__.py
 shapleyx/utilities/indicies.py
 shapleyx/utilities/legendre.py
