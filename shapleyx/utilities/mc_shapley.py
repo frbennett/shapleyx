@@ -28,20 +28,72 @@ import pandas as pd
 
 
 # ------------------------------------------------------------
+# Optional progress bar (tqdm) — graceful fallback if not installed
+# ------------------------------------------------------------
+try:
+    from tqdm import tqdm as _tqdm
+except ImportError:
+    _tqdm = None
+
+
+class _Progress:
+    """Single progress bar tracking total function evaluations.
+
+    Created with a pre-computed total; updated after each batch or
+    per-sample evaluation step.  Degrades to a no-op when ``tqdm``
+    is not installed or ``enabled`` is ``False``.
+
+    When *total* is zero the bar is created without a known total;
+    :meth:`add_total` can grow it as work is discovered (used by the
+    permutation method where subsets are evaluated lazily).
+    """
+    def __init__(self, total, desc='MC Shapley', enabled=True):
+        self._pbar = None
+        if enabled and _tqdm is not None:
+            self._pbar = _tqdm(total=total if total > 0 else None,
+                               desc=desc, unit='evals',
+                               smoothing=0.01)
+
+    def update(self, n=1):
+        if self._pbar is not None:
+            self._pbar.update(n)
+
+    def add_total(self, n):
+        """Increase the total by *n* evaluations (for lazy discovery)."""
+        if self._pbar is not None:
+            self._pbar.total = (self._pbar.total or 0) + n
+            self._pbar.refresh()
+
+    def close(self):
+        if self._pbar is not None:
+            self._pbar.close()
+
+
+# ------------------------------------------------------------
 # Helper: wrap a 2D predict function for 1D scalar use
 # ------------------------------------------------------------
 def _wrap_predict_fn(predict_fn):
-    """Wrap a predict function that expects 2D input to accept 1D scalar input.
+    """Wrap a 1D-native predict function to also accept 2D (batch) input.
+
+    For 1D input the function is called directly and the result cast to float.
+    For 2D input each row is evaluated sequentially (per-sample loop).
+
+    Use this wrapper when the underlying function only handles 1D arrays.
+    For functions that natively support 2D (batch) input, pass them directly
+    via the ``predict_batch`` parameter of the data-collection functions.
 
     Args:
-        predict_fn: Callable that takes a 2D array (n_samples, n_features)
-            and returns a 1D array of predictions.
+        predict_fn: Callable ``f(x)`` where ``x`` is a 1D array, returning a
+            scalar (float or 0-d array).
 
     Returns:
-        Callable f(x) where x is a 1D array, returning a scalar float.
+        Callable ``g(x)`` accepting 1D or 2D input.
     """
     def f(x):
-        return float(predict_fn(x.reshape(1, -1))[0])
+        x = np.asarray(x, dtype=float)
+        if x.ndim == 1:
+            return float(predict_fn(x))
+        return np.array([float(predict_fn(xi)) for xi in x])
     return f
 
 
@@ -193,7 +245,8 @@ class GaussianCopulaUniform:
 # ------------------------------------------------------------
 # Core functions for exhaustive method
 # ------------------------------------------------------------
-def collect_shapley_data(f, joint, N=10000):
+def collect_shapley_data(f, joint, N=10000, predict_batch=None,
+                         progress=False):
     """Compute and store outputs for all non-empty subsets (exhaustive).
 
     For each subset u of variable indices:
@@ -208,6 +261,14 @@ def collect_shapley_data(f, joint, N=10000):
         f: Model function f(x) taking a 1D array and returning a scalar.
         joint: Distribution object with sample_joint and sample_conditional.
         N: Number of Monte Carlo samples per subset.
+        predict_batch: Optional callable that accepts a 2D array (N, d)
+            and returns a 1D array of predictions. When provided, batch
+            evaluation is used for unconditional draws, greatly reducing
+            Python-level call overhead. When None (default), ``f`` is
+            called once per sample.
+        progress: If ``True``, display a single tqdm progress bar
+            tracking the total number of function evaluations across
+            all subsets (requires ``tqdm`` to be installed).
 
     Returns:
         dict mapping frozenset(u) -> tuple describing stored data.
@@ -215,24 +276,43 @@ def collect_shapley_data(f, joint, N=10000):
     d = joint.d
     subsets = [frozenset(s) for k in range(1, d + 1)
                for s in itertools.combinations(range(d), k)]
+    n_subsets = len(subsets)          # 2^d - 1
+    n_partial = n_subsets - 1         # subsets with |u| < d
+
+    # Each partial subset costs 2N evaluations (N unconditional + N conditional);
+    # the full subset costs N evaluations.  Total = N + 2N * n_partial.
+    total_evals = N + 2 * N * n_partial
+    pbar = _Progress(total_evals, enabled=progress)
+
     data = {}
     for u in subsets:
         u_list = list(u)
         if len(u) == d:
+            # Full set: sample and evaluate (N evals)
             X = joint.sample_joint(N)
-            Y = np.array([f(X[i]) for i in range(N)])
+            if predict_batch is not None:
+                Y = np.asarray(predict_batch(X), dtype=float)
+            else:
+                Y = np.array([f(X[i]) for i in range(N)])
+            pbar.update(N)
             data[u] = ('full', Y)
         else:
-            Y1 = np.zeros(N)
+            # Partial set: unconditional draws (N evals) ...
+            X = joint.sample_joint(N)
+            if predict_batch is not None:
+                Y1 = np.asarray(predict_batch(X), dtype=float)
+            else:
+                Y1 = np.array([f(X[i]) for i in range(N)])
+            pbar.update(N)
+            # ... then conditional draws (N evals)
             Y2 = np.zeros(N)
             for i in range(N):
-                x = joint.sample_joint(1)[0]
-                y1 = f(x)
-                x_cond = joint.sample_conditional(u_list, x[u_list])
-                y2 = f(x_cond)
-                Y1[i] = y1
-                Y2[i] = y2
+                x_cond = joint.sample_conditional(u_list, X[i, u_list])
+                Y2[i] = f(x_cond)
+                pbar.update(1)
             data[u] = ('pair', Y1, Y2)
+
+    pbar.close()
     return data
 
 
@@ -328,7 +408,8 @@ def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None):
 # ------------------------------------------------------------
 # Random permutation method (with caching)
 # ------------------------------------------------------------
-def compute_subset_data(f, joint, u, N, data_cache):
+def compute_subset_data(f, joint, u, N, data_cache, predict_batch=None,
+                        pbar=None):
     """Compute and store data for a subset u if not already cached.
 
     Args:
@@ -337,6 +418,10 @@ def compute_subset_data(f, joint, u, N, data_cache):
         u: Iterable of variable indices for the subset.
         N: Sample size.
         data_cache: Dict to store computed data.
+        predict_batch: Optional batch prediction callable (see
+            ``collect_shapley_data``).
+        pbar: Optional :class:`_Progress` instance to update after each
+            evaluation step.  When ``None`` no progress is reported.
     """
     key = frozenset(u)
     if key in data_cache:
@@ -344,21 +429,40 @@ def compute_subset_data(f, joint, u, N, data_cache):
     d = joint.d
     if len(u) == 0:
         return
+
+    # Announce cost before computing — allows dynamic progress bars to
+    # grow their total as subsets are discovered lazily.
+    cost = N if len(u) == d else 2 * N
+    if pbar is not None:
+        pbar.add_total(cost)
+
     if len(u) == d:
+        # Full set: sample and evaluate (N evals)
         X = joint.sample_joint(N)
-        Y = np.array([f(X[i]) for i in range(N)])
+        if predict_batch is not None:
+            Y = np.asarray(predict_batch(X), dtype=float)
+        else:
+            Y = np.array([f(X[i]) for i in range(N)])
+        if pbar is not None:
+            pbar.update(N)
         data_cache[key] = ('full', Y)
     else:
+        # Partial set: unconditional draws (N evals) ...
         u_list = list(u)
-        Y1 = np.zeros(N)
+        X = joint.sample_joint(N)
+        if predict_batch is not None:
+            Y1 = np.asarray(predict_batch(X), dtype=float)
+        else:
+            Y1 = np.array([f(X[i]) for i in range(N)])
+        if pbar is not None:
+            pbar.update(N)
+        # ... then conditional draws (N evals)
         Y2 = np.zeros(N)
         for i in range(N):
-            x = joint.sample_joint(1)[0]
-            y1 = f(x)
-            x_cond = joint.sample_conditional(u_list, x[u_list])
-            y2 = f(x_cond)
-            Y1[i] = y1
-            Y2[i] = y2
+            x_cond = joint.sample_conditional(u_list, X[i, u_list])
+            Y2[i] = f(x_cond)
+            if pbar is not None:
+                pbar.update(1)
         data_cache[key] = ('pair', Y1, Y2)
 
 
@@ -382,7 +486,8 @@ def get_v_from_data(data_entry):
 
 
 def shapley_effects_permutation(f, joint, N=10000, n_perm=1000,
-                                B=0, alpha=0.05, random_state=None):
+                                B=0, alpha=0.05, random_state=None,
+                                predict_batch=None, progress=False):
     """Shapley effects via random permutations.
 
     Instead of enumerating all 2^d subsets, this method uses random
@@ -397,6 +502,10 @@ def shapley_effects_permutation(f, joint, N=10000, n_perm=1000,
         B: Bootstrap replications (0 to skip).
         alpha: Significance level for CIs.
         random_state: Seed for reproducibility.
+        predict_batch: Optional batch prediction callable (see
+            ``shapley_effects``).
+        progress: If ``True``, display tqdm progress bars over the
+            permutation loop and the bootstrap loop (if B > 0).
 
     Returns:
         effects: Normalised Shapley effects, shape (d,).
@@ -410,11 +519,17 @@ def shapley_effects_permutation(f, joint, N=10000, n_perm=1000,
     d = joint.d
     perms = [np.random.permutation(d).tolist() for _ in range(n_perm)]
 
+    # Subsets are evaluated lazily — start without a known total.
+    # compute_subset_data will grow the bar as new subsets are discovered.
+    pbar = _Progress(0, enabled=progress)
+
     data = {}
 
     def ensure_data(u_set):
         if u_set not in data and len(u_set) > 0:
-            compute_subset_data(f, joint, u_set, N, data)
+            compute_subset_data(f, joint, u_set, N, data,
+                                predict_batch=predict_batch,
+                                pbar=pbar)
 
     # Point estimate
     contrib = np.zeros(d)
@@ -433,6 +548,7 @@ def shapley_effects_permutation(f, joint, N=10000, n_perm=1000,
     effects = Sh / total_var
 
     if B == 0:
+        pbar.close()
         return effects, Sh, total_var
 
     # Bootstrap
@@ -469,6 +585,7 @@ def shapley_effects_permutation(f, joint, N=10000, n_perm=1000,
 
     lower = np.percentile(boot_effects, 100 * alpha / 2, axis=0)
     upper = np.percentile(boot_effects, 100 * (1 - alpha / 2), axis=0)
+    pbar.close()
     return effects, Sh, total_var, lower, upper
 
 
@@ -476,7 +593,8 @@ def shapley_effects_permutation(f, joint, N=10000, n_perm=1000,
 # Unified interface
 # ------------------------------------------------------------
 def shapley_effects(f, joint, N=10000, method='exhaustive', n_perm=1000,
-                    B=0, alpha=0.05, random_state=None):
+                    B=0, alpha=0.05, random_state=None,
+                    predict_batch=None, progress=False):
     """Compute Shapley effects for correlated inputs via Monte Carlo.
 
     This is the main entry point for the MC Shapley algorithm.
@@ -493,6 +611,12 @@ def shapley_effects(f, joint, N=10000, method='exhaustive', n_perm=1000,
         B: Number of bootstrap replications (0 to skip CIs).
         alpha: Significance level for confidence intervals.
         random_state: Random seed for reproducibility.
+        predict_batch: Optional callable that accepts a 2D array (N, d)
+            and returns a 1D array of predictions. When provided, batch
+            evaluation is used for unconditional draws, greatly reducing
+            Python-level call overhead.
+        progress: If ``True``, display tqdm progress bars (requires
+            ``tqdm`` to be installed).
 
     Returns:
         If B == 0:
@@ -519,7 +643,8 @@ def shapley_effects(f, joint, N=10000, method='exhaustive', n_perm=1000,
         np.random.seed(random_state)
 
     if method == 'exhaustive':
-        data = collect_shapley_data(f, joint, N)
+        data = collect_shapley_data(f, joint, N, predict_batch=predict_batch,
+                                    progress=progress)
         effects, sh, total_var = shapley_from_data(data, joint.d)
         if B > 0:
             _, lower, upper = bootstrap_shapley(
@@ -530,7 +655,9 @@ def shapley_effects(f, joint, N=10000, method='exhaustive', n_perm=1000,
     elif method == 'permutation':
         return shapley_effects_permutation(
             f, joint, N=N, n_perm=n_perm,
-            B=B, alpha=alpha, random_state=random_state
+            B=B, alpha=alpha, random_state=random_state,
+            predict_batch=predict_batch,
+            progress=progress
         )
     else:
         raise ValueError("method must be 'exhaustive' or 'permutation'")
@@ -554,13 +681,14 @@ class MCShapley:
         >>> mc = MCShapley(f=my_model, joint=my_distribution)
         >>> results = mc.compute(N=10000, method='exhaustive', B=500)
     """
-    def __init__(self, f, joint):
+    def __init__(self, f, joint, predict_batch=None):
         self.f = f
         self.joint = joint
         self.d = joint.d
+        self.predict_batch = predict_batch
 
     def compute(self, N=10000, method='exhaustive', n_perm=1000,
-                B=0, alpha=0.05, random_state=None):
+                B=0, alpha=0.05, random_state=None, progress=False):
         """Compute Shapley effects.
 
         Args:
@@ -570,6 +698,7 @@ class MCShapley:
             B: Bootstrap replications (0 to skip).
             alpha: Significance level for CIs.
             random_state: Random seed.
+            progress: If ``True``, display tqdm progress bars.
 
         Returns:
             pd.DataFrame with columns:
@@ -580,7 +709,9 @@ class MCShapley:
         result = shapley_effects(
             self.f, self.joint, N=N, method=method,
             n_perm=n_perm, B=B, alpha=alpha,
-            random_state=random_state
+            random_state=random_state,
+            predict_batch=self.predict_batch,
+            progress=progress
         )
 
         if B > 0:

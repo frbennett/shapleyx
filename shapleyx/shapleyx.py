@@ -493,7 +493,7 @@ class rshdmr():
     def get_mc_shapley(self, joint=None, corr=None, N=10000,
                        method='exhaustive', n_perm=1000,
                        B=0, alpha=0.05, random_state=None,
-                       f=None):
+                       f=None, progress=False):
         """Compute Shapley effects via Monte Carlo with correlated inputs.
 
         Uses a Monte Carlo approach to estimate Shapley effects when
@@ -532,6 +532,8 @@ class rshdmr():
                 surrogate model's :meth:`predict` method is used.
                 This allows both surrogate-based and user-defined
                 function evaluations.
+            progress: If ``True``, display tqdm progress bars during
+                the Monte Carlo sampling (requires ``tqdm`` installed).
 
         Returns:
             pd.DataFrame: DataFrame with columns:
@@ -567,10 +569,15 @@ class rshdmr():
             ... )
         """
         # Determine the model function
+        # self.predict handles both 1D (scalar) and 2D (batch) — pass as batch
+        # predictor for efficient MC evaluation. User-defined f is wrapped for
+        # compatibility and has no batch predictor.
         if f is None:
-            _f = _wrap_predict_fn(self.predict)
+            _f = self.predict
+            _predict_batch = self.predict
         else:
-            _f = f
+            _f = _wrap_predict_fn(f)
+            _predict_batch = None
 
         # Build the distribution if not provided
         if joint is None:
@@ -583,10 +590,11 @@ class rshdmr():
             joint = GaussianCopulaUniform(lows, highs, corr)
 
         # Compute MC Shapley effects
-        mc = MCShapley(_f, joint)
+        mc = MCShapley(_f, joint, predict_batch=_predict_batch)
         df = mc.compute(
             N=N, method=method, n_perm=n_perm,
-            B=B, alpha=alpha, random_state=random_state
+            B=B, alpha=alpha, random_state=random_state,
+            progress=progress
         )
 
         # Replace generic variable names with actual feature names

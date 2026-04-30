@@ -18,6 +18,7 @@ shapleyx/utilities/ARD_old_cv.py
 shapleyx/utilities/__init__.py
 shapleyx/utilities/indicies.py
 shapleyx/utilities/legendre.py
+shapleyx/utilities/mc_shapley.py
 shapleyx/utilities/pawn.py
 shapleyx/utilities/predictor.py
 shapleyx/utilities/pruned_model.py
