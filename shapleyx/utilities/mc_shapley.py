@@ -694,6 +694,52 @@ def shapley_from_data(data, d, _weights=None):
 _shapley_weight_cache = {}
 
 
+# ------------------------------------------------------------
+# Helper: extract Sobol indices from collected data
+# ------------------------------------------------------------
+def sobol_from_data(data, d):
+    """Extract first-order and total-order Sobol indices from MC data.
+
+    Uses the covariance formulation v(u) = Cov[f(X), f(X_u)].
+    Since v(u) = V[E(f(X) | X_u)] under the Owen & Prieur (2017)
+    framework, first-order and total-order Sobol indices can be
+    computed without additional model evaluations.
+
+    Args:
+        data: Dict from ``collect_shapley_data``.
+        d: Number of input dimensions.
+
+    Returns:
+        S: First-order Sobol indices, shape (d,).
+        T: Total-order Sobol indices, shape (d,).
+    """
+    # Compute v(u) from stored data
+    v = {frozenset(): 0.0}
+    for u, typ in data.items():
+        if typ[0] == 'full':
+            v[u] = np.var(typ[1])
+        else:
+            Y1, Y2 = typ[1], typ[2]
+            v[u] = np.mean(Y1 * Y2) - np.mean(Y1) * np.mean(Y2)
+
+    v_full = v[frozenset(range(d))]
+
+    # First-order: S_i = v({i}) / v_full
+    S = np.array([v.get(frozenset([i]), 0.0) / v_full for i in range(d)])
+
+    # Total-order: T_i = 1 - v(all_except_i) / v_full
+    T = np.array([
+        1.0 - v.get(frozenset([j for j in range(d) if j != i]), 0.0) / v_full
+        for i in range(d)
+    ])
+
+    return S, T
+
+
+# Module-level cache for the Shapley weights (one per dimensionality). _shapley_weight_cache is defined above
+
+
+
 def _get_shapley_weights(d):
     """Return array w[k] = k! (d-k-1)! / d! for k = 0, ..., d-1, plus w[d]=0."""
     if d in _shapley_weight_cache:
@@ -1163,7 +1209,7 @@ class MCShapley:
 
     def compute(self, N=10000, method='exhaustive', n_perm=1000,
                 B=0, alpha=0.05, random_state=None, progress=False):
-        """Compute Shapley effects.
+        """Compute Shapley effects and Sobol indices.
 
         Args:
             N: Monte Carlo sample size per subset.
@@ -1179,26 +1225,61 @@ class MCShapley:
             - 'variable': Input variable names.
             - 'effect': Normalised Shapley effects.
             - 'shapley_value': Unscaled Shapley values.
+            - 'sobol_first': First-order Sobol indices S_i.
+            - 'sobol_total': Total-order Sobol indices T_i.
             - 'total_variance': Estimated total variance.
             - 'lower', 'upper': CI bounds (if B > 0).
+
+            Sobol indices are computed only when ``method='exhaustive'``
+            (all subsets are evaluated).  For the permutation method
+            they are returned as NaN.
         """
-        result = shapley_effects(
-            self.f, self.joint, N=N, method=method,
-            n_perm=n_perm, B=B, alpha=alpha,
-            random_state=random_state,
-            predict_batch=self.predict_batch,
-            progress=progress,
-        )
+        if random_state is not None:
+            np.random.seed(random_state)
 
-        if B > 0:
-            effects, sh, total_var, lower, upper = result
+        # --- Run data collection and Shapley computation ---
+        if method == 'exhaustive':
+            data = collect_shapley_data(
+                self.f, self.joint, N,
+                predict_batch=self.predict_batch,
+                progress=progress,
+            )
+            effects, sh, total_var = shapley_from_data(data, self.d)
+
+            # Sobol indices from the same data
+            S, T = sobol_from_data(data, self.d)
+
+            if B > 0:
+                point, lower, upper = bootstrap_shapley(
+                    data, self.d, B, alpha, random_state,
+                )
+        elif method == 'permutation':
+            result = shapley_effects_permutation(
+                self.f, self.joint, N=N, n_perm=n_perm,
+                B=B, alpha=alpha, random_state=random_state,
+                predict_batch=self.predict_batch,
+                progress=progress,
+            )
+            if B > 0:
+                effects, sh, total_var, lower, upper = result
+            else:
+                effects, sh, total_var = result
+            # Sobol indices not available for permutation (lazy subsets)
+            S = np.full(self.d, np.nan)
+            T = np.full(self.d, np.nan)
+            if B > 0:
+                lower = lower
+                upper = upper
         else:
-            effects, sh, total_var = result
+            raise ValueError("method must be 'exhaustive' or 'permutation'")
 
+        # --- Build DataFrame ---
         df = pd.DataFrame({
             'variable': [f'X{i+1}' for i in range(self.d)],
             'effect': effects,
             'shapley_value': sh,
+            'sobol_first': S,
+            'sobol_total': T,
         })
         df['total_variance'] = total_var
 
