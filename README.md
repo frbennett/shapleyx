@@ -1,11 +1,33 @@
 # ShapleyX — Global Sensitivity Analysis with RS-HDMR
 
+[![PyPI](https://img.shields.io/pypi/v/shapleyx)](https://pypi.org/project/shapleyx/)
+[![Python](https://img.shields.io/pypi/pyversions/shapleyx)](https://pypi.org/project/shapleyx/)
+[![License](https://img.shields.io/github/license/frbennett/shapleyx)](https://github.com/frbennett/shapleyx/blob/main/LICENSE)
+
 ShapleyX is a Python package for global sensitivity analysis using
 Random Sampling High-Dimensional Model Representation (RS-HDMR).  It
 builds sparse polynomial surrogate models via Automatic Relevance
 Determination (ARD) regression and extracts Sobol indices, Shapley
 effects, and moment-free sensitivity measures — with full support for
 **correlated inputs** through Monte Carlo Shapley estimation.
+
+## Installation
+
+```bash
+pip install shapleyx
+```
+
+To upgrade:
+
+```bash
+pip install --upgrade shapleyx
+```
+
+### From GitHub (development version)
+
+```bash
+pip install https://github.com/frbennett/shapleyx/archive/main.zip
+```
 
 ## Features
 
@@ -36,26 +58,6 @@ effects, and moment-free sensitivity measures — with full support for
   - Bootstrap resampling for confidence intervals
   - Progress bars (via tqdm, optional) and Numba-accelerated bootstrap (optional)
 
-## Installation
-
-### From GitHub (latest version)
-```bash
-pip install https://github.com/frbennett/shapleyx/archive/main.zip
-```
-
-To upgrade:
-```bash
-pip uninstall -y shapleyx
-pip install https://github.com/frbennett/shapleyx/archive/main.zip
-```
-
-### Development Installation
-```bash
-git clone https://github.com/frbennett/shapleyx.git
-cd shapleyx
-python setup.py develop
-```
-
 ## Dependencies
 
 | Required | Optional |
@@ -69,7 +71,7 @@ python setup.py develop
 ## Documentation
 
 Full documentation is available at:
-- [Document Home](https://frbennett.github.io/shapleyx/)
+- [Documentation Home](https://frbennett.github.io/shapleyx/)
 - [Quick Start Guide](https://frbennett.github.io/shapleyx/getting-started/quickstart/)
 - [MC Shapley How-to](https://frbennett.github.io/shapleyx/how-to-guides/mc-shapley/)
 - [Theory Background](https://frbennett.github.io/shapleyx/explanation/theory/)
@@ -81,11 +83,11 @@ Jupyter notebooks demonstrating usage:
 
 | Notebook | Description |
 |---|---|
-| [Ishigami Function](Examples/ishigami.ipynb) | Basic RS-HDMR workflow with Sobol & Shapley |
-| [MC Shapley](Examples/mc_shapley.ipynb) | Monte Carlo Shapley for correlated inputs |
-| [Truncated Normal](Examples/mc_shapley_truncated_normal.ipynb) | `TruncatedMultivariateNormal` with the Ishigami function |
-| [Owen Product Function](Examples/owen_product_function.ipynb) | Higher-dimensional example workflow |
+| [Ishigami Function](https://github.com/frbennett/shapleyx/blob/main/Examples/ishigami.ipynb) | Basic RS-HDMR workflow with Sobol & Shapley |
+| [MC Shapley](https://github.com/frbennett/shapleyx/blob/main/Examples/mc_shapley.ipynb) | Monte Carlo Shapley for correlated inputs |
+| [Truncated Normal](https://github.com/frbennett/shapleyx/blob/main/Examples/mc_shapley_truncated_normal.ipynb) | `TruncatedMultivariateNormal` with the Ishigami function |
+| [Owen Product Function](https://github.com/frbennett/shapleyx/blob/main/Examples/owen_product_function.ipynb) | Higher-dimensional example workflow |
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License — see the [LICENSE](https://github.com/frbennett/shapleyx/blob/main/LICENSE) file for details.
