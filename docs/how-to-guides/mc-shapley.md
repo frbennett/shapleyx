@@ -8,7 +8,7 @@ The MC Shapley method estimates Shapley effects via conditional Monte Carlo samp
 
 - **Two computation methods**: exhaustive enumeration and random permutations
 - **Bootstrap confidence intervals** for all estimates
-- **Two distribution families**: `GaussianCopulaUniform` and `MultivariateNormal`
+- **Three distribution families**: `GaussianCopulaUniform`, `MultivariateNormal`, and `TruncatedMultivariateNormal`
 - **Flexible model functions**: use the trained surrogate or any Python callable
 
 ## Basic Usage with the Surrogate Model
@@ -93,6 +93,28 @@ joint = MultivariateNormal(
 
 mc = model.get_mc_shapley(joint=joint, f=my_model, N=5000)
 ```
+
+### Truncated Multivariate Normal
+
+```python
+from shapleyx.utilities.mc_shapley import TruncatedMultivariateNormal
+
+joint = TruncatedMultivariateNormal(
+    mean=[0.0, 0.0, 0.0],
+    cov=[[1.0, 0.5, 0.0],
+         [0.5, 1.0, 0.0],
+         [0.0, 0.0, 1.0]],
+    lower=[-1.0, -1.0, -1.0],
+    upper=[1.0,  1.0,  1.0],
+)
+
+mc = model.get_mc_shapley(joint=joint, f=my_model, N=5000)
+```
+
+Use `-np.inf` and `np.inf` for unbounded dimensions.  The class uses
+**Gibbs sampling** for both joint and conditional draws; tune
+`joint_burn_in` (default 30) and `cond_burn_in` (default 5) to
+balance speed versus convergence.
 
 ## Choosing a Computation Method
 

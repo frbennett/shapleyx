@@ -21,10 +21,20 @@ Reference:
 """
 
 import numpy as np
-from scipy.stats import norm
+from scipy.stats import norm, truncnorm
 import itertools
 import math
 import pandas as pd
+
+
+# -----------------------------------------------------------------------
+# Optional Numba JIT for the bootstrap hot path.
+# -----------------------------------------------------------------------
+try:
+    from numba import njit
+    _NUMBA_AVAILABLE = True
+except ImportError:
+    _NUMBA_AVAILABLE = False
 
 
 # ------------------------------------------------------------
@@ -70,7 +80,7 @@ class _Progress:
 
 
 # ------------------------------------------------------------
-# Helper: wrap a 2D predict function for 1D scalar use
+# Helper: wrap a 1D predict function to also accept 2D (batch) input
 # ------------------------------------------------------------
 def _wrap_predict_fn(predict_fn):
     """Wrap a 1D-native predict function to also accept 2D (batch) input.
@@ -125,43 +135,85 @@ class MultivariateNormal:
         """
         return np.random.multivariate_normal(self.mean, self.cov, n)
 
-    def sample_conditional(self, u_indices, fixed_x):
-        """Draw one sample conditioned on fixed values for variables in u.
+    def _cond_params(self, u_indices):
+        """Pre-compute conditional distribution parameters for a subset.
 
-        Samples x_v | x_u = fixed_x using the conditional multivariate
-        normal formula, then returns the full vector [x_u, x_v].
-
-        Args:
-            u_indices: Indices of variables to condition on.
-            fixed_x: Fixed values for the conditioned variables.
-
-        Returns:
-            1D array of shape (d,).
+        Returns (v_indices, mu_v, A, cond_cov, L) where:
+            cond_mean(x_u) = mu_v + (x_u - mu_u) @ A
+            cond_cov = Sigma_vv - Sigma_vu @ inv(Sigma_uu) @ Sigma_uv
+            L = cholesky(cond_cov) for fast sampling.
         """
         u = np.asarray(u_indices)
-        if len(u) == 0:
-            return self.sample_joint(1)[0]
-
-        fixed_x = np.asarray(fixed_x)
         all_idx = np.arange(self.d)
         v = np.setdiff1d(all_idx, u)
+
+        if len(u) == 0:
+            return v, None, None, None, None
 
         mu_u = self.mean[u]
         mu_v = self.mean[v]
         Sigma_uu = self.cov[np.ix_(u, u)]
         Sigma_uv = self.cov[np.ix_(u, v)]
-        Sigma_vu = Sigma_uv.T
+        Sigma_vu = self.cov[np.ix_(v, u)]
         Sigma_vv = self.cov[np.ix_(v, v)]
 
         inv_Sigma_uu = np.linalg.inv(Sigma_uu)
-        cond_mean = mu_v + Sigma_vu @ inv_Sigma_uu @ (fixed_x - mu_u)
-        cond_cov = Sigma_vv - Sigma_vu @ inv_Sigma_uu @ Sigma_uv
+        # A = inv(Sigma_uu) @ Sigma_uv  so that (x_u - mu_u) @ A gives the
+        # adjustment to the conditional mean
+        A = inv_Sigma_uu @ Sigma_uv          # (|u|, |v|)
+        cond_cov = Sigma_vv - Sigma_vu @ A    # (|v|, |v|)
+        # Cholesky for efficient draw: X_v = cond_mean + Z @ L.T
+        L = np.linalg.cholesky(cond_cov + 1e-10 * np.eye(len(v)))
 
-        z_v = np.random.multivariate_normal(cond_mean, cond_cov)
-        x_full = np.zeros(self.d)
-        x_full[u] = fixed_x
-        x_full[v] = z_v
-        return x_full
+        return v, mu_v, A, cond_cov, L
+
+    def sample_conditional(self, u_indices, fixed_x):
+        """Draw one sample conditioned on fixed values for variables in u.
+
+        Args:
+            u_indices: Indices of variables to condition on.
+            fixed_x: 1D array of fixed values for the conditioned variables.
+
+        Returns:
+            1D array of shape (d,).
+        """
+        # Route to batch implementation for consistency
+        X = self.sample_conditional_batch(
+            u_indices, np.atleast_2d(np.asarray(fixed_x)))
+        return X[0]
+
+    def sample_conditional_batch(self, u_indices, fixed_X):
+        """Draw N conditional samples in one operation.
+
+        Args:
+            u_indices: Indices of variables to condition on.
+            fixed_X: 2D array of shape (N, |u|) — fixed values for each draw.
+
+        Returns:
+            2D array of shape (N, d).
+        """
+        u = np.asarray(u_indices)
+        N = fixed_X.shape[0]
+        fixed_X = np.asarray(fixed_X)
+
+        if len(u) == 0:
+            return self.sample_joint(N)
+
+        v, mu_v, A, _cond_cov, L = self._cond_params(u)
+
+        # cond_means = mu_v + (fixed_X - mu_u) @ A
+        # Shape: (|v|,) + (N, |u|) @ (|u|, |v|) = (N, |v|)
+        mu_u = self.mean[u]
+        cond_means = mu_v + (fixed_X - mu_u) @ A
+
+        # Draw from N(0, I) and transform: Z @ L.T ~ N(0, cond_cov)
+        Z = np.random.randn(N, len(v))
+        X_v = cond_means + Z @ L.T
+
+        X_full = np.zeros((N, self.d))
+        X_full[:, u] = fixed_X
+        X_full[:, v] = X_v
+        return X_full
 
 
 class GaussianCopulaUniform:
@@ -198,47 +250,320 @@ class GaussianCopulaUniform:
         U = norm.cdf(Z)
         return self.lows + (self.highs - self.lows) * U
 
+    def _cond_params(self, u_indices):
+        """Pre-compute conditional copula parameters for a subset.
+
+        Returns (v_indices, A, cond_cov, L) where:
+            cond_mean(z_u) = z_u @ A  (no absolute mean — zero-mean latent)
+            cond_cov = Sigma_vv - Sigma_vu @ inv(Sigma_uu) @ Sigma_uv
+            L = cholesky(cond_cov).
+        """
+        u = np.asarray(u_indices)
+        all_idx = np.arange(self.d)
+        v = np.setdiff1d(all_idx, u)
+
+        if len(u) == 0:
+            return v, None, None, None
+
+        Sigma_uu = self.corr[np.ix_(u, u)]
+        Sigma_uv = self.corr[np.ix_(u, v)]
+        Sigma_vu = self.corr[np.ix_(v, u)]
+        Sigma_vv = self.corr[np.ix_(v, v)]
+
+        inv_Sigma_uu = np.linalg.inv(Sigma_uu)
+        A = inv_Sigma_uu @ Sigma_uv           # (|u|, |v|)
+        cond_cov = Sigma_vv - Sigma_vu @ A     # (|v|, |v|)
+        L = np.linalg.cholesky(cond_cov + 1e-10 * np.eye(len(v)))
+
+        return v, A, cond_cov, L
+
     def sample_conditional(self, u_indices, fixed_x):
         """Draw one sample conditioned on fixed values for variables in u.
 
-        Transforms to the latent normal space, conditions there, then
-        transforms back to the uniform scale.
-
         Args:
             u_indices: Indices of variables to condition on.
-            fixed_x: Fixed values for the conditioned variables.
+            fixed_x: 1D array of fixed values for the conditioned variables.
 
         Returns:
             1D array of shape (d,).
         """
+        X = self.sample_conditional_batch(
+            u_indices, np.atleast_2d(np.asarray(fixed_x)))
+        return X[0]
+
+    def sample_conditional_batch(self, u_indices, fixed_X):
+        """Draw N conditional samples in one operation.
+
+        Args:
+            u_indices: Indices of variables to condition on.
+            fixed_X: 2D array of shape (N, |u|) — fixed values for each draw.
+
+        Returns:
+            2D array of shape (N, d).
+        """
         u = np.asarray(u_indices)
+        N = fixed_X.shape[0]
+        fixed_X = np.asarray(fixed_X)
+
         if len(u) == 0:
-            return self.sample_joint(1)[0]
+            return self.sample_joint(N)
 
-        fixed_x = np.asarray(fixed_x)
         # Transform to latent normal space
-        fixed_u = (fixed_x - self.lows[u]) / (self.highs[u] - self.lows[u])
+        span_u = self.highs[u] - self.lows[u]
+        fixed_u = (fixed_X - self.lows[u]) / span_u
         fixed_u = np.clip(fixed_u, 1e-12, 1 - 1e-12)
-        z_u = norm.ppf(fixed_u)
+        Z_u = norm.ppf(fixed_u)                      # (N, |u|)
 
+        v, A, _cond_cov, L = self._cond_params(u)
+
+        # cond_means = Z_u @ A   (zero-mean latent)
+        cond_means = Z_u @ A                          # (N, |v|)
+
+        Z_std = np.random.randn(N, len(v))
+        Z_v = cond_means + Z_std @ L.T                # (N, |v|)
+
+        Z_full = np.zeros((N, self.d))
+        Z_full[:, u] = Z_u
+        Z_full[:, v] = Z_v
+        U_full = norm.cdf(Z_full)
+        return self.lows + (self.highs - self.lows) * U_full
+
+
+class TruncatedMultivariateNormal:
+    """Truncated multivariate normal inputs with conditional sampling.
+
+    Each marginal is a normal distribution truncated to
+    ``[lower[i], upper[i]]``.  Dependence is induced through the
+    specified covariance matrix.  Both joint and conditional sampling
+    use Gibbs sampling, making the class usable for any truncation
+    pattern where the truncation region is a hyper-rectangle.
+
+    Args:
+        mean: 1D array of means, shape (d,).
+        cov: 2D covariance matrix, shape (d, d).
+        lower: Lower truncation bounds, shape (d,).  Use ``-np.inf``
+            for no lower bound.
+        upper: Upper truncation bounds, shape (d,).  Use ``np.inf``
+            for no upper bound.
+        joint_burn_in: Number of Gibbs iterations per independent
+            joint sample (default 30).
+        cond_burn_in: Number of Gibbs iterations per conditional
+            sample (default 5).  The chain is started at the
+            untruncated conditional mean, which is well-centred, so
+            a small value is sufficient.
+    """
+    def __init__(self, mean, cov, lower, upper,
+                 joint_burn_in=30, cond_burn_in=5):
+        self.mean = np.asarray(mean, dtype=float)
+        self.cov = np.asarray(cov, dtype=float)
+        self.lower = np.asarray(lower, dtype=float)
+        self.upper = np.asarray(upper, dtype=float)
+        self.d = len(mean)
+        self._joint_burn_in = joint_burn_in
+        self._cond_burn_in = cond_burn_in
+
+        assert self.cov.shape == (self.d, self.d), \
+            f"cov must be ({self.d}, {self.d}), got {self.cov.shape}"
+        assert self.lower.shape == (self.d,), \
+            f"lower must be ({self.d},), got {self.lower.shape}"
+        assert self.upper.shape == (self.d,), \
+            f"upper must be ({self.d},), got {self.upper.shape}"
+        assert np.all(self.lower < self.upper), \
+            "lower must be strictly less than upper element-wise"
+
+        # Precompute Gibbs regression coefficients for joint sampling.
+        self._gibbs_betas = []
+        self._gibbs_stds = []
+        for j in range(self.d):
+            not_j = [i for i in range(self.d) if i != j]
+            Sigma_jj = self.cov[j, j]
+            Sigma_j_notj = self.cov[j, not_j]
+            Sigma_notj_notj = self.cov[np.ix_(not_j, not_j)]
+            inv = np.linalg.inv(Sigma_notj_notj)
+            beta = inv @ Sigma_j_notj            # (d-1,)
+            cond_var = Sigma_jj - Sigma_j_notj @ beta
+            self._gibbs_betas.append((not_j, beta))
+            self._gibbs_stds.append(np.sqrt(max(cond_var, 0.0)))
+
+    # --------------------------------------------------------
+    # Conditional-distribution parameters (same formulas as
+    # the untruncated multivariate normal)
+    # --------------------------------------------------------
+    def _cond_params(self, u_indices):
+        """Pre-compute conditional distribution parameters for a subset.
+
+        Returns (v_indices, mu_v, A, cond_cov, L) where:
+            cond_mean(x_u) = mu_v + (x_u - mu_u) @ A
+            cond_cov = Sigma_vv - Sigma_vu @ inv(Sigma_uu) @ Sigma_uv
+            L = cholesky(cond_cov).
+        """
+        u = np.asarray(u_indices)
         all_idx = np.arange(self.d)
         v = np.setdiff1d(all_idx, u)
 
-        Sigma_uu = self.corr[np.ix_(u, u)]
-        Sigma_uv = self.corr[np.ix_(u, v)]
-        Sigma_vu = Sigma_uv.T
-        Sigma_vv = self.corr[np.ix_(v, v)]
+        if len(u) == 0:
+            return v, None, None, None, None
+
+        mu_u = self.mean[u]
+        mu_v = self.mean[v]
+        Sigma_uu = self.cov[np.ix_(u, u)]
+        Sigma_uv = self.cov[np.ix_(u, v)]
+        Sigma_vu = self.cov[np.ix_(v, u)]
+        Sigma_vv = self.cov[np.ix_(v, v)]
 
         inv_Sigma_uu = np.linalg.inv(Sigma_uu)
-        cond_mean = Sigma_vu @ inv_Sigma_uu @ z_u
-        cond_cov = Sigma_vv - Sigma_vu @ inv_Sigma_uu @ Sigma_uv
+        A = inv_Sigma_uu @ Sigma_uv          # (|u|, |v|)
+        cond_cov = Sigma_vv - Sigma_vu @ A    # (|v|, |v|)
+        L = np.linalg.cholesky(cond_cov + 1e-10 * np.eye(len(v)))
 
-        z_v = np.random.multivariate_normal(cond_mean, cond_cov)
-        Z_full = np.zeros(self.d)
-        Z_full[u] = z_u
-        Z_full[v] = z_v
-        U_full = norm.cdf(Z_full)
-        X_full = self.lows + (self.highs - self.lows) * U_full
+        return v, mu_v, A, cond_cov, L
+
+    # --------------------------------------------------------
+    # Joint sampling — vectorised Gibbs across all chains
+    # --------------------------------------------------------
+    def sample_joint(self, n):
+        """Draw n joint samples via vectorised Gibbs sampling.
+
+        Args:
+            n: Number of samples.
+
+        Returns:
+            Array of shape (n, d).
+        """
+        d = self.d
+        lb = self.lower
+        ub = self.upper
+
+        # Initialise all chains at the mean, clipped to bounds.
+        X = np.tile(np.clip(self.mean, lb, ub), (n, 1))
+
+        for _ in range(self._joint_burn_in):
+            for j in range(d):
+                not_j, beta = self._gibbs_betas[j]
+                # Conditional mean for variable j (n,)
+                cond_mean = (self.mean[j]
+                             + (X[:, not_j] - self.mean[not_j]) @ beta)
+                cond_std = self._gibbs_stds[j]
+
+                # Standardised truncation bounds
+                a = (lb[j] - cond_mean) / cond_std
+                b = (ub[j] - cond_mean) / cond_std
+
+                # Sample — fast path for unbounded variables
+                inf_mask = np.isneginf(a) & np.isposinf(b)
+                if np.all(inf_mask):
+                    X[:, j] = np.random.normal(cond_mean, cond_std)
+                else:
+                    new = np.empty(n)
+                    if np.any(inf_mask):
+                        new[inf_mask] = np.random.normal(
+                            cond_mean[inf_mask], cond_std)
+                    not_inf = ~inf_mask
+                    if np.any(not_inf):
+                        new[not_inf] = truncnorm.rvs(
+                            a[not_inf], b[not_inf],
+                            loc=cond_mean[not_inf],
+                            scale=cond_std)
+                    X[:, j] = new
+
+        return X
+
+    # --------------------------------------------------------
+    # Conditional sampling
+    # --------------------------------------------------------
+    def sample_conditional(self, u_indices, fixed_x):
+        """Draw one sample conditioned on fixed values for variables in u.
+
+        Args:
+            u_indices: Indices of variables to condition on.
+            fixed_x: 1D array of fixed values for the conditioned variables.
+
+        Returns:
+            1D array of shape (d,).
+        """
+        X = self.sample_conditional_batch(
+            u_indices, np.atleast_2d(np.asarray(fixed_x, dtype=float)))
+        return X[0]
+
+    def sample_conditional_batch(self, u_indices, fixed_X):
+        """Draw N conditional samples via vectorised Gibbs sampling.
+
+        Args:
+            u_indices: Indices of variables to condition on.
+            fixed_X: 2D array of shape (N, |u|) — fixed values.
+
+        Returns:
+            2D array of shape (N, d).
+        """
+        u = np.asarray(u_indices)
+        N = fixed_X.shape[0]
+        fixed_X = np.asarray(fixed_X, dtype=float)
+
+        if len(u) == 0:
+            return self.sample_joint(N)
+
+        v, mu_v, A, cond_cov, _L = self._cond_params(u)
+        n_v = len(v)
+        mu_u = self.mean[u]
+
+        # Conditional means: (N, |v|)
+        cond_means = mu_v + (fixed_X - mu_u) @ A
+
+        # Truncation bounds for the v-variables
+        lb_v = self.lower[v]
+        ub_v = self.upper[v]
+
+        # Precompute Gibbs parameters for cond_cov (shared across rows).
+        gibbs_betas_v = []
+        gibbs_stds_v = []
+        for j in range(n_v):
+            not_j = [i for i in range(n_v) if i != j]
+            Sigma_jj = cond_cov[j, j]
+            Sigma_j_notj = cond_cov[j, not_j]
+            Sigma_notj_notj = cond_cov[np.ix_(not_j, not_j)]
+            inv = np.linalg.inv(Sigma_notj_notj)
+            beta = inv @ Sigma_j_notj
+            cond_var = Sigma_jj - Sigma_j_notj @ beta
+            gibbs_betas_v.append((not_j, beta))
+            gibbs_stds_v.append(np.sqrt(max(cond_var, 0.0)))
+
+        # Initialise at conditional means, clipped to bounds.
+        X_v = np.clip(cond_means, lb_v, ub_v)
+
+        for _ in range(self._cond_burn_in):
+            for j in range(n_v):
+                not_j, beta = gibbs_betas_v[j]
+                # Conditional mean for variable j within the v-block.
+                # The "unconditional" mean for the truncated v-block is
+                # cond_means[:, j]; we express the conditional mean as
+                #   mean_j + beta @ (x[-j] - mean[-j])
+                mean_v_j = cond_means[:, j]
+                cond_mean_j = (mean_v_j
+                               + (X_v[:, not_j] - cond_means[:, not_j]) @ beta)
+                cond_std_j = gibbs_stds_v[j]
+
+                a = (lb_v[j] - cond_mean_j) / cond_std_j
+                b = (ub_v[j] - cond_mean_j) / cond_std_j
+
+                inf_mask = np.isneginf(a) & np.isposinf(b)
+                if np.all(inf_mask):
+                    X_v[:, j] = np.random.normal(cond_mean_j, cond_std_j)
+                else:
+                    new = np.empty(N)
+                    if np.any(inf_mask):
+                        new[inf_mask] = np.random.normal(
+                            cond_mean_j[inf_mask], cond_std_j)
+                    not_inf = ~inf_mask
+                    if np.any(not_inf):
+                        new[not_inf] = truncnorm.rvs(
+                            a[not_inf], b[not_inf],
+                            loc=cond_mean_j[not_inf],
+                            scale=cond_std_j)
+                    X_v[:, j] = new
+
+        X_full = np.zeros((N, self.d))
+        X_full[:, u] = fixed_X
+        X_full[:, v] = X_v
         return X_full
 
 
@@ -252,23 +577,21 @@ def collect_shapley_data(f, joint, N=10000, predict_batch=None,
     For each subset u of variable indices:
     - If |u| == d (the full set): draw N joint samples, evaluate f,
       store the outputs for variance estimation.
-    - Otherwise: for each of N iterations, draw one joint sample x,
-      evaluate f(x), then draw a conditional sample x_cond where
-      variables in u are fixed to x[u], evaluate f(x_cond). Store
-      the paired outputs for covariance estimation.
+    - Otherwise: draw N joint samples X, evaluate f(X) in batch; then
+      draw N conditional samples X_cond (with variables in u fixed to
+      X[:, u]) and evaluate f(X_cond) in batch.  Store the paired
+      outputs for covariance estimation.
 
     Args:
         f: Model function f(x) taking a 1D array and returning a scalar.
-        joint: Distribution object with sample_joint and sample_conditional.
+        joint: Distribution object with sample_joint, sample_conditional,
+            and sample_conditional_batch.
         N: Number of Monte Carlo samples per subset.
         predict_batch: Optional callable that accepts a 2D array (N, d)
             and returns a 1D array of predictions. When provided, batch
-            evaluation is used for unconditional draws, greatly reducing
-            Python-level call overhead. When None (default), ``f`` is
-            called once per sample.
-        progress: If ``True``, display a single tqdm progress bar
-            tracking the total number of function evaluations across
-            all subsets (requires ``tqdm`` to be installed).
+            evaluation is used for both unconditional and conditional
+            draws. When None, ``f`` is called once per sample.
+        progress: If ``True``, display a single tqdm progress bar.
 
     Returns:
         dict mapping frozenset(u) -> tuple describing stored data.
@@ -279,8 +602,6 @@ def collect_shapley_data(f, joint, N=10000, predict_batch=None,
     n_subsets = len(subsets)          # 2^d - 1
     n_partial = n_subsets - 1         # subsets with |u| < d
 
-    # Each partial subset costs 2N evaluations (N unconditional + N conditional);
-    # the full subset costs N evaluations.  Total = N + 2N * n_partial.
     total_evals = N + 2 * N * n_partial
     pbar = _Progress(total_evals, enabled=progress)
 
@@ -297,26 +618,28 @@ def collect_shapley_data(f, joint, N=10000, predict_batch=None,
             pbar.update(N)
             data[u] = ('full', Y)
         else:
-            # Partial set: unconditional draws (N evals) ...
+            # --- Side A: unconditional draws (N evals, batched) ---
             X = joint.sample_joint(N)
             if predict_batch is not None:
                 Y1 = np.asarray(predict_batch(X), dtype=float)
             else:
                 Y1 = np.array([f(X[i]) for i in range(N)])
             pbar.update(N)
-            # ... then conditional draws (N evals)
-            Y2 = np.zeros(N)
-            for i in range(N):
-                x_cond = joint.sample_conditional(u_list, X[i, u_list])
-                Y2[i] = f(x_cond)
-                pbar.update(1)
+
+            # --- Side B: conditional draws (N evals, batched) ---
+            X_cond = joint.sample_conditional_batch(u_list, X[:, u_list])
+            if predict_batch is not None:
+                Y2 = np.asarray(predict_batch(X_cond), dtype=float)
+            else:
+                Y2 = np.array([f(X_cond[i]) for i in range(N)])
+            pbar.update(N)
             data[u] = ('pair', Y1, Y2)
 
     pbar.close()
     return data
 
 
-def shapley_from_data(data, d):
+def shapley_from_data(data, d, _weights=None):
     """Compute point estimates of Shapley effects from collected data.
 
     Uses the covariance-based formulation: v(u) = Cov[f(X), f(X_u)]
@@ -326,12 +649,17 @@ def shapley_from_data(data, d):
     Args:
         data: Dict from collect_shapley_data.
         d: Number of input dimensions.
+        _weights: Optional precomputed Shapley weights array of length d,
+            where ``_weights[k] = k! (d-k-1)! / d!``.  When ``None`` the
+            weights are computed on first call and cached (memoised) for
+            reuse across bootstrap iterations.
 
     Returns:
         effects: Normalised Shapley effects (sums to 1), shape (d,).
         sh: Unscaled Shapley values, shape (d,).
         total_var: Estimated total variance.
     """
+    # ---- compute v(u) from stored data ----
     v = {frozenset(): 0.0}
     for u, typ in data.items():
         if typ[0] == 'full':
@@ -342,6 +670,11 @@ def shapley_from_data(data, d):
             cov = np.mean(Y1 * Y2) - np.mean(Y1) * np.mean(Y2)
             v[u] = cov
 
+    # ---- precompute Shapley weights once per d (memoised) ----
+    if _weights is None:
+        _weights = _get_shapley_weights(d)
+
+    # ---- accumulate Shapley values ----
     sh = np.zeros(d)
     subsets_all = [frozenset(s) for k in range(d + 1)
                    for s in itertools.combinations(range(d), k)]
@@ -350,13 +683,139 @@ def shapley_from_data(data, d):
             if i not in u:
                 u_with_i = u.union({i})
                 diff = v[u_with_i] - v[u]
-                k = len(u)
-                weight = (math.factorial(k) * math.factorial(d - k - 1)
-                          / math.factorial(d))
-                sh[i] += weight * diff
+                sh[i] += _weights[len(u)] * diff
+
     total_var = v[frozenset(range(d))]
     effects = sh / total_var
     return effects, sh, total_var
+
+
+# Module-level cache for the Shapley weights (one per dimensionality).
+_shapley_weight_cache = {}
+
+
+def _get_shapley_weights(d):
+    """Return array w[k] = k! (d-k-1)! / d! for k = 0, ..., d-1, plus w[d]=0."""
+    if d in _shapley_weight_cache:
+        return _shapley_weight_cache[d]
+    w = np.empty(d + 1)
+    d_fact = math.factorial(d)
+    for k in range(d):
+        w[k] = (math.factorial(k) * math.factorial(d - k - 1)) / d_fact
+    w[d] = 0.0   # guard — the full set is never used as u (i ∉ full set)
+    _shapley_weight_cache[d] = w
+    return w
+
+
+# -----------------------------------------------------------------------
+# Compiled array-based bootstrap helpers (Numba-accelerated when available)
+# -----------------------------------------------------------------------
+def _data_to_arrays(data, d):
+    """Convert the data dict into flat arrays for compiled bootstrap.
+
+    Returns (Y_full, pair_Y1, pair_Y2, subset_sizes, union_lookup) where:
+    - Y_full: (N,) — outputs for the full set
+    - pair_Y1, pair_Y2: (n_pairs, N) — paired outputs for partial subsets
+    - subset_sizes: int array (n_all,) — |u| for each canonical subset
+    - union_lookup: int array (n_all, d) — index of u ∪ {i}, or -1 if i ∈ u
+      (index 0 is the empty set, index n_all-1 is the full set)
+    """
+    # Build canonical ordering of all subsets
+    all_subsets = [frozenset(s) for k in range(d + 1)
+                   for s in itertools.combinations(range(d), k)]
+    mask_to_idx = {s: i for i, s in enumerate(all_subsets)}
+    n_all = len(all_subsets)
+
+    # Subset sizes and union lookup
+    subset_sizes = np.array([len(s) for s in all_subsets], dtype=np.int32)
+    union_lookup = np.full((n_all, d), -1, dtype=np.int32)
+    for idx, s in enumerate(all_subsets):
+        for i in range(d):
+            if i not in s:
+                u2 = s.union({i})
+                union_lookup[idx, i] = mask_to_idx[u2]
+
+    # Extract Y arrays
+    N = len(data[all_subsets[-1]][1])
+    Y_full = data[all_subsets[-1]][1].astype(np.float64)
+
+    pair_subsets = all_subsets[1:-1]   # exclude empty and full
+    n_pairs = len(pair_subsets)
+    pair_Y1 = np.empty((n_pairs, N), dtype=np.float64)
+    pair_Y2 = np.empty((n_pairs, N), dtype=np.float64)
+    for j, s in enumerate(pair_subsets):
+        pair_Y1[j] = data[s][1]
+        pair_Y2[j] = data[s][2]
+
+    return Y_full, pair_Y1, pair_Y2, subset_sizes, union_lookup
+
+
+if _NUMBA_AVAILABLE:
+
+    @njit(cache=True)
+    def _bootstrap_iter_numba(Y_full, pair_Y1, pair_Y2, subset_sizes,
+                              union_lookup, weights, d, B, alpha,
+                              rng_states):
+        """Compiled bootstrap: B iterations of resample → Shapley.
+
+        Args:
+            Y_full, pair_Y1, pair_Y2: data arrays (see _data_to_arrays).
+            subset_sizes: int32 (n_all,).
+            union_lookup: int32 (n_all, d).
+            weights: float64 (d,).
+            d: input dimensionality.
+            B: number of bootstrap replications.
+            alpha: significance level.
+            rng_states: int32 (B,) — per-iteration random seeds.
+
+        Returns:
+            point_eff: (d,), lower: (d,), upper: (d,).
+        """
+        N = Y_full.shape[0]
+        n_pairs = pair_Y1.shape[0]
+        n_all = n_pairs + 2  # empty (0) + pairs + full (n_pairs+1)
+        boot_effects = np.zeros((B, d))
+
+        for b in range(B):
+            np.random.seed(rng_states[b])
+            idx = np.random.choice(N, size=N, replace=True)
+
+            # Compute v(u) from resampled data
+            v = np.zeros(n_all)
+            v[n_pairs + 1] = np.var(Y_full[idx])  # full set
+            for s in range(n_pairs):
+                y1 = pair_Y1[s, idx]
+                y2 = pair_Y2[s, idx]
+                v[s + 1] = np.mean(y1 * y2) - np.mean(y1) * np.mean(y2)
+
+            # Shapley accumulation (start from empty set at index 0)
+            sh = np.zeros(d)
+            for s in range(n_all):
+                k = subset_sizes[s]
+                w = weights[k]
+                v_s = v[s]
+                for i in range(d):
+                    u_idx = union_lookup[s, i]
+                    if u_idx >= 0:
+                        sh[i] += w * (v[u_idx] - v_s)
+
+            total_var = v[n_pairs + 1]
+            boot_effects[b] = sh / total_var
+
+        # Point estimate (first iteration)
+        point_eff = boot_effects[0]
+        lower = np.zeros(d)
+        upper = np.zeros(d)
+        for i in range(d):
+            col = np.sort(boot_effects[:, i])
+            lower[i] = col[int(np.floor(B * alpha / 2))]
+            upper[i] = col[int(np.ceil(B * (1 - alpha / 2))) - 1]
+        return point_eff, lower, upper
+
+else:
+    # Stub for when Numba is not available
+    def _bootstrap_iter_numba(*args, **kwargs):
+        raise RuntimeError("Numba is not available — use the pure-Python bootstrap path")
 
 
 def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None):
@@ -379,7 +838,7 @@ def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None):
 
     point_eff, _, _ = shapley_from_data(data, d)
 
-    # Determine sample size N from the data
+    # Determine sample size N
     for typ in data.values():
         if typ[0] == 'full':
             N = len(typ[1])
@@ -388,20 +847,32 @@ def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None):
             N = len(typ[1])
             break
 
-    boot_effects = np.zeros((B, d))
-    for b in range(B):
-        idx = np.random.choice(N, size=N, replace=True)
-        boot_data = {}
-        for u, typ in data.items():
-            if typ[0] == 'full':
-                boot_data[u] = ('full', typ[1][idx])
-            else:
-                boot_data[u] = ('pair', typ[1][idx], typ[2][idx])
-        eff_b, _, _ = shapley_from_data(boot_data, d)
-        boot_effects[b] = eff_b
+    # ---- compiled bootstrap path ----
+    if _NUMBA_AVAILABLE:
+        (Y_full, pair_Y1, pair_Y2,
+         subset_sizes, union_lookup) = _data_to_arrays(data, d)
+        weights = _get_shapley_weights(d)
+        rng_states = np.random.randint(0, 2**31, size=B, dtype=np.int32)
+        _, lower, upper = _bootstrap_iter_numba(
+            Y_full, pair_Y1, pair_Y2, subset_sizes, union_lookup,
+            weights, d, B, alpha, rng_states,
+        )
+    else:
+        # ---- pure-Python fallback ----
+        boot_effects = np.zeros((B, d))
+        for b in range(B):
+            idx = np.random.choice(N, size=N, replace=True)
+            boot_data = {}
+            for u, typ in data.items():
+                if typ[0] == 'full':
+                    boot_data[u] = ('full', typ[1][idx])
+                else:
+                    boot_data[u] = ('pair', typ[1][idx], typ[2][idx])
+            eff_b, _, _ = shapley_from_data(boot_data, d)
+            boot_effects[b] = eff_b
+        lower = np.percentile(boot_effects, 100 * alpha / 2, axis=0)
+        upper = np.percentile(boot_effects, 100 * (1 - alpha / 2), axis=0)
 
-    lower = np.percentile(boot_effects, 100 * alpha / 2, axis=0)
-    upper = np.percentile(boot_effects, 100 * (1 - alpha / 2), axis=0)
     return point_eff, lower, upper
 
 
@@ -412,16 +883,19 @@ def compute_subset_data(f, joint, u, N, data_cache, predict_batch=None,
                         pbar=None):
     """Compute and store data for a subset u if not already cached.
 
+    Both unconditional (Side A) and conditional (Side B) draws are
+    batched — the full N samples are drawn and evaluated in one
+    operation, eliminating the per-sample Python loop.
+
     Args:
         f: Model function.
-        joint: Distribution object.
+        joint: Distribution object with sample_joint,
+            sample_conditional_batch.
         u: Iterable of variable indices for the subset.
         N: Sample size.
         data_cache: Dict to store computed data.
-        predict_batch: Optional batch prediction callable (see
-            ``collect_shapley_data``).
-        pbar: Optional :class:`_Progress` instance to update after each
-            evaluation step.  When ``None`` no progress is reported.
+        predict_batch: Optional batch prediction callable.
+        pbar: Optional :class:`_Progress` instance.
     """
     key = frozenset(u)
     if key in data_cache:
@@ -430,14 +904,12 @@ def compute_subset_data(f, joint, u, N, data_cache, predict_batch=None,
     if len(u) == 0:
         return
 
-    # Announce cost before computing — allows dynamic progress bars to
-    # grow their total as subsets are discovered lazily.
     cost = N if len(u) == d else 2 * N
     if pbar is not None:
         pbar.add_total(cost)
 
     if len(u) == d:
-        # Full set: sample and evaluate (N evals)
+        # Full set
         X = joint.sample_joint(N)
         if predict_batch is not None:
             Y = np.asarray(predict_batch(X), dtype=float)
@@ -447,8 +919,9 @@ def compute_subset_data(f, joint, u, N, data_cache, predict_batch=None,
             pbar.update(N)
         data_cache[key] = ('full', Y)
     else:
-        # Partial set: unconditional draws (N evals) ...
         u_list = list(u)
+
+        # --- Side A: unconditional draws (batched) ---
         X = joint.sample_joint(N)
         if predict_batch is not None:
             Y1 = np.asarray(predict_batch(X), dtype=float)
@@ -456,13 +929,15 @@ def compute_subset_data(f, joint, u, N, data_cache, predict_batch=None,
             Y1 = np.array([f(X[i]) for i in range(N)])
         if pbar is not None:
             pbar.update(N)
-        # ... then conditional draws (N evals)
-        Y2 = np.zeros(N)
-        for i in range(N):
-            x_cond = joint.sample_conditional(u_list, X[i, u_list])
-            Y2[i] = f(x_cond)
-            if pbar is not None:
-                pbar.update(1)
+
+        # --- Side B: conditional draws (batched) ---
+        X_cond = joint.sample_conditional_batch(u_list, X[:, u_list])
+        if predict_batch is not None:
+            Y2 = np.asarray(predict_batch(X_cond), dtype=float)
+        else:
+            Y2 = np.array([f(X_cond[i]) for i in range(N)])
+        if pbar is not None:
+            pbar.update(N)
         data_cache[key] = ('pair', Y1, Y2)
 
 
@@ -502,10 +977,8 @@ def shapley_effects_permutation(f, joint, N=10000, n_perm=1000,
         B: Bootstrap replications (0 to skip).
         alpha: Significance level for CIs.
         random_state: Seed for reproducibility.
-        predict_batch: Optional batch prediction callable (see
-            ``shapley_effects``).
-        progress: If ``True``, display tqdm progress bars over the
-            permutation loop and the bootstrap loop (if B > 0).
+        predict_batch: Optional batch prediction callable.
+        progress: If ``True``, display tqdm progress bars.
 
     Returns:
         effects: Normalised Shapley effects, shape (d,).
@@ -519,8 +992,6 @@ def shapley_effects_permutation(f, joint, N=10000, n_perm=1000,
     d = joint.d
     perms = [np.random.permutation(d).tolist() for _ in range(n_perm)]
 
-    # Subsets are evaluated lazily — start without a known total.
-    # compute_subset_data will grow the bar as new subsets are discovered.
     pbar = _Progress(0, enabled=progress)
 
     data = {}
@@ -603,8 +1074,9 @@ def shapley_effects(f, joint, N=10000, method='exhaustive', n_perm=1000,
 
     Args:
         f: Model function f(x) taking a 1D array and returning a scalar.
-        joint: Distribution object with ``sample_joint(n)`` and
-            ``sample_conditional(u_indices, fixed_x)`` methods.
+        joint: Distribution object with ``sample_joint(n)``,
+            ``sample_conditional(u_indices, fixed_x)``, and
+            ``sample_conditional_batch(u_indices, fixed_X)`` methods.
         N: Monte Carlo sample size per subset.
         method: Computation method, 'exhaustive' or 'permutation'.
         n_perm: Number of random permutations (permutation method only).
@@ -613,8 +1085,8 @@ def shapley_effects(f, joint, N=10000, method='exhaustive', n_perm=1000,
         random_state: Random seed for reproducibility.
         predict_batch: Optional callable that accepts a 2D array (N, d)
             and returns a 1D array of predictions. When provided, batch
-            evaluation is used for unconditional draws, greatly reducing
-            Python-level call overhead.
+            evaluation is used for both unconditional and conditional
+            draws, greatly reducing Python-level call overhead.
         progress: If ``True``, display tqdm progress bars (requires
             ``tqdm`` to be installed).
 
@@ -676,6 +1148,8 @@ class MCShapley:
         f: Model function f(x) taking a 1D array and returning a scalar.
         joint: Distribution object with ``sample_joint`` and
             ``sample_conditional`` methods.
+        predict_batch: Optional callable that accepts a 2D array (N, d)
+            and returns a 1D array of predictions.
 
     Examples:
         >>> mc = MCShapley(f=my_model, joint=my_distribution)
@@ -698,12 +1172,14 @@ class MCShapley:
             B: Bootstrap replications (0 to skip).
             alpha: Significance level for CIs.
             random_state: Random seed.
-            progress: If ``True``, display tqdm progress bars.
+            progress: If ``True``, show tqdm progress bars.
 
         Returns:
             pd.DataFrame with columns:
-            - 'variable': Input variable names (if provided).
+            - 'variable': Input variable names.
             - 'effect': Normalised Shapley effects.
+            - 'shapley_value': Unscaled Shapley values.
+            - 'total_variance': Estimated total variance.
             - 'lower', 'upper': CI bounds (if B > 0).
         """
         result = shapley_effects(
@@ -711,7 +1187,7 @@ class MCShapley:
             n_perm=n_perm, B=B, alpha=alpha,
             random_state=random_state,
             predict_batch=self.predict_batch,
-            progress=progress
+            progress=progress,
         )
 
         if B > 0:

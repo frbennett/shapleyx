@@ -86,6 +86,7 @@ ShapleyX provides two distribution families with built-in conditional sampling:
 |---|---|
 | `GaussianCopulaUniform` | Uniform marginals $[a_i, b_i]$ with dependence induced by a latent multivariate normal. Correlation matrix $\mathbf{R}$ controls dependence. |
 | `MultivariateNormal` | Jointly normal with mean $\boldsymbol{\mu}$ and covariance $\boldsymbol{\Sigma}$. Conditional distributions are analytically tractable. |
+| `TruncatedMultivariateNormal` | Jointly normal with per-dimension truncation bounds $[a_i, b_i]$. Both joint and conditional sampling use Gibbs sampling, making it suitable for any hyper-rectangular truncation region. |
 
 ### Computation Methods
 

@@ -5,5 +5,8 @@ __pycache__/
 # Ignore built documentation
 site/
 
+# Ignore mkdocs-jupyter cache
+.cache/
+
 # Ignore egg-info
 *.egg-info/

@@ -17,6 +17,7 @@ jobs:
         with:
           python-version: '3.x'
       - run: pip install mkdocs mkdocs-material mkdocstrings[python] mkdocs-jupyter pymdown-extensions
+      - run: pip install .
       - name: Deploy to GitHub Pages
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

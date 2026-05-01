@@ -7,6 +7,7 @@
       members:
         - MultivariateNormal
         - GaussianCopulaUniform
+        - TruncatedMultivariateNormal
         - shapley_effects
         - MCShapley
         - collect_shapley_data
