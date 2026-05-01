@@ -61,6 +61,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">How-to Guides</span></p>
               <ul>
@@ -119,6 +121,8 @@
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/theory/">Theory</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/performance/">Performance</a>
                   </li>
               </ul>
       </div>
@@ -893,7 +897,7 @@ and delta samples.</p>
 
 
 <h4 id="shapleyx.rshdmr.get_mc_shapley" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">joint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">corr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">,</span> <span class="n">n_perm</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+            <code class="highlight language-python"><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">joint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">corr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">,</span> <span class="n">n_perm</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
 
 </h4>
 
@@ -997,6 +1001,14 @@ the return value is a scalar. If <code>None</code>, the trained
 surrogate model's :meth:<code>predict</code> method is used.
 This allows both surrogate-based and user-defined
 function evaluations.</p>
+              </div>
+            </li>
+            <li>
+              <b><code>progress</code></b>
+              –
+              <div class="doc-md-description">
+                <p>If <code>True</code>, display tqdm progress bars during
+the Monte Carlo sampling (requires <code>tqdm</code> installed).</p>
               </div>
             </li>
         </ul>
@@ -1196,10 +1208,18 @@ function evaluations.</p>
 <span class="normal">593</span>
 <span class="normal">594</span>
 <span class="normal">595</span>
-<span class="normal">596</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_mc_shapley</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">corr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
+<span class="normal">596</span>
+<span class="normal">597</span>
+<span class="normal">598</span>
+<span class="normal">599</span>
+<span class="normal">600</span>
+<span class="normal">601</span>
+<span class="normal">602</span>
+<span class="normal">603</span>
+<span class="normal">604</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">get_mc_shapley</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">joint</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">corr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>
                    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">,</span> <span class="n">n_perm</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
                    <span class="n">B</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                   <span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+                   <span class="n">f</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">progress</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Compute Shapley effects via Monte Carlo with correlated inputs.</span>
 
 <span class="sd">    Uses a Monte Carlo approach to estimate Shapley effects when</span>
@@ -1238,6 +1258,8 @@ function evaluations.</p>
 <span class="sd">            surrogate model&#39;s :meth:`predict` method is used.</span>
 <span class="sd">            This allows both surrogate-based and user-defined</span>
 <span class="sd">            function evaluations.</span>
+<span class="sd">        progress: If ``True``, display tqdm progress bars during</span>
+<span class="sd">            the Monte Carlo sampling (requires ``tqdm`` installed).</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        pd.DataFrame: DataFrame with columns:</span>
@@ -1273,10 +1295,15 @@ function evaluations.</p>
 <span class="sd">        ... )</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Determine the model function</span>
+    <span class="c1"># self.predict handles both 1D (scalar) and 2D (batch) — pass as batch</span>
+    <span class="c1"># predictor for efficient MC evaluation. User-defined f is wrapped for</span>
+    <span class="c1"># compatibility and has no batch predictor.</span>
     <span class="k">if</span> <span class="n">f</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">_f</span> <span class="o">=</span> <span class="n">_wrap_predict_fn</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">predict</span><span class="p">)</span>
+        <span class="n">_f</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span>
+        <span class="n">_predict_batch</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">predict</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">_f</span> <span class="o">=</span> <span class="n">f</span>
+        <span class="n">_f</span> <span class="o">=</span> <span class="n">_wrap_predict_fn</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+        <span class="n">_predict_batch</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="c1"># Build the distribution if not provided</span>
     <span class="k">if</span> <span class="n">joint</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1289,10 +1316,11 @@ function evaluations.</p>
         <span class="n">joint</span> <span class="o">=</span> <span class="n">GaussianCopulaUniform</span><span class="p">(</span><span class="n">lows</span><span class="p">,</span> <span class="n">highs</span><span class="p">,</span> <span class="n">corr</span><span class="p">)</span>
 
     <span class="c1"># Compute MC Shapley effects</span>
-    <span class="n">mc</span> <span class="o">=</span> <span class="n">MCShapley</span><span class="p">(</span><span class="n">_f</span><span class="p">,</span> <span class="n">joint</span><span class="p">)</span>
+    <span class="n">mc</span> <span class="o">=</span> <span class="n">MCShapley</span><span class="p">(</span><span class="n">_f</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">predict_batch</span><span class="o">=</span><span class="n">_predict_batch</span><span class="p">)</span>
     <span class="n">df</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
         <span class="n">N</span><span class="o">=</span><span class="n">N</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="n">method</span><span class="p">,</span> <span class="n">n_perm</span><span class="o">=</span><span class="n">n_perm</span><span class="p">,</span>
-        <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span>
+        <span class="n">B</span><span class="o">=</span><span class="n">B</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="n">random_state</span><span class="p">,</span>
+        <span class="n">progress</span><span class="o">=</span><span class="n">progress</span>
     <span class="p">)</span>
 
     <span class="c1"># Replace generic variable names with actual feature names</span>

@@ -61,6 +61,8 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">How-to Guides</span></p>
               <ul>
@@ -105,6 +107,8 @@
     </ul>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../performance/">Performance</a>
                   </li>
               </ul>
       </div>
@@ -215,6 +219,10 @@ v(u) = \text{Cov}\big[f(\mathbf{X}),\, f(\mathbf{X}_u)\big]
 <tr>
 <td><code>MultivariateNormal</code></td>
 <td>Jointly normal with mean <span class="arithmatex">\(\boldsymbol{\mu}\)</span> and covariance <span class="arithmatex">\(\boldsymbol{\Sigma}\)</span>. Conditional distributions are analytically tractable.</td>
+</tr>
+<tr>
+<td><code>TruncatedMultivariateNormal</code></td>
+<td>Jointly normal with per-dimension truncation bounds <span class="arithmatex">\([a_i, b_i]\)</span>. Both joint and conditional sampling use Gibbs sampling, making it suitable for any hyper-rectangular truncation region.</td>
 </tr>
 </tbody>
 </table>
