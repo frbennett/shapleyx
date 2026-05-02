@@ -1,7 +1,8 @@
 numpy
+scipy
 pandas
 matplotlib
-scipy
+scikit-learn
 
 [dev]
 pytest>=6.0
@@ -14,3 +15,6 @@ ipython>=7.0
 [docs]
 mkdocs>=1.2
 mkdocs-material>=7.0
+mkdocstrings[python]
+mkdocs-jupyter
+pymdown-extensions
