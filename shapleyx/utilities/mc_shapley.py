@@ -1150,10 +1150,12 @@ def shapley_effects_permutation(f, joint, N=10000, n_perm=1000,
     d = joint.d
     perms = [np.random.permutation(d).tolist() for _ in range(n_perm)]
 
-    # Pre-compute worst-case total evaluations for progress bar.
-    # Each permutation visits d subsets; the full set costs N,
-    # all others cost 2N.  Caching may reduce the actual total.
-    total_evals = n_perm * (2 * d - 1) * N
+    # Progress bar: use exhaustive total as the upper bound, since
+    # at most 2^d - 1 unique subsets can ever be evaluated.  Caching
+    # will cause the bar to complete early — showing how much work
+    # was saved by subset reuse.
+    max_subsets = 2**d - 1
+    total_evals = N + 2 * N * (max_subsets - 1)  # full set costs N
     pbar = _Progress(total_evals, enabled=progress)
 
     data = {}
