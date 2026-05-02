@@ -1227,7 +1227,7 @@ def shapley_effects_permutation(f, joint, N=10000, n_perm=1000,
 # ------------------------------------------------------------
 def shapley_effects(f, joint, N=10000, method='exhaustive', n_perm=1000,
                     B=0, alpha=0.05, random_state=None,
-                    predict_batch=None, progress=False):
+                    predict_batch=None, progress=False, k_max=None):
     """Compute Shapley effects for correlated inputs via Monte Carlo.
 
     This is the main entry point for the MC Shapley algorithm.
@@ -1251,6 +1251,8 @@ def shapley_effects(f, joint, N=10000, method='exhaustive', n_perm=1000,
             draws, greatly reducing Python-level call overhead.
         progress: If ``True``, display tqdm progress bars (requires
             ``tqdm`` to be installed).
+        k_max: Optional maximum coalition size (exhaustive method only).
+            When set, only subsets up to size ``k_max`` are evaluated.
 
     Returns:
         If B == 0:
@@ -1278,11 +1280,11 @@ def shapley_effects(f, joint, N=10000, method='exhaustive', n_perm=1000,
 
     if method == 'exhaustive':
         data = collect_shapley_data(f, joint, N, predict_batch=predict_batch,
-                                    progress=progress)
-        effects, sh, total_var = shapley_from_data(data, joint.d)
+                                    progress=progress, k_max=k_max)
+        effects, sh, total_var = shapley_from_data(data, joint.d, k_max=k_max)
         if B > 0:
             _, lower, upper = bootstrap_shapley(
-                data, joint.d, B, alpha, random_state
+                data, joint.d, B, alpha, random_state, k_max=k_max,
             )
             return effects, sh, total_var, lower, upper
         return effects, sh, total_var
