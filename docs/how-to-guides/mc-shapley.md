@@ -141,6 +141,37 @@ print(f"X1 effect: {mc.loc[0, 'effect']:.4f} "
       f"[{mc.loc[0, 'lower']:.4f}, {mc.loc[0, 'upper']:.4f}]")
 ```
 
+## Sobol Indices from the Same Data
+
+The Owen & Prieur covariance formulation $v(u) = \text{Cov}[f(\mathbf{X}), f(\mathbf{X}_u)]$ equals
+the **closed Sobol index** $\mathbb{V}[\mathbb{E}(f(\mathbf{X}) \mid \mathbf{X}_u)]$.  This means
+**first-order ($S_i$) and total-order ($T_i$) Sobol indices** can be extracted from the same
+Monte Carlo data at zero additional cost:
+
+$$S_i = \frac{v(\{i\})}{v(\text{full})}, \qquad
+T_i = 1 - \frac{v(\text{all}\setminus\{i\})}{v(\text{full})}$$
+
+When using `method='exhaustive'`, the returned DataFrame includes:
+
+| Column | Description |
+|---|---|
+| `sobol_first` | First-order Sobol index $S_i$ |
+| `sobol_total` | Total-order Sobol index $T_i$ |
+| `sobol_first_lower`, `sobol_first_upper` | Bootstrap CIs for $S_i$ (if `B > 0`) |
+| `sobol_total_lower`, `sobol_total_upper` | Bootstrap CIs for $T_i$ (if `B > 0`) |
+
+```python
+mc = model.get_mc_shapley(N=5000, method='exhaustive', B=500)
+print(mc[['variable', 'effect', 'sobol_first', 'sobol_total']])
+```
+
+For the permutation method, Sobol columns are returned as `NaN` — the lazy subset
+evaluation may not include all singleton and $(d-1)$-variable subsets needed.
+
+**Note on correlated inputs:** Under correlation, the standard inequality
+$S_i \leq T_i$ no longer holds.  See the [MC Shapley + Sobol](../tutorials/mc_shapley_sobol/)
+tutorial for a detailed explanation.
+
 ## Performance Tips
 
 - **Start with small N**: Use `N=1000–2000` for quick exploration, increase for final results.

@@ -13,4 +13,6 @@
         - collect_shapley_data
         - shapley_from_data
         - bootstrap_shapley
+        - sobol_from_data
+        - bootstrap_sobol
         - shapley_effects_permutation

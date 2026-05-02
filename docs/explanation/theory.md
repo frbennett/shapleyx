@@ -78,6 +78,32 @@ where $\mathbf{X}_u$ is a random vector constructed by:
 
 The MC Shapley algorithm estimates $v(u)$ for each subset by Monte Carlo, then assembles the Shapley effects via the standard coalition formula.
 
+### MC Sobol Indices as a By-Product
+
+The same $v(u)$ values equal the **closed Sobol indices**:
+
+$$v(u) = \text{Cov}[f(\mathbf{X}), f(\mathbf{X}_u)] = \mathbb{V}[\mathbb{E}(f(\mathbf{X}) \mid \mathbf{X}_u)]$$
+
+This is a direct consequence of the Owen & Prieur (2017) formulation — see the
+[proof in their paper](https://arxiv.org/abs/1704.06942).  From $v(u)$ we obtain
+both first-order and total-order Sobol indices without additional model evaluations:
+
+$$S_i = \frac{v(\{i\})}{v(\text{full})}, \qquad
+T_i = 1 - \frac{v(\text{all}\setminus\{i\})}{v(\text{full})}$$
+
+where $v(\text{full}) = \mathbb{V}(f(\mathbf{X}))$ is the total output variance.
+
+The `MCShapley.compute()` method returns `sobol_first` and `sobol_total` columns
+alongside the Shapley effects, with bootstrap confidence intervals available
+via `bootstrap_sobol()`.  This gives practitioners three complementary perspectives
+from a single data collection: $S_i$ (main effect), Shapley (fair attribution
+including interactions), and $T_i$ (total effect).
+
+**Important:** Under correlated inputs, the standard inequality $S_i \leq T_i$ can
+break down — correlation inflates $S_i$ (shared information through dependence) and
+deflates $T_i$ (other variables proxy for $X_i$).  The Shapley effect remains
+axiomatically interpretable regardless of the correlation structure.
+
 ### Distribution Classes
 
 ShapleyX provides two distribution families with built-in conditional sampling:
