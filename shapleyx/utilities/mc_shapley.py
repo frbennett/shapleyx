@@ -922,6 +922,59 @@ def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None):
     return point_eff, lower, upper
 
 
+def bootstrap_sobol(data, d, B=1000, alpha=0.05, random_state=None):
+    """Bootstrap confidence intervals for first-order and total-order
+    Sobol indices from the exhaustive method.
+
+    Args:
+        data: Dict from ``collect_shapley_data``.
+        d: Number of input dimensions.
+        B: Number of bootstrap replications.
+        alpha: Significance level (e.g., 0.05 for 95% CI).
+        random_state: Seed for reproducibility.
+
+    Returns:
+        S_point: Point estimates of first-order Sobol (d,).
+        S_lower, S_upper: CI bounds for first-order Sobol (d,).
+        T_point: Point estimates of total-order Sobol (d,).
+        T_lower, T_upper: CI bounds for total-order Sobol (d,).
+    """
+    if random_state is not None:
+        np.random.seed(random_state)
+
+    S_point, T_point = sobol_from_data(data, d)
+
+    # Determine sample size N
+    for typ in data.values():
+        if typ[0] == 'full':
+            N = len(typ[1])
+            break
+        elif typ[0] == 'pair':
+            N = len(typ[1])
+            break
+
+    boot_S = np.zeros((B, d))
+    boot_T = np.zeros((B, d))
+    for b in range(B):
+        idx = np.random.choice(N, size=N, replace=True)
+        boot_data = {}
+        for u, typ in data.items():
+            if typ[0] == 'full':
+                boot_data[u] = ('full', typ[1][idx])
+            else:
+                boot_data[u] = ('pair', typ[1][idx], typ[2][idx])
+        Sb, Tb = sobol_from_data(boot_data, d)
+        boot_S[b] = Sb
+        boot_T[b] = Tb
+
+    S_lower = np.percentile(boot_S, 100 * alpha / 2, axis=0)
+    S_upper = np.percentile(boot_S, 100 * (1 - alpha / 2), axis=0)
+    T_lower = np.percentile(boot_T, 100 * alpha / 2, axis=0)
+    T_upper = np.percentile(boot_T, 100 * (1 - alpha / 2), axis=0)
+
+    return S_point, S_lower, S_upper, T_point, T_lower, T_upper
+
+
 # ------------------------------------------------------------
 # Random permutation method (with caching)
 # ------------------------------------------------------------
@@ -1253,6 +1306,14 @@ class MCShapley:
                 point, lower, upper = bootstrap_shapley(
                     data, self.d, B, alpha, random_state,
                 )
+                _, S_lower, S_upper, _, T_lower, T_upper = bootstrap_sobol(
+                    data, self.d, B, alpha, random_state,
+                )
+            else:
+                S_lower = np.full(self.d, np.nan)
+                S_upper = np.full(self.d, np.nan)
+                T_lower = np.full(self.d, np.nan)
+                T_upper = np.full(self.d, np.nan)
         elif method == 'permutation':
             result = shapley_effects_permutation(
                 self.f, self.joint, N=N, n_perm=n_perm,
@@ -1267,6 +1328,10 @@ class MCShapley:
             # Sobol indices not available for permutation (lazy subsets)
             S = np.full(self.d, np.nan)
             T = np.full(self.d, np.nan)
+            S_lower = np.full(self.d, np.nan)
+            S_upper = np.full(self.d, np.nan)
+            T_lower = np.full(self.d, np.nan)
+            T_upper = np.full(self.d, np.nan)
             if B > 0:
                 lower = lower
                 upper = upper
@@ -1286,5 +1351,9 @@ class MCShapley:
         if B > 0:
             df['lower'] = lower
             df['upper'] = upper
+        df['sobol_first_lower'] = S_lower
+        df['sobol_first_upper'] = S_upper
+        df['sobol_total_lower'] = T_lower
+        df['sobol_total_upper'] = T_upper
 
         return df
