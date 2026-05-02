@@ -52,10 +52,6 @@ class _Progress:
     Created with a pre-computed total; updated after each batch or
     per-sample evaluation step.  Degrades to a no-op when ``tqdm``
     is not installed or ``enabled`` is ``False``.
-
-    When *total* is zero the bar is created without a known total;
-    :meth:`add_total` can grow it as work is discovered (used by the
-    permutation method where subsets are evaluated lazily).
     """
     def __init__(self, total, desc='MC Shapley', enabled=True):
         self._pbar = None
@@ -1057,10 +1053,6 @@ def compute_subset_data(f, joint, u, N, data_cache, predict_batch=None,
     if len(u) == 0:
         return
 
-    cost = N if len(u) == d else 2 * N
-    if pbar is not None:
-        pbar.add_total(cost)
-
     if len(u) == d:
         # Full set
         X = joint.sample_joint(N)
@@ -1145,7 +1137,11 @@ def shapley_effects_permutation(f, joint, N=10000, n_perm=1000,
     d = joint.d
     perms = [np.random.permutation(d).tolist() for _ in range(n_perm)]
 
-    pbar = _Progress(0, enabled=progress)
+    # Pre-compute worst-case total evaluations for progress bar.
+    # Each permutation visits d subsets; the full set costs N,
+    # all others cost 2N.  Caching may reduce the actual total.
+    total_evals = n_perm * (2 * d - 1) * N
+    pbar = _Progress(total_evals, enabled=progress)
 
     data = {}
 
