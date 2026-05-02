@@ -98,11 +98,10 @@ joint = TruncatedMultivariateNormal(
     upper=[1.0,  1.0,  1.0],
 )
 ```
-
 | Method | Implementation |
 |---|---|
 | `sample_joint` | Vectorised Gibbs sampling — iterates over variables, each drawn from a univariate truncated normal conditioned on current values of all others |
-| `sample_conditional_batch` | Gibbs on the $|v|$-dimensional truncated conditional, started at the well-centred untruncated conditional mean |
+| `sample_conditional_batch` | Gibbs on the $\lvert v\rvert$-dimensional truncated conditional, started at the well-centred untruncated conditional mean |
 
 Tune `joint_burn_in` (default 30) and `cond_burn_in` (default 5) to balance
 speed and convergence.  Use `-np.inf` / `np.inf` for unbounded dimensions.
