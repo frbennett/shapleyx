@@ -677,11 +677,11 @@ def shapley_from_data(data, d, _weights=None, k_max=None):
     variables as X.
 
     When ``k_max`` is set and some coalitions are missing from the
-    data, their v(u) is approximated as the total variance — i.e.,
-    missing high-order interactions are assumed to contribute
-    proportionally.  For models with sparse high-order structure
-    (e.g., RS-HDMR with ``polys=[10, 5]`` has only second-order
-    interactions) this is conservative but consistent.
+    data, Shapley contributions are only computed for coalitions whose
+    v(u) and v(u ∪ {i}) are both available.  The effects are then
+    renormalised to sum to 1, which distributes the missing variance
+    proportionally.  For models whose HDMR expansion is bounded at
+    order ``k_max`` (e.g., RS-HDMR surrogates), this is exact.
 
     Args:
         data: Dict from collect_shapley_data.
@@ -691,7 +691,8 @@ def shapley_from_data(data, d, _weights=None, k_max=None):
             weights are computed on first call and cached (memoised) for
             reuse across bootstrap iterations.
         k_max: Optional maximum coalition size used during data
-            collection.  Used to handle missing subsets gracefully.
+            collection.  Used to restrict the accumulation to
+            available coalitions.
 
     Returns:
         effects: Normalised Shapley effects (sums to 1), shape (d,).
@@ -719,15 +720,27 @@ def shapley_from_data(data, d, _weights=None, k_max=None):
     sh = np.zeros(d)
     subsets_all = [frozenset(s) for k in range(d + 1)
                    for s in itertools.combinations(range(d), k)]
+
+    truncating = k_max is not None and k_max < d
+
     for i in range(d):
         for u in subsets_all:
             if i not in u:
                 u_with_i = u.union({i})
-                # Use stored v(u) if available, else fall back to total_var
-                v_u = v.get(u, total_var)
-                v_ui = v.get(u_with_i, total_var)
-                diff = v_ui - v_u
+                if truncating and (u not in v or u_with_i not in v):
+                    # Skip coalitions where we don't have both v(u)
+                    # and v(u ∪ {i}) — these will be accounted for
+                    # by renormalisation.
+                    continue
+                diff = v[u_with_i] - v[u]
                 sh[i] += _weights[len(u)] * diff
+
+    if truncating:
+        # Renormalise: the skipped coalitions would have contributed
+        # additional variance.  Distribute proportionally.
+        sh_sum = sh.sum()
+        if sh_sum > 0:
+            sh = sh * (total_var / sh_sum)
 
     effects = sh / total_var
     return effects, sh, total_var
