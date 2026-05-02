@@ -49,6 +49,8 @@ nav:
     - Basic Usage: tutorials/basic-usage.md
     - Example Workflow: tutorials/owen_product_function.ipynb
     - MC Shapley: tutorials/mc_shapley.ipynb
+    - MC Shapley + Sobol: tutorials/mc_shapley_sobol.ipynb
+    - Coalition Truncation: tutorials/mc_shapley_kmax.ipynb
     - Truncated Normal: tutorials/mc_shapley_truncated_normal.ipynb
     - Correlated Ishigami: tutorials/iooss_prieur_ishigami_correlation.ipynb
   - How-to Guides:

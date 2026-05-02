@@ -155,13 +155,20 @@ dramatically reducing the number of subsets:
 
 ### Auto-Detection
 
-When using `model.get_mc_shapley()`, `k_max` is **auto-detected** from the
-surrogate model's `polys` parameter — `len(polys)` gives the highest interaction
-order in the Legendre expansion.  No manual configuration is needed:
+When using `model.get_mc_shapley()`, `k_max` defaults to `False` (a sentinel
+meaning "not set").  In this state, it is **auto-detected** from the surrogate
+model's `polys` parameter — `len(polys)` gives the highest interaction order.
+No manual configuration is needed:
 
 ```python
 # polys=[10, 5] → k_max=2 auto-detected (exact for this surrogate)
 mc = model.get_mc_shapley(N=5000, method='exhaustive')
+```
+
+To force full enumeration, pass `k_max=None`:
+
+```python
+mc = model.get_mc_shapley(N=5000, method='exhaustive', k_max=None)
 ```
 
 ### Explicit Control
@@ -172,7 +179,7 @@ Override the auto-detected value or use `k_max` with the low-level API:
 # Explicit: limit to pairwise coalitions
 mc = model.get_mc_shapley(N=5000, method='exhaustive', k_max=2)
 
-# Full enumeration (backward-compatible default)
+# Full enumeration (all 2^d - 1 subsets)
 mc = model.get_mc_shapley(N=5000, method='exhaustive', k_max=None)
 
 # Low-level API
@@ -180,6 +187,10 @@ from shapleyx.utilities.mc_shapley import MCShapley
 mc = MCShapley(f=my_model, joint=my_dist)
 df = mc.compute(N=5000, method='exhaustive', k_max=2)
 ```
+
+> **Note:** `k_max` only affects the **exhaustive** method.  The permutation
+> method evaluates subsets lazily through random permutations of all sizes
+> and does not support coalition truncation.
 
 ### Approximation Behaviour
 
