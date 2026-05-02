@@ -567,11 +567,40 @@ class TruncatedMultivariateNormal:
         return X_full
 
 
+def coalitions_up_to_k(d, k_max):
+    """Generate non-empty subsets up to size k_max, plus the full set.
+
+    The full set is always included because it is needed for total
+    variance estimation.  When k_max is None or >= d, all 2^d - 1
+    non-empty subsets are returned (standard exhaustive enumeration).
+
+    Args:
+        d: Number of input dimensions.
+        k_max: Maximum coalition size (1 to d-1).  If None, returns
+            all subsets.
+
+    Returns:
+        List of frozenset objects.
+    """
+    if k_max is None or k_max >= d:
+        return [frozenset(s) for k in range(1, d + 1)
+                for s in itertools.combinations(range(d), k)]
+    subsets = []
+    for k in range(1, min(k_max + 1, d)):
+        for s in itertools.combinations(range(d), k):
+            subsets.append(frozenset(s))
+    # Always include the full set for total variance
+    full = frozenset(range(d))
+    if full not in subsets:
+        subsets.append(full)
+    return subsets
+
+
 # ------------------------------------------------------------
 # Core functions for exhaustive method
 # ------------------------------------------------------------
 def collect_shapley_data(f, joint, N=10000, predict_batch=None,
-                         progress=False):
+                         progress=False, k_max=None):
     """Compute and store outputs for all non-empty subsets (exhaustive).
 
     For each subset u of variable indices:
@@ -591,16 +620,21 @@ def collect_shapley_data(f, joint, N=10000, predict_batch=None,
             and returns a 1D array of predictions. When provided, batch
             evaluation is used for both unconditional and conditional
             draws. When None, ``f`` is called once per sample.
+        k_max: Optional maximum coalition size.  When set, only subsets
+            up to size ``k_max`` are evaluated (plus the full set for
+            total variance).  This is *exact* when the model has no
+            interactions above order ``k_max``; otherwise it provides
+            an approximation.  Default ``None`` evaluates all 2^d - 1
+            subsets.
         progress: If ``True``, display a single tqdm progress bar.
 
     Returns:
         dict mapping frozenset(u) -> tuple describing stored data.
     """
     d = joint.d
-    subsets = [frozenset(s) for k in range(1, d + 1)
-               for s in itertools.combinations(range(d), k)]
-    n_subsets = len(subsets)          # 2^d - 1
-    n_partial = n_subsets - 1         # subsets with |u| < d
+    subsets = coalitions_up_to_k(d, k_max)
+    n_subsets = len(subsets)
+    n_partial = sum(1 for u in subsets if len(u) < d)
 
     total_evals = N + 2 * N * n_partial
     pbar = _Progress(total_evals, enabled=progress)
@@ -639,12 +673,19 @@ def collect_shapley_data(f, joint, N=10000, predict_batch=None,
     return data
 
 
-def shapley_from_data(data, d, _weights=None):
+def shapley_from_data(data, d, _weights=None, k_max=None):
     """Compute point estimates of Shapley effects from collected data.
 
     Uses the covariance-based formulation: v(u) = Cov[f(X), f(X_u)]
     where X_u is a conditional sample sharing the same background
     variables as X.
+
+    When ``k_max`` is set and some coalitions are missing from the
+    data, their v(u) is approximated as the total variance — i.e.,
+    missing high-order interactions are assumed to contribute
+    proportionally.  For models with sparse high-order structure
+    (e.g., RS-HDMR with ``polys=[10, 5]`` has only second-order
+    interactions) this is conservative but consistent.
 
     Args:
         data: Dict from collect_shapley_data.
@@ -653,6 +694,8 @@ def shapley_from_data(data, d, _weights=None):
             where ``_weights[k] = k! (d-k-1)! / d!``.  When ``None`` the
             weights are computed on first call and cached (memoised) for
             reuse across bootstrap iterations.
+        k_max: Optional maximum coalition size used during data
+            collection.  Used to handle missing subsets gracefully.
 
     Returns:
         effects: Normalised Shapley effects (sums to 1), shape (d,).
@@ -670,6 +713,8 @@ def shapley_from_data(data, d, _weights=None):
             cov = np.mean(Y1 * Y2) - np.mean(Y1) * np.mean(Y2)
             v[u] = cov
 
+    total_var = v[frozenset(range(d))]
+
     # ---- precompute Shapley weights once per d (memoised) ----
     if _weights is None:
         _weights = _get_shapley_weights(d)
@@ -682,10 +727,12 @@ def shapley_from_data(data, d, _weights=None):
         for u in subsets_all:
             if i not in u:
                 u_with_i = u.union({i})
-                diff = v[u_with_i] - v[u]
+                # Use stored v(u) if available, else fall back to total_var
+                v_u = v.get(u, total_var)
+                v_ui = v.get(u_with_i, total_var)
+                diff = v_ui - v_u
                 sh[i] += _weights[len(u)] * diff
 
-    total_var = v[frozenset(range(d))]
     effects = sh / total_var
     return effects, sh, total_var
 
@@ -728,10 +775,14 @@ def sobol_from_data(data, d):
     S = np.array([v.get(frozenset([i]), 0.0) / v_full for i in range(d)])
 
     # Total-order: T_i = 1 - v(all_except_i) / v_full
-    T = np.array([
-        1.0 - v.get(frozenset([j for j in range(d) if j != i]), 0.0) / v_full
-        for i in range(d)
-    ])
+    # When {-i} is not in data (e.g. k_max < d-1), set T_i to NaN
+    T = np.empty(d)
+    for i in range(d):
+        key_i = frozenset([j for j in range(d) if j != i])
+        if key_i in v:
+            T[i] = 1.0 - v[key_i] / v_full
+        else:
+            T[i] = np.nan
 
     return S, T
 
@@ -864,7 +915,8 @@ else:
         raise RuntimeError("Numba is not available — use the pure-Python bootstrap path")
 
 
-def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None):
+def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None,
+                      k_max=None):
     """Bootstrap confidence intervals for the exhaustive method.
 
     Args:
@@ -873,6 +925,8 @@ def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None):
         B: Number of bootstrap replications.
         alpha: Significance level (e.g., 0.05 for 95% CI).
         random_state: Seed for reproducibility.
+        k_max: Optional maximum coalition size (passed to
+            ``shapley_from_data``).
 
     Returns:
         point_eff: Point estimates, shape (d,).
@@ -882,7 +936,7 @@ def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None):
     if random_state is not None:
         np.random.seed(random_state)
 
-    point_eff, _, _ = shapley_from_data(data, d)
+    point_eff, _, _ = shapley_from_data(data, d, k_max=k_max)
 
     # Determine sample size N
     for typ in data.values():
@@ -893,8 +947,8 @@ def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None):
             N = len(typ[1])
             break
 
-    # ---- compiled bootstrap path ----
-    if _NUMBA_AVAILABLE:
+    # ---- compiled bootstrap path (only when k_max is None) ----
+    if _NUMBA_AVAILABLE and k_max is None:
         (Y_full, pair_Y1, pair_Y2,
          subset_sizes, union_lookup) = _data_to_arrays(data, d)
         weights = _get_shapley_weights(d)
@@ -904,7 +958,7 @@ def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None):
             weights, d, B, alpha, rng_states,
         )
     else:
-        # ---- pure-Python fallback ----
+        # ---- pure-Python fallback (always used when k_max is set) ----
         boot_effects = np.zeros((B, d))
         for b in range(B):
             idx = np.random.choice(N, size=N, replace=True)
@@ -914,7 +968,7 @@ def bootstrap_shapley(data, d, B=1000, alpha=0.05, random_state=None):
                     boot_data[u] = ('full', typ[1][idx])
                 else:
                     boot_data[u] = ('pair', typ[1][idx], typ[2][idx])
-            eff_b, _, _ = shapley_from_data(boot_data, d)
+            eff_b, _, _ = shapley_from_data(boot_data, d, k_max=k_max)
             boot_effects[b] = eff_b
         lower = np.percentile(boot_effects, 100 * alpha / 2, axis=0)
         upper = np.percentile(boot_effects, 100 * (1 - alpha / 2), axis=0)
@@ -1261,7 +1315,8 @@ class MCShapley:
         self.predict_batch = predict_batch
 
     def compute(self, N=10000, method='exhaustive', n_perm=1000,
-                B=0, alpha=0.05, random_state=None, progress=False):
+                B=0, alpha=0.05, random_state=None, progress=False,
+                k_max=None):
         """Compute Shapley effects and Sobol indices.
 
         Args:
@@ -1272,6 +1327,10 @@ class MCShapley:
             alpha: Significance level for CIs.
             random_state: Random seed.
             progress: If ``True``, show tqdm progress bars.
+            k_max: Optional maximum coalition size.  When set, only
+                subsets up to size ``k_max`` are evaluated (plus the
+                full set).  Exact when the model has no interactions
+                above order ``k_max``; approximate otherwise.
 
         Returns:
             pd.DataFrame with columns:
@@ -1279,7 +1338,9 @@ class MCShapley:
             - 'effect': Normalised Shapley effects.
             - 'shapley_value': Unscaled Shapley values.
             - 'sobol_first': First-order Sobol indices S_i.
-            - 'sobol_total': Total-order Sobol indices T_i.
+            - 'sobol_total': Total-order Sobol indices T_i
+              (NaN when k_max < d-1 since {-i} subsets are not
+              evaluated).
             - 'total_variance': Estimated total variance.
             - 'lower', 'upper': CI bounds (if B > 0).
 
@@ -1296,8 +1357,11 @@ class MCShapley:
                 self.f, self.joint, N,
                 predict_batch=self.predict_batch,
                 progress=progress,
+                k_max=k_max,
             )
-            effects, sh, total_var = shapley_from_data(data, self.d)
+            effects, sh, total_var = shapley_from_data(
+                data, self.d, k_max=k_max,
+            )
 
             # Sobol indices from the same data
             S, T = sobol_from_data(data, self.d)
@@ -1305,6 +1369,7 @@ class MCShapley:
             if B > 0:
                 point, lower, upper = bootstrap_shapley(
                     data, self.d, B, alpha, random_state,
+                    k_max=k_max,
                 )
                 _, S_lower, S_upper, _, T_lower, T_upper = bootstrap_sobol(
                     data, self.d, B, alpha, random_state,

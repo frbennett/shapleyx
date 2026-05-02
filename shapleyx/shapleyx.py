@@ -493,7 +493,7 @@ class rshdmr():
     def get_mc_shapley(self, joint=None, corr=None, N=10000,
                        method='exhaustive', n_perm=1000,
                        B=0, alpha=0.05, random_state=None,
-                       f=None, progress=False):
+                       f=None, progress=False, k_max=None):
         """Compute Shapley effects via Monte Carlo with correlated inputs.
 
         Uses a Monte Carlo approach to estimate Shapley effects when
@@ -534,12 +534,23 @@ class rshdmr():
                 function evaluations.
             progress: If ``True``, display tqdm progress bars during
                 the Monte Carlo sampling (requires ``tqdm`` installed).
+            k_max: Optional maximum coalition size for the exhaustive
+                method.  Limits evaluation to subsets of size ≤ k_max
+                (plus the full set for total variance).  When ``None``,
+                auto-detected from the surrogate model's ``polys``
+                parameter (the highest interaction order).  For example,
+                an RS-HDMR model with ``polys=[10, 5]`` implies
+                ``k_max=2``.  This is *exact* for models with no
+                interactions above the Legendre expansion order, and
+                approximate otherwise.
 
         Returns:
             pd.DataFrame: DataFrame with columns:
             - ``'variable'``: Variable names from the training data.
             - ``'effect'``: Normalised Shapley effects (sum to 1).
             - ``'shapley_value'``: Unscaled Shapley values.
+            - ``'sobol_first'``: First-order Sobol indices S_i.
+            - ``'sobol_total'``: Total-order Sobol indices T_i.
             - ``'total_variance'``: Estimated total output variance.
             - ``'lower'``, ``'upper'``: Bootstrap CI bounds (if B > 0).
 
@@ -589,12 +600,16 @@ class rshdmr():
                 corr = np.eye(d)
             joint = GaussianCopulaUniform(lows, highs, corr)
 
+        # Auto-detect k_max from the surrogate model's polynomial orders
+        if k_max is None and hasattr(self, 'polys') and self.polys:
+            k_max = len(self.polys)
+
         # Compute MC Shapley effects
         mc = MCShapley(_f, joint, predict_batch=_predict_batch)
         df = mc.compute(
             N=N, method=method, n_perm=n_perm,
             B=B, alpha=alpha, random_state=random_state,
-            progress=progress
+            progress=progress, k_max=k_max,
         )
 
         # Replace generic variable names with actual feature names
