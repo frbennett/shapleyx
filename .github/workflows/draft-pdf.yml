@@ -1,6 +1,11 @@
 
 name: Draft PDF
-on: [push]
+on:
+  push:
+    paths:
+      - 'paper/paper.md'
+      - 'paper/paper.bib'
+      - '.github/workflows/draft-pdf.yml'
 
 jobs:
   paper:
@@ -13,13 +18,9 @@ jobs:
         uses: openjournals/openjournals-draft-action@master
         with:
           journal: joss
-          # Path to the paper inside repo
-          paper-path: paper.md
+          paper-path: paper/paper.md
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: paper
-          # This is the output path where Pandoc will write the compiled
-          # PDF. Note, this should be the same directory as the input
-          # paper.md
-          path: paper.pdf
+          path: paper/paper.pdf
