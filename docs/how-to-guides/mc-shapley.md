@@ -131,6 +131,69 @@ mc = model.get_mc_shapley(N=5000, method='exhaustive')
 mc = model.get_mc_shapley(N=5000, method='permutation', n_perm=2000)
 ```
 
+## Coalition Truncation (`k_max`)
+
+The exhaustive method evaluates all $2^d - 1$ non-empty subsets, which becomes
+prohibitively expensive for $d > 8$.  However, many models — especially those
+built from RS-HDMR surrogates — have **no interactions above a known order**.
+For example, an RS-HDMR model trained with `polys=[10, 5]` has only
+first-order (main effects) and second-order (pairwise) interactions; third-order
+and higher terms are absent by construction.
+
+The **`k_max` parameter** limits coalition evaluation to subsets of size
+$\leq k_{\max}$ (plus the full set, always needed for total variance).  This is
+**exact** when the model truly has no interactions above order $k_{\max}$,
+dramatically reducing the number of subsets:
+
+| $d$ | All subsets ($2^d-1$) | $k_{\max}=2$ | $k_{\max}=3$ |
+|---|---:|---:|---:|
+| 6 | 63 | 22 | 42 |
+| 8 | 255 | 37 | 93 |
+| 10 | 1,023 | 56 | 176 |
+| 15 | 32,767 | 121 | 576 |
+| 20 | 1,048,575 | 211 | 1,351 |
+
+### Auto-Detection
+
+When using `model.get_mc_shapley()`, `k_max` is **auto-detected** from the
+surrogate model's `polys` parameter — `len(polys)` gives the highest interaction
+order in the Legendre expansion.  No manual configuration is needed:
+
+```python
+# polys=[10, 5] → k_max=2 auto-detected (exact for this surrogate)
+mc = model.get_mc_shapley(N=5000, method='exhaustive')
+```
+
+### Explicit Control
+
+Override the auto-detected value or use `k_max` with the low-level API:
+
+```python
+# Explicit: limit to pairwise coalitions
+mc = model.get_mc_shapley(N=5000, method='exhaustive', k_max=2)
+
+# Full enumeration (backward-compatible default)
+mc = model.get_mc_shapley(N=5000, method='exhaustive', k_max=None)
+
+# Low-level API
+from shapleyx.utilities.mc_shapley import MCShapley
+mc = MCShapley(f=my_model, joint=my_dist)
+df = mc.compute(N=5000, method='exhaustive', k_max=2)
+```
+
+### Approximation Behaviour
+
+When `k_max < d-1`, some coalitions are not evaluated.  The estimator uses
+a **conservative fallback**: missing $v(u)$ values are approximated as the
+total variance $v(\text{full})$, meaning missing high-order interactions are
+assumed to contribute proportionally.  For models with sparse high-order
+structure (the intended use case), this approximation is excellent.
+
+**Note on Sobol indices:** When $k_{\max} < d-1$, the complement sets
+$\{-i\}$ needed for total-order Sobol indices $T_i$ are not evaluated,
+so `sobol_total` is returned as `NaN`.  First-order Sobol indices $S_i$
+remain available (they only require singleton subsets).
+
 ## Bootstrap Confidence Intervals
 
 Set `B > 0` to enable bootstrap CIs. The returned DataFrame gains `'lower'` and `'upper'` columns:

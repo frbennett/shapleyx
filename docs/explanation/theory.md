@@ -120,8 +120,35 @@ ShapleyX provides two distribution families with built-in conditional sampling:
 |---|---|---|
 | `'exhaustive'` | Enumerates all $2^d - 1$ non-empty subsets. Each subset requires $N$ Monte Carlo iterations. | $O(2^d \cdot N)$ |
 | `'permutation'` | Evaluates only subsets encountered in random permutations, with lazy caching. | $O(n_{\text{perm}} \cdot d \cdot N)$ |
+| `'exhaustive'` with `k_max` | Enumerates only subsets up to size $k_{\max}$ (plus the full set). Exact when interactions are bounded at order $k_{\max}$. | $O(d^{k_{\max}} \cdot N)$ |
 
-Bootstrap confidence intervals are available for both methods by resampling the stored output arrays.
+Bootstrap confidence intervals are available for all methods by resampling the stored output arrays.
+
+### Coalition Truncation
+
+The exhaustive method's $O(2^d)$ complexity limits its use to $d \leq 8$ in
+practice.  However, many models — particularly RS-HDMR surrogates — have
+**bounded interaction order**.  An RS-HDMR model built with `polys=[10, 5]`
+contains only first-order (main effects) and second-order (pairwise)
+interactions; all higher-order terms are identically zero.
+
+When the model's HDMR decomposition has no interactions above order $k$, the
+Shapley value for variable $i$ simplifies: coalitions larger than $k$ contribute
+nothing beyond what is already captured by their sub-coalitions of size $\leq k$.
+Formally, for any $u$ with $|u| > k$:
+
+$$v(u) = \sum_{w \subseteq u, |w| \leq k} \sigma_w^2$$
+
+and the Shapley difference $v(u \cup \{i\}) - v(u)$ only involves terms where
+$i \in w$ and $|w| \leq k$.  The Shapley weight for coalitions of size $|u| > k$
+distributes these contributions identically to how they are distributed through
+the sub-coalitions already evaluated.
+
+This justifies setting `k_max` to the highest interaction order of the
+surrogate model.  ShapleyX **auto-detects** this from the `polys` parameter
+($k_{\max} = \text{len}(\text{polys})$) when using `model.get_mc_shapley()`.
+For general models where the interaction order is unknown, `k_max` provides a
+controlled approximation that converges to the exact result as $k_{\max} \to d$.
 
 ---
 

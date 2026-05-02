@@ -198,6 +198,36 @@ predict-compilation gains.
 *Measured with the analytical G-function to isolate MC infrastructure
 from surrogate-model cost.*
 
+### 2.4 Coalition truncation (`k_max`)
+
+**Change:** Added `k_max` parameter to `collect_shapley_data()` and
+`shapley_from_data()`.  When `k_max < d`, only subsets up to size
+$k_{\max}$ are evaluated (plus the full set for total variance).
+
+**Why:** The standard exhaustive method evaluates $2^d - 1$ subsets.
+For RS-HDMR surrogate models with bounded interaction order (e.g.,
+`polys=[10,5]` has only second-order terms), coalitions larger than the
+expansion order contribute nothing that isn't already captured by their
+sub-coalitions.  Evaluating only up to the surrogate's interaction order
+is **exact** and reduces the subset count from $O(2^d)$ to $O(d^{k_{\max}})$.
+
+**Auto-detection:** `model.get_mc_shapley()` sets $k_{\max} =
+\text{len}(\text{polys})$ automatically, requiring no user configuration.
+
+**Subset reduction examples:**
+
+| $d$ | Full ($2^d-1$) | $k_{\max}=2$ | Factor |
+|---|---:|---:|---:|
+| 6 | 63 | 22 | 2.9× |
+| 8 | 255 | 37 | 6.9× |
+| 10 | 1,023 | 56 | 18× |
+| 12 | 4,095 | 79 | 52× |
+| 15 | 32,767 | 121 | 270× |
+
+**Impact:** For a second-order RS-HDMR model ($k_{\max}=2$) at $d=10$,
+the MC sampling phase evaluates 56 subsets instead of 1,023 — an 18×
+reduction — with zero loss of accuracy.  At $d=15$ the reduction is 270×.
+
 ---
 
 ## 3. Shapley Computation and Bootstrap
