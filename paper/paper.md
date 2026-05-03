@@ -54,6 +54,11 @@ ShapleyX fills this gap by providing:
   covariance formulation [@Owen2017], with two estimation methods (exhaustive
   subset enumeration and scalable random permutations) and bootstrap confidence
   intervals.
+- **Coalition truncation** ($k_{\max}$) for the exhaustive method: when the
+  model's interactions are bounded at a known order (as in RS-HDMR surrogates),
+  coalitions larger than $k_{\max}$ are skipped with zero loss of accuracy,
+  reducing the subset count from $O(2^d)$ to $O(d^{k_{\max}})$ — a 270×
+  reduction at $d=15$ for $k_{\max}=2$.
 - **Built-in distribution classes** for Gaussian copula models, multivariate
   normal, and truncated multivariate normal inputs, with a documented interface
   for user-defined distributions.
@@ -104,6 +109,38 @@ Two computation methods are provided:
 - **Permutation**: evaluates only subsets encountered in random permutations
   with lazy caching [@Plischke2013].  Scales as $O(n_{\text{perm}} \cdot d \cdot N)$,
   suitable for $d > 8$.
+
+## Coalition Truncation
+
+The exhaustive method's exponential complexity limits its practical use to
+$d \leq 8$.  However, when the model's HDMR decomposition has **bounded
+interaction order** — as in RS-HDMR surrogates where `polys=[10, 5]` implies
+only first- and second-order terms — coalitions larger than the expansion
+order contribute nothing beyond what is already captured by their
+sub-coalitions.  ShapleyX exploits this via a **coalition truncation**
+parameter $k_{\max}$:
+
+- Only subsets of size $\leq k_{\max}$ are evaluated (plus the full set,
+  always needed for total variance estimation).
+- The Shapley accumulation skips coalition pairs where $v(u)$ or
+  $v(u \cup \{i\})$ is unavailable, then renormalises to distribute the
+  missing variance proportionally.  This is **exact** when the model truly
+  has no interactions above order $k_{\max}$.
+- $k_{\max}$ is **auto-detected** from the surrogate's `polys` parameter
+  ($k_{\max} = \text{len}(\text{polys})$) when using the high-level
+  `model.get_mc_shapley()` interface, requiring no user configuration.
+
+The computational savings are dramatic:
+
+| $d$ | Full ($2^d-1$) | $k_{\max}=2$ | Factor |
+|---|---:|---:|---:|
+| 6 | 63 | 22 | 2.9× |
+| 10 | 1,023 | 56 | 18× |
+| 15 | 32,767 | 121 | 270× |
+| 20 | 1,048,575 | 211 | 4,970× |
+
+For a second-order RS-HDMR model at $d=15$, coalition truncation evaluates
+121 subsets instead of 32,767 — a 270× reduction with zero loss of accuracy.
 
 ## Sobol Indices as a By-Product
 
