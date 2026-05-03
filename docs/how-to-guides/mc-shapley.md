@@ -203,7 +203,9 @@ structure (the intended use case), this approximation is excellent.
 **Note on Sobol indices:** When $k_{\max} < d-1$, the complement sets
 $\{-i\}$ needed for total-order Sobol indices $T_i$ are not evaluated,
 so `sobol_total` is returned as `NaN`.  First-order Sobol indices $S_i$
-remain available (they only require singleton subsets).
+remain available (they only require singleton subsets, always evaluated
+when $k_{\max} \ge 1$).  Pass `k_max=None` to force full enumeration
+and obtain $T_i$.
 
 ## Bootstrap Confidence Intervals
 
@@ -238,6 +240,21 @@ When using `method='exhaustive'`, the returned DataFrame includes:
 mc = model.get_mc_shapley(N=5000, method='exhaustive', B=500)
 print(mc[['variable', 'effect', 'sobol_first', 'sobol_total']])
 ```
+
+#### Sobol Availability with $k_{\max}$
+
+When using coalition truncation, Sobol index availability depends on
+which subsets are evaluated:
+
+| Index | Required subset | Available when |
+|---|---|---|
+| $S_i$ | $\{i\}$ (size 1) | $k_{\max} \ge 1$ — always available |
+| $T_i$ | $\{-i\}$ (size $d-1$) | $k_{\max} \ge d-1$ *or* `k_max=None` |
+
+When $T_i$ cannot be computed (missing complement sets), the
+`sobol_total` column contains `NaN`.  Pass `k_max=None` to force
+full enumeration and obtain both $S_i$ and $T_i$ regardless of
+dimension.
 
 For the permutation method, Sobol columns are returned as `NaN` — the lazy subset
 evaluation may not include all singleton and $(d-1)$-variable subsets needed.
