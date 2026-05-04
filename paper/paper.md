@@ -178,7 +178,7 @@ methodology:
 | Example | Dimension | Features |
 |---|---|---|
 | Ishigami function | 3 | Standard benchmark, correlation sweep (Iooss & Prieur 2019) |
-| Cantilever beam | 6 | Mixed LogNormal + Normal marginals, target Shapley effects (Demange-Chryst 2022) |
+| Cantilever beam | 6 | Mixed LogNormal + Normal marginals, analytical and surrogate target Shapley effects validated against published reference (Demange-Chryst 2022) |
 | Borehole function | 8 | Normal + LogNormal + Uniform marginals, RS-HDMR surrogate, Sobol + Shapley |
 | Owen product function | 6 | High-order interactions, analytical Sobol validation |
 
