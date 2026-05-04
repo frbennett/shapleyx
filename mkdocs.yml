@@ -53,6 +53,7 @@ nav:
     - Coalition Truncation: tutorials/mc_shapley_kmax.ipynb
     - Truncated Normal: tutorials/mc_shapley_truncated_normal.ipynb
     - Correlated Ishigami: tutorials/iooss_prieur_ishigami_correlation.ipynb
+    - Wing Weight: tutorials/wing_weight.ipynb
   - How-to Guides:
     - Common Tasks: how-to-guides/common-tasks.md
     - MC Shapley: how-to-guides/mc-shapley.md
@@ -63,6 +64,7 @@ nav:
   - Explanation:
     - Theory: explanation/theory.md
     - Distribution Classes: explanation/distributions.md
+    - Case Studies: explanation/case_studies.md
     - ARD Theory: explanation/ard_theory.md
     - Performance: explanation/performance.md
 

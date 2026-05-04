@@ -231,6 +231,7 @@ prediction, and progress bars.
 | [Borehole Function](../tutorials/borehole/) | `GaussianCopulaFull` | 8 inputs, Normal + LogNormal + Uniform marginals, optional geological correlations, Sobol + Shapley from single run |
 | [Truncated Normal](../tutorials/mc_shapley_truncated_normal/) | `TruncatedMultivariateNormal` (built-in) | 3 inputs, per-dimension truncation, multiple truncation schemes, RS-HDMR surrogate comparison |
 | [Iooss & Prieur Correlation Sweep](../tutorials/iooss_prieur_ishigami_correlation/) | `GaussianCopulaUniform` (built-in) | 3 inputs, Shapley + $S_i$ + $T_i$ vs correlation $\rho$, exhaustive and permutation methods |
+| [Wing Weight Function](../tutorials/wing_weight/) | `GaussianCopulaUniform` (built-in) | 10 inputs, all Uniform spanning 5 orders of magnitude, independent and correlated analyses, validated against OpenTURNS reference |
 
 ---
 

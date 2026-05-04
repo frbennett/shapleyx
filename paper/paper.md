@@ -180,6 +180,7 @@ methodology:
 | Ishigami function | 3 | Standard benchmark, correlation sweep (Iooss & Prieur 2019) |
 | Cantilever beam | 6 | Mixed LogNormal + Normal marginals, analytical and surrogate target Shapley effects validated against published reference (Demange-Chryst 2022) |
 | Borehole function | 8 | Normal + LogNormal + Uniform marginals, RS-HDMR surrogate, Sobol + Shapley |
+| Wing weight function | 10 | All Uniform inputs across 5 orders of magnitude, independent and correlated analyses, validated against OpenTURNS reference |
 | Owen product function | 6 | High-order interactions, analytical Sobol validation |
 
 The Ishigami and borehole examples include comparisons with published reference

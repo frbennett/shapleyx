@@ -18,6 +18,7 @@ ShapleyX.  Each notebook is self-contained and can be run independently.
 | 9 | [`owen_product_function.ipynb`](owen_product_function.ipynb) | 6 | **Owen product function.**  High-order interaction benchmark with analytical Sobol' indices.  RS-HDMR surrogate vs exact Shapley effects. | Validation against closed-form values. |
 | 10 | [`cantilever_beam.ipynb`](cantilever_beam.ipynb) | 6 | **Cantilever beam (Demange-Chryst 2022, Ex. 4.2).**  Mixed LogNormal + Normal marginals with correlations.  Analytical and RS-HDMR surrogate estimates for both variance-based and target Shapley effects.  Validated against published reference values. | `GaussianCopulaMixed` custom distribution class. |
 | 11 | [`borehole.ipynb`](borehole.ipynb) | 8 | **Borehole function (Harper & Gupta 1983).**  Normal + LogNormal + Uniform marginals.  MC Shapley + Sobol from single run.  Correlated vs independent surrogate comparison; literature validation (Saltelli 2004). | `GaussianCopulaFull` custom distribution class. |
+| 12 | [`wing_weight.ipynb`](wing_weight.ipynb) | 10 | **Wing weight function (Forrester et al. 2008).**  All Uniform inputs spanning 5 orders of magnitude.  Independent and correlated analyses with RS-HDMR surrogate.  Validated against OpenTURNS reference Sobol indices. | `GaussianCopulaUniform` built-in class. |
 
 ## Learning Path
 
