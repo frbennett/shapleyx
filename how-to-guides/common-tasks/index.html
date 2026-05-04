@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/how-to-guides/common-tasks/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Common Tasks - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Common Tasks";
+        var mkdocs_page_input_path = "how-to-guides/common-tasks.md";
+        var mkdocs_page_url = "/shapleyx/how-to-guides/common-tasks/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Common Tasks</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#handling-large-datasets">Handling Large Datasets</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#customizing-polynomial-orders">Customizing Polynomial Orders</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#saving-and-loading-results">Saving and Loading Results</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#comparing-different-methods">Comparing Different Methods</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#computing-shapley-effects-for-correlated-inputs">Computing Shapley Effects for Correlated Inputs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#computing-additional-sensitivity-indices">Computing Additional Sensitivity Indices</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#troubleshooting-common-issues">Troubleshooting Common Issues</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#memory-errors">Memory Errors</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#convergence-issues">Convergence Issues</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mc-shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/distributions/">Distribution Classes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/performance/">Performance</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">How-to Guides</li>
+      <li class="breadcrumb-item active">Common Tasks</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/how-to-guides/common-tasks.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="common-tasks">Common Tasks</h1>
+<h2 id="handling-large-datasets">Handling Large Datasets</h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># Process data in chunks</span>
+<span class="n">analyzer</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span>
+    <span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;large_data.csv&#39;</span><span class="p">,</span>
+    <span class="n">chunksize</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span>  <span class="c1"># Process 10,000 rows at a time</span>
+    <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span>     <span class="c1"># Lower polynomial orders for large datasets</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ard&#39;</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="customizing-polynomial-orders">Customizing Polynomial Orders</h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># Set different polynomial orders for each input</span>
+<span class="n">analyzer</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span>
+    <span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;data.csv&#39;</span><span class="p">,</span>
+    <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span>  <span class="c1"># Specific orders for each parameter</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ard&#39;</span>
+<span class="p">)</span>
+</code></pre></div>
+<h2 id="saving-and-loading-results">Saving and Loading Results</h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># Save results to file</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pickle</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;sensitivity_results.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">({</span>
+        <span class="s1">&#39;sobol&#39;</span><span class="p">:</span> <span class="n">sobol_indices</span><span class="p">,</span>
+        <span class="s1">&#39;shapley&#39;</span><span class="p">:</span> <span class="n">shapley_effects</span><span class="p">,</span>
+        <span class="s1">&#39;total&#39;</span><span class="p">:</span> <span class="n">total_index</span>
+    <span class="p">},</span> <span class="n">f</span><span class="p">)</span>
+
+<span class="c1"># Load results</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;sensitivity_results.pkl&#39;</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">results</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="comparing-different-methods">Comparing Different Methods</h2>
+<div class="highlight"><pre><span></span><code><span class="c1"># Compare ARD and OMP methods</span>
+<span class="n">analyzer_ard</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;data.csv&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ard&#39;</span><span class="p">)</span>
+<span class="n">analyzer_omp</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;data.csv&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;omp&#39;</span><span class="p">)</span>
+
+<span class="n">ard_results</span> <span class="o">=</span> <span class="n">analyzer_ard</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+<span class="n">omp_results</span> <span class="o">=</span> <span class="n">analyzer_omp</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+</code></pre></div>
+<h2 id="computing-shapley-effects-for-correlated-inputs">Computing Shapley Effects for Correlated Inputs</h2>
+<p>When inputs are correlated, use the MC Shapley method instead of the default coefficient-based approach:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianCopulaUniform</span>
+
+<span class="c1"># Define correlation structure</span>
+<span class="n">corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+<span class="p">])</span>
+
+<span class="c1"># Using the surrogate model with a correlation matrix</span>
+<span class="n">mc_results</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">corr</span><span class="o">=</span><span class="n">corr</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mc_results</span><span class="p">[[</span><span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="s1">&#39;effect&#39;</span><span class="p">,</span> <span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">]])</span>
+
+<span class="c1"># Using a user-defined function with a custom distribution</span>
+<span class="n">joint</span> <span class="o">=</span> <span class="n">GaussianCopulaUniform</span><span class="p">(</span>
+    <span class="n">lows</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+    <span class="n">highs</span><span class="o">=</span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span>
+    <span class="n">corr</span><span class="o">=</span><span class="n">corr</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">my_model</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">7</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">mc_user</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">joint</span><span class="o">=</span><span class="n">joint</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">my_model</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</code></pre></div>
+<p>See the <a href="../mc-shapley/">MC Shapley guide</a> for full details.</p>
+<h2 id="computing-additional-sensitivity-indices">Computing Additional Sensitivity Indices</h2>
+<p>The trained surrogate supports moment-free sensitivity methods:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># PAWN (distribution-based) sensitivity</span>
+<span class="n">pawn_results</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_pawn</span><span class="p">(</span><span class="n">S</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># PAWN with surrogate model</span>
+<span class="n">pawnx_results</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_pawnx</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">100</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+
+<span class="c1"># Delta moment-free indices</span>
+<span class="n">delta_indices</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_deltax</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+
+<span class="c1"># H-index (KL divergence based)</span>
+<span class="n">h_indices</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_hx</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+
+<span class="c1"># Owen-Shapley interaction values</span>
+<span class="n">interactions</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_interactions</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="troubleshooting-common-issues">Troubleshooting Common Issues</h2>
+<h3 id="memory-errors">Memory Errors</h3>
+<ul>
+<li>Reduce polynomial orders</li>
+<li>Use smaller chunksize</li>
+<li>Filter less important parameters</li>
+</ul>
+<h3 id="convergence-issues">Convergence Issues</h3>
+<ul>
+<li>Check data quality</li>
+<li>Try different polynomial orders</li>
+<li>Normalize input data</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../tutorials/iooss_prieur_ishigami_correlation/" class="btn btn-neutral float-left" title="Correlated Ishigami"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../mc-shapley/" class="btn btn-neutral float-right" title="MC Shapley">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../../tutorials/iooss_prieur_ishigami_correlation/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../mc-shapley/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/how-to-guides/mc-shapley/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>MC Shapley - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "MC Shapley";
+        var mkdocs_page_input_path = "how-to-guides/mc-shapley.md";
+        var mkdocs_page_url = "/shapleyx/how-to-guides/mc-shapley/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">MC Shapley</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview">Overview</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#basic-usage-with-the-surrogate-model">Basic Usage with the Surrogate Model</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#correlated-inputs">Correlated Inputs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#user-defined-model-functions">User-Defined Model Functions</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#custom-distributions">Custom Distributions</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#gaussian-copula-with-uniform-marginals">Gaussian Copula with Uniform Marginals</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#multivariate-normal">Multivariate Normal</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#truncated-multivariate-normal">Truncated Multivariate Normal</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#choosing-a-computation-method">Choosing a Computation Method</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#coalition-truncation-k_max">Coalition Truncation (k_max)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#auto-detection">Auto-Detection</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#explicit-control">Explicit Control</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#approximation-behaviour">Approximation Behaviour</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#bootstrap-confidence-intervals">Bootstrap Confidence Intervals</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#sobol-indices-from-the-same-data">Sobol Indices from the Same Data</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#sobol-availability-with-k_max">Sobol Availability with \(k_{\max}\)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#performance-tips">Performance Tips</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/distributions/">Distribution Classes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/performance/">Performance</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">How-to Guides</li>
+      <li class="breadcrumb-item active">MC Shapley</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/how-to-guides/mc-shapley.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="monte-carlo-shapley-effects">Monte Carlo Shapley Effects</h1>
+<p>This guide explains how to estimate Shapley effects using the Monte Carlo approach, which correctly handles correlated inputs — a scenario where standard variance-based methods break down.</p>
+<h2 id="overview">Overview</h2>
+<p>The MC Shapley method estimates Shapley effects via conditional Monte Carlo sampling. It supports:</p>
+<ul>
+<li><strong>Two computation methods</strong>: exhaustive enumeration and random permutations</li>
+<li><strong>Bootstrap confidence intervals</strong> for all estimates</li>
+<li><strong>Three distribution families</strong>: <code>GaussianCopulaUniform</code>, <code>MultivariateNormal</code>, and <code>TruncatedMultivariateNormal</code></li>
+<li><strong>Flexible model functions</strong>: use the trained surrogate or any Python callable</li>
+</ul>
+<h2 id="basic-usage-with-the-surrogate-model">Basic Usage with the Surrogate Model</h2>
+<p>After training an RS-HDMR surrogate, call <code>get_mc_shapley()</code> directly:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx</span><span class="w"> </span><span class="kn">import</span> <span class="n">rshdmr</span>
+
+<span class="c1"># Train the RS-HDMR surrogate</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;data.csv&#39;</span><span class="p">,</span> <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ard_cv&#39;</span><span class="p">)</span>
+<span class="n">sobol</span><span class="p">,</span> <span class="n">shapley</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+
+<span class="c1"># Compute MC Shapley effects (independent inputs, surrogate model)</span>
+<span class="n">mc_results</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">mc_results</span><span class="p">)</span>
+<span class="c1">#   variable    effect  shapley_value  total_variance     lower     upper</span>
+<span class="c1"># 0       X1  0.435622       5.982737         13.7330  0.408571  0.466487</span>
+<span class="c1"># 1       X2  0.424561       5.830838         13.7330  0.396925  0.453246</span>
+<span class="c1"># 2       X3  0.139817       1.920069         13.7330  0.114170  0.166073</span>
+</code></pre></div>
+<h2 id="correlated-inputs">Correlated Inputs</h2>
+<p>Provide a correlation matrix via the <code>corr</code> parameter to model dependence:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="p">[</span><span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+<span class="p">])</span>
+
+<span class="n">mc_corr</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">corr</span><span class="o">=</span><span class="n">corr</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</code></pre></div>
+<p>This constructs a <code>GaussianCopulaUniform</code> distribution using the training data's min–max ranges and the supplied correlation matrix.</p>
+<h2 id="user-defined-model-functions">User-Defined Model Functions</h2>
+<p>You are not limited to the surrogate model. Pass any callable <code>f(x)</code> that takes a 1D numpy array and returns a scalar:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">my_model</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="mi">7</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="mf">0.1</span> <span class="o">*</span> <span class="n">x</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">**</span><span class="mi">4</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">mc_user</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="n">my_model</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="custom-distributions">Custom Distributions</h2>
+<p>For full control over the input distribution, provide a distribution object via the <code>joint</code> parameter.</p>
+<h3 id="gaussian-copula-with-uniform-marginals">Gaussian Copula with Uniform Marginals</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianCopulaUniform</span>
+
+<span class="n">joint</span> <span class="o">=</span> <span class="n">GaussianCopulaUniform</span><span class="p">(</span>
+    <span class="n">lows</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
+    <span class="n">highs</span><span class="o">=</span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">],</span>
+    <span class="n">corr</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">joint</span><span class="o">=</span><span class="n">joint</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">my_model</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="multivariate-normal">Multivariate Normal</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultivariateNormal</span>
+
+<span class="n">joint</span> <span class="o">=</span> <span class="n">MultivariateNormal</span><span class="p">(</span>
+    <span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="n">cov</span><span class="o">=</span><span class="p">[[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+         <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+         <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]],</span>
+<span class="p">)</span>
+
+<span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">joint</span><span class="o">=</span><span class="n">joint</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">my_model</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="truncated-multivariate-normal">Truncated Multivariate Normal</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">TruncatedMultivariateNormal</span>
+
+<span class="n">joint</span> <span class="o">=</span> <span class="n">TruncatedMultivariateNormal</span><span class="p">(</span>
+    <span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="n">cov</span><span class="o">=</span><span class="p">[[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+         <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+         <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]],</span>
+    <span class="n">lower</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">],</span>
+    <span class="n">upper</span><span class="o">=</span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span>  <span class="mf">1.0</span><span class="p">,</span>  <span class="mf">1.0</span><span class="p">],</span>
+<span class="p">)</span>
+
+<span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">joint</span><span class="o">=</span><span class="n">joint</span><span class="p">,</span> <span class="n">f</span><span class="o">=</span><span class="n">my_model</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+</code></pre></div>
+<p>Use <code>-np.inf</code> and <code>np.inf</code> for unbounded dimensions.  The class uses
+<strong>Gibbs sampling</strong> for both joint and conditional draws; tune
+<code>joint_burn_in</code> (default 30) and <code>cond_burn_in</code> (default 5) to
+balance speed versus convergence.</p>
+<h2 id="choosing-a-computation-method">Choosing a Computation Method</h2>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>When to Use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>'exhaustive'</code></td>
+<td>Small to moderate <span class="arithmatex">\(d\)</span> (≤ 8). Enumerates all <span class="arithmatex">\(2^d-1\)</span> subsets. Exact.</td>
+</tr>
+<tr>
+<td><code>'permutation'</code></td>
+<td>Larger <span class="arithmatex">\(d\)</span>. Uses random permutations with lazy caching. Approximate but scalable.</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="c1"># Exhaustive (default)</span>
+<span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">)</span>
+
+<span class="c1"># Permutation</span>
+<span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;permutation&#39;</span><span class="p">,</span> <span class="n">n_perm</span><span class="o">=</span><span class="mi">2000</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="coalition-truncation-k_max">Coalition Truncation (<code>k_max</code>)</h2>
+<p>The exhaustive method evaluates all <span class="arithmatex">\(2^d - 1\)</span> non-empty subsets, which becomes
+prohibitively expensive for <span class="arithmatex">\(d &gt; 8\)</span>.  However, many models — especially those
+built from RS-HDMR surrogates — have <strong>no interactions above a known order</strong>.
+For example, an RS-HDMR model trained with <code>polys=[10, 5]</code> has only
+first-order (main effects) and second-order (pairwise) interactions; third-order
+and higher terms are absent by construction.</p>
+<p>The <strong><code>k_max</code> parameter</strong> limits coalition evaluation to subsets of size
+<span class="arithmatex">\(\leq k_{\max}\)</span> (plus the full set, always needed for total variance).  This is
+<strong>exact</strong> when the model truly has no interactions above order <span class="arithmatex">\(k_{\max}\)</span>,
+dramatically reducing the number of subsets:</p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(d\)</span></th>
+<th style="text-align: right;">All subsets (<span class="arithmatex">\(2^d-1\)</span>)</th>
+<th style="text-align: right;"><span class="arithmatex">\(k_{\max}=2\)</span></th>
+<th style="text-align: right;"><span class="arithmatex">\(k_{\max}=3\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">42</td>
+</tr>
+<tr>
+<td>8</td>
+<td style="text-align: right;">255</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: right;">93</td>
+</tr>
+<tr>
+<td>10</td>
+<td style="text-align: right;">1,023</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">176</td>
+</tr>
+<tr>
+<td>15</td>
+<td style="text-align: right;">32,767</td>
+<td style="text-align: right;">121</td>
+<td style="text-align: right;">576</td>
+</tr>
+<tr>
+<td>20</td>
+<td style="text-align: right;">1,048,575</td>
+<td style="text-align: right;">211</td>
+<td style="text-align: right;">1,351</td>
+</tr>
+</tbody>
+</table>
+<h3 id="auto-detection">Auto-Detection</h3>
+<p>When using <code>model.get_mc_shapley()</code>, <code>k_max</code> defaults to <code>False</code> (a sentinel
+meaning "not set").  In this state, it is <strong>auto-detected</strong> from the surrogate
+model's <code>polys</code> parameter — <code>len(polys)</code> gives the highest interaction order.
+No manual configuration is needed:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># polys=[10, 5] → k_max=2 auto-detected (exact for this surrogate)</span>
+<span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>To force full enumeration, pass <code>k_max=None</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">,</span> <span class="n">k_max</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="explicit-control">Explicit Control</h3>
+<p>Override the auto-detected value or use <code>k_max</code> with the low-level API:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Explicit: limit to pairwise coalitions</span>
+<span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">,</span> <span class="n">k_max</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="c1"># Full enumeration (all 2^d - 1 subsets)</span>
+<span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">,</span> <span class="n">k_max</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="c1"># Low-level API</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">MCShapley</span>
+<span class="n">mc</span> <span class="o">=</span> <span class="n">MCShapley</span><span class="p">(</span><span class="n">f</span><span class="o">=</span><span class="n">my_model</span><span class="p">,</span> <span class="n">joint</span><span class="o">=</span><span class="n">my_dist</span><span class="p">)</span>
+<span class="n">df</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">,</span> <span class="n">k_max</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+<blockquote>
+<p><strong>Note:</strong> <code>k_max</code> only affects the <strong>exhaustive</strong> method.  The permutation
+method evaluates subsets lazily through random permutations of all sizes
+and does not support coalition truncation.</p>
+</blockquote>
+<h3 id="approximation-behaviour">Approximation Behaviour</h3>
+<p>When <code>k_max &lt; d-1</code>, some coalitions are not evaluated.  The estimator uses
+a <strong>conservative fallback</strong>: missing <span class="arithmatex">\(v(u)\)</span> values are approximated as the
+total variance <span class="arithmatex">\(v(\text{full})\)</span>, meaning missing high-order interactions are
+assumed to contribute proportionally.  For models with sparse high-order
+structure (the intended use case), this approximation is excellent.</p>
+<p><strong>Note on Sobol indices:</strong> When <span class="arithmatex">\(k_{\max} &lt; d-1\)</span>, the complement sets
+<span class="arithmatex">\(\{-i\}\)</span> needed for total-order Sobol indices <span class="arithmatex">\(T_i\)</span> are not evaluated,
+so <code>sobol_total</code> is returned as <code>NaN</code>.  First-order Sobol indices <span class="arithmatex">\(S_i\)</span>
+remain available (they only require singleton subsets, always evaluated
+when <span class="arithmatex">\(k_{\max} \ge 1\)</span>).  Pass <code>k_max=None</code> to force full enumeration
+and obtain <span class="arithmatex">\(T_i\)</span>.</p>
+<h2 id="bootstrap-confidence-intervals">Bootstrap Confidence Intervals</h2>
+<p>Set <code>B &gt; 0</code> to enable bootstrap CIs. The returned DataFrame gains <code>'lower'</code> and <code>'upper'</code> columns:</p>
+<div class="highlight"><pre><span></span><code><span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;X1 effect: </span><span class="si">{</span><span class="n">mc</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;effect&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2"> &quot;</span>
+      <span class="sa">f</span><span class="s2">&quot;[</span><span class="si">{</span><span class="n">mc</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;lower&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">mc</span><span class="o">.</span><span class="n">loc</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s1">&#39;upper&#39;</span><span class="p">]</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="sobol-indices-from-the-same-data">Sobol Indices from the Same Data</h2>
+<p>The Owen &amp; Prieur covariance formulation <span class="arithmatex">\(v(u) = \text{Cov}[f(\mathbf{X}), f(\mathbf{X}_u)]\)</span> equals
+the <strong>closed Sobol index</strong> <span class="arithmatex">\(\mathbb{V}[\mathbb{E}(f(\mathbf{X}) \mid \mathbf{X}_u)]\)</span>.  This means
+<strong>first-order (<span class="arithmatex">\(S_i\)</span>) and total-order (<span class="arithmatex">\(T_i\)</span>) Sobol indices</strong> can be extracted from the same
+Monte Carlo data at zero additional cost:</p>
+<div class="arithmatex">\[S_i = \frac{v(\{i\})}{v(\text{full})}, \qquad
+T_i = 1 - \frac{v(\text{all}\setminus\{i\})}{v(\text{full})}\]</div>
+<p>When using <code>method='exhaustive'</code>, the returned DataFrame includes:</p>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sobol_first</code></td>
+<td>First-order Sobol index <span class="arithmatex">\(S_i\)</span></td>
+</tr>
+<tr>
+<td><code>sobol_total</code></td>
+<td>Total-order Sobol index <span class="arithmatex">\(T_i\)</span></td>
+</tr>
+<tr>
+<td><code>sobol_first_lower</code>, <code>sobol_first_upper</code></td>
+<td>Bootstrap CIs for <span class="arithmatex">\(S_i\)</span> (if <code>B &gt; 0</code>)</td>
+</tr>
+<tr>
+<td><code>sobol_total_lower</code>, <code>sobol_total_upper</code></td>
+<td>Bootstrap CIs for <span class="arithmatex">\(T_i\)</span> (if <code>B &gt; 0</code>)</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mc</span><span class="p">[[</span><span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="s1">&#39;effect&#39;</span><span class="p">,</span> <span class="s1">&#39;sobol_first&#39;</span><span class="p">,</span> <span class="s1">&#39;sobol_total&#39;</span><span class="p">]])</span>
+</code></pre></div>
+<h4 id="sobol-availability-with-k_max">Sobol Availability with <span class="arithmatex">\(k_{\max}\)</span></h4>
+<p>When using coalition truncation, Sobol index availability depends on
+which subsets are evaluated:</p>
+<table>
+<thead>
+<tr>
+<th>Index</th>
+<th>Required subset</th>
+<th>Available when</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(S_i\)</span></td>
+<td><span class="arithmatex">\(\{i\}\)</span> (size 1)</td>
+<td><span class="arithmatex">\(k_{\max} \ge 1\)</span> — always available</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(T_i\)</span></td>
+<td><span class="arithmatex">\(\{-i\}\)</span> (size <span class="arithmatex">\(d-1\)</span>)</td>
+<td><span class="arithmatex">\(k_{\max} \ge d-1\)</span> <em>or</em> <code>k_max=None</code></td>
+</tr>
+</tbody>
+</table>
+<p>When <span class="arithmatex">\(T_i\)</span> cannot be computed (missing complement sets), the
+<code>sobol_total</code> column contains <code>NaN</code>.  Pass <code>k_max=None</code> to force
+full enumeration and obtain both <span class="arithmatex">\(S_i\)</span> and <span class="arithmatex">\(T_i\)</span> regardless of
+dimension.</p>
+<p>For the permutation method, Sobol columns are returned as <code>NaN</code> — the lazy subset
+evaluation may not include all singleton and <span class="arithmatex">\((d-1)\)</span>-variable subsets needed.</p>
+<p><strong>Note on correlated inputs:</strong> Under correlation, the standard inequality
+<span class="arithmatex">\(S_i \leq T_i\)</span> no longer holds.  See the <a href="../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+tutorial for a detailed explanation.</p>
+<h2 id="performance-tips">Performance Tips</h2>
+<ul>
+<li><strong>Start with small N</strong>: Use <code>N=1000–2000</code> for quick exploration, increase for final results.</li>
+<li><strong>Prefer the permutation method</strong> for <span class="arithmatex">\(d &gt; 6\)</span> to avoid exponential subset explosion.</li>
+<li><strong>The <code>B</code> bootstrap iterations</strong> are independent of the <span class="arithmatex">\(2^d\)</span> scaling — they re-use cached data.</li>
+<li><strong>Random state</strong>: Fix <code>random_state</code> for reproducible outputs.</li>
+</ul>
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="../../reference/mc_shapley/">MC Shapley Reference</a> — complete API documentation</li>
+<li><a href="../../explanation/theory/#shapley-effects-with-correlated-inputs">Theory: Shapley Effects with Correlated Inputs</a></li>
+<li><a href="https://github.com/frbennett/shapleyx/blob/main/Examples/mc_shapley.ipynb">Examples: MC Shapley Notebook</a></li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../common-tasks/" class="btn btn-neutral float-left" title="Common Tasks"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../reference/api/" class="btn btn-neutral float-right" title="API">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../common-tasks/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../reference/api/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/explanation/distributions/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Distribution Classes - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Distribution Classes";
+        var mkdocs_page_input_path = "explanation/distributions.md";
+        var mkdocs_page_url = "/shapleyx/explanation/distributions/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Distribution Classes</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#interface-contract">Interface Contract</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#built-in-classes">Built-in Classes</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#multivariatenormal">MultivariateNormal</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#gaussiancopulauniform">GaussianCopulaUniform</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#truncatedmultivariatenormal">TruncatedMultivariateNormal</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#custom-classes-from-case-studies">Custom Classes from Case Studies</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#gaussiancopulamixed-cantilever-beam">GaussianCopulaMixed — Cantilever Beam</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#gaussiancopulafull-borehole-function">GaussianCopulaFull — Borehole Function</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#writing-your-own-distribution-class">Writing Your Own Distribution Class</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#step-1-choose-a-strategy">Step 1: Choose a strategy</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#step-2-implement-the-interface">Step 2: Implement the interface</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#step-3-test-your-class">Step 3: Test your class</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#step-4-plug-into-shapleyx">Step 4: Plug into ShapleyX</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#case-studies">Case Studies</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#see-also">See Also</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../performance/">Performance</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Explanation</li>
+      <li class="breadcrumb-item active">Distribution Classes</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/explanation/distributions.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="distribution-classes">Distribution Classes</h1>
+<p>The Monte Carlo Shapley estimator requires <strong>conditional sampling</strong> from the
+joint input distribution — drawing from <span class="arithmatex">\(P(\mathbf{X}_{-u} \mid \mathbf{X}_u = \mathbf{x}_u)\)</span>
+for arbitrary subsets <span class="arithmatex">\(u\)</span>.  ShapleyX defines a <strong>distribution class interface</strong>
+that any input model can implement to plug into the MC Shapley machinery.</p>
+<p>This page describes the built-in classes, the interface contract, and several
+custom classes developed for the example case studies.</p>
+<hr />
+<h2 id="interface-contract">Interface Contract</h2>
+<p>A distribution class must provide four attributes and methods:</p>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Signature</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>self.d</code></td>
+<td><code>int</code></td>
+<td>Number of input dimensions</td>
+</tr>
+<tr>
+<td><code>sample_joint(n)</code></td>
+<td><code>(n,)</code> → <code>(n, d)</code> array</td>
+<td>Draw <span class="arithmatex">\(n\)</span> i.i.d. samples from the full joint distribution</td>
+</tr>
+<tr>
+<td><code>sample_conditional(u, x)</code></td>
+<td><code>(list, 1D array)</code> → <code>(d,)</code> array</td>
+<td>Draw <em>one</em> sample conditioned on <span class="arithmatex">\(\mathbf{X}_u = \mathbf{x}\)</span></td>
+</tr>
+<tr>
+<td><code>sample_conditional_batch(u, X)</code></td>
+<td><code>(list, 2D array)</code> → <code>(N, d)</code> array</td>
+<td>Draw <span class="arithmatex">\(N\)</span> conditional samples, vectorised — used by the MC loops for efficiency</td>
+</tr>
+</tbody>
+</table>
+<p>Where:</p>
+<ul>
+<li><code>u</code> is a list of variable indices (e.g., <code>[0, 2]</code>)</li>
+<li><code>x</code> is a 1D array of fixed values for those variables</li>
+<li><code>X</code> is a 2D array of shape <code>(N, len(u))</code> — <span class="arithmatex">\(N\)</span> different conditioning points</li>
+</ul>
+<p>The <code>sample_conditional</code> method can delegate to <code>sample_conditional_batch</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sample_conditional</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_conditional_batch</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+</code></pre></div>
+<hr />
+<h2 id="built-in-classes">Built-in Classes</h2>
+<h3 id="multivariatenormal"><code>MultivariateNormal</code></h3>
+<p><strong>Jointly normal</strong> inputs with analytical conditional distributions.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultivariateNormal</span>
+
+<span class="n">joint</span> <span class="o">=</span> <span class="n">MultivariateNormal</span><span class="p">(</span>
+    <span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="n">cov</span><span class="o">=</span><span class="p">[[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+         <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+         <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]],</span>
+<span class="p">)</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sample_joint</code></td>
+<td><code>np.random.multivariate_normal</code></td>
+</tr>
+<tr>
+<td><code>sample_conditional_batch</code></td>
+<td>Closed-form: <span class="arithmatex">\(\boldsymbol{\mu}_{v\mid u} = \boldsymbol{\mu}_v + \boldsymbol{\Sigma}_{vu}\boldsymbol{\Sigma}_{uu}^{-1}(\mathbf{x}_u - \boldsymbol{\mu}_u)\)</span>, Cholesky of conditional covariance</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Fastest</strong> of the built-in classes — uses a single Cholesky decomposition per subset.</p>
+<h3 id="gaussiancopulauniform"><code>GaussianCopulaUniform</code></h3>
+<p><strong>Uniform marginals</strong> <span class="arithmatex">\([a_i, b_i]\)</span> with dependence induced by a latent multivariate normal.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianCopulaUniform</span>
+
+<span class="n">joint</span> <span class="o">=</span> <span class="n">GaussianCopulaUniform</span><span class="p">(</span>
+    <span class="n">lows</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">],</span>
+    <span class="n">highs</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">],</span>
+    <span class="n">corr</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Implementation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sample_joint</code></td>
+<td>Draw latent normal → <code>norm.cdf</code> → scale to <span class="arithmatex">\([a_i, b_i]\)</span></td>
+</tr>
+<tr>
+<td><code>sample_conditional_batch</code></td>
+<td>Map fixed variables to latent normal via <code>norm.ppf</code>, condition with <code>MultivariateNormal</code> formulas, map back via <code>norm.cdf</code></td>
+</tr>
+</tbody>
+</table>
+<p>Used in the Iooss &amp; Prieur correlation sweep tutorials.</p>
+<h3 id="truncatedmultivariatenormal"><code>TruncatedMultivariateNormal</code></h3>
+<p><strong>Jointly normal</strong> with per-dimension truncation bounds <span class="arithmatex">\([a_i, b_i]\)</span>.</p>
+<p><div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">TruncatedMultivariateNormal</span>
+
+<span class="n">joint</span> <span class="o">=</span> <span class="n">TruncatedMultivariateNormal</span><span class="p">(</span>
+    <span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+    <span class="n">cov</span><span class="o">=</span><span class="p">[[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+         <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>
+         <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]],</span>
+    <span class="n">lower</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">1.0</span><span class="p">],</span>
+    <span class="n">upper</span><span class="o">=</span><span class="p">[</span><span class="mf">1.0</span><span class="p">,</span>  <span class="mf">1.0</span><span class="p">,</span>  <span class="mf">1.0</span><span class="p">],</span>
+<span class="p">)</span>
+</code></pre></div>
+| Method | Implementation |
+|---|---|
+| <code>sample_joint</code> | Vectorised Gibbs sampling — iterates over variables, each drawn from a univariate truncated normal conditioned on current values of all others |
+| <code>sample_conditional_batch</code> | Gibbs on the <span class="arithmatex">\(\lvert v\rvert\)</span>-dimensional truncated conditional, started at the well-centred untruncated conditional mean |</p>
+<p>Tune <code>joint_burn_in</code> (default 30) and <code>cond_burn_in</code> (default 5) to balance
+speed and convergence.  Use <code>-np.inf</code> / <code>np.inf</code> for unbounded dimensions.</p>
+<hr />
+<h2 id="custom-classes-from-case-studies">Custom Classes from Case Studies</h2>
+<p>Several notebooks define <strong>ad-hoc distribution classes</strong> to handle
+challenging input models.  They illustrate the flexibility of the interface.</p>
+<h3 id="gaussiancopulamixed-cantilever-beam"><code>GaussianCopulaMixed</code> — Cantilever Beam</h3>
+<p><strong>Mixed Normal + LogNormal marginals</strong> with a Gaussian copula for correlation.
+Defined inline in <code>Examples/cantilever_beam.ipynb</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">GaussianCopulaMixed</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">marginals</span><span class="p">,</span> <span class="n">latent_corr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">marginals</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mvn</span> <span class="o">=</span> <span class="n">MultivariateNormal</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">d</span><span class="p">),</span> <span class="n">cov</span><span class="o">=</span><span class="n">latent_corr</span><span class="p">)</span>
+        <span class="c1"># ...</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_to_latent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>   <span class="c1"># original → N(0,1)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_from_latent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span> <span class="c1"># N(0,1) → original</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_joint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>         <span class="c1"># latent draw → _to_original</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_conditional_batch</span><span class="p">(</span><span class="o">...</span><span class="p">):</span> <span class="c1"># map fixed to latent → condition →</span>
+                                        <span class="c1"># map back</span>
+</code></pre></div>
+<p><strong>Key pattern:</strong> the class wraps a <code>MultivariateNormal</code> in latent space and
+provides two static methods (<code>_to_latent</code>, <code>_from_latent</code>) that are dispatched
+per column based on the marginal type.  Adding a new marginal type (e.g.,
+Weibull, Beta) requires only a new branch in these two methods.</p>
+<h3 id="gaussiancopulafull-borehole-function"><code>GaussianCopulaFull</code> — Borehole Function</h3>
+<p>Extends the mixed-copula pattern to <strong>Uniform marginals</strong> in addition to
+Normal and LogNormal.  Defined in <code>Examples/borehole.ipynb</code>.</p>
+<p>The only change from <code>GaussianCopulaMixed</code> is an extra branch in the
+transform methods:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Uniform[a, b]: map via Φ⁻¹((x-a)/(b-a))</span>
+<span class="k">if</span> <span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;uniform&#39;</span><span class="p">:</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="o">=</span> <span class="n">params</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">((</span><span class="n">x</span> <span class="o">-</span> <span class="n">a</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">b</span> <span class="o">-</span> <span class="n">a</span><span class="p">),</span> <span class="mf">1e-15</span><span class="p">,</span> <span class="mi">1</span> <span class="o">-</span> <span class="mf">1e-15</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">norm</span><span class="o">.</span><span class="n">ppf</span><span class="p">(</span><span class="n">u</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="writing-your-own-distribution-class">Writing Your Own Distribution Class</h2>
+<p>Follow these steps to create a custom distribution:</p>
+<h3 id="step-1-choose-a-strategy">Step 1: Choose a strategy</h3>
+<table>
+<thead>
+<tr>
+<th>If your distribution is...</th>
+<th>Consider...</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A known multivariate family</td>
+<td>Wrapping <code>MultivariateNormal</code> in latent space (Gaussian copula)</td>
+</tr>
+<tr>
+<td>Defined by physical constraints</td>
+<td>Rejection sampling on top of a base distribution</td>
+</tr>
+<tr>
+<td>Available only via a black-box simulator</td>
+<td>Pre-generating a large sample and using nearest-neighbour approximation (see Demange-Chryst 2022, Appendix I)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="step-2-implement-the-interface">Step 2: Implement the interface</h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">MyDistribution</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">...</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">d</span> <span class="o">=</span> <span class="o">...</span>  <span class="c1"># number of dimensions</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_joint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return (n, d) array of joint samples.&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_conditional</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_indices</span><span class="p">,</span> <span class="n">fixed_x</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return (d,) array — single conditional sample.&quot;&quot;&quot;</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sample_conditional_batch</span><span class="p">(</span>
+            <span class="n">u_indices</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_2d</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">fixed_x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">))</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">sample_conditional_batch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">u_indices</span><span class="p">,</span> <span class="n">fixed_X</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return (N, d) array — N conditional samples.&quot;&quot;&quot;</span>
+        <span class="o">...</span>
+</code></pre></div>
+<h3 id="step-3-test-your-class">Step 3: Test your class</h3>
+<p>Verify that the class produces correct correlations and respects
+the conditional structure:</p>
+<div class="highlight"><pre><span></span><code><span class="n">joint</span> <span class="o">=</span> <span class="n">MyDistribution</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+
+<span class="c1"># Check marginals</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">joint</span><span class="o">.</span><span class="n">sample_joint</span><span class="p">(</span><span class="mi">10000</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Means:&quot;</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">))</span>
+
+<span class="c1"># Check conditional: E[X_i | X_j = some_value] should differ from E[X_i]</span>
+<span class="n">x_cond</span> <span class="o">=</span> <span class="n">joint</span><span class="o">.</span><span class="n">sample_conditional</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="n">some_value</span><span class="p">])</span>
+
+<span class="c1"># Check batch: should be faster than a Python loop</span>
+<span class="n">X_batch</span> <span class="o">=</span> <span class="n">joint</span><span class="o">.</span><span class="n">sample_conditional_batch</span><span class="p">([</span><span class="mi">0</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">v1</span><span class="p">],</span> <span class="p">[</span><span class="n">v2</span><span class="p">],</span> <span class="p">[</span><span class="n">v3</span><span class="p">]]))</span>
+</code></pre></div>
+<h3 id="step-4-plug-into-shapleyx">Step 4: Plug into ShapleyX</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">shapley_effects</span>
+
+<span class="n">effects</span><span class="p">,</span> <span class="n">sh</span><span class="p">,</span> <span class="n">var</span> <span class="o">=</span> <span class="n">shapley_effects</span><span class="p">(</span><span class="n">my_model</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span><span class="p">)</span>
+</code></pre></div>
+<p>Your class is now a first-class citizen of the MC Shapley pipeline — it
+works with the exhaustive method, permutation method, bootstrap, batch
+prediction, and progress bars.</p>
+<hr />
+<h2 id="case-studies">Case Studies</h2>
+<table>
+<thead>
+<tr>
+<th>Notebook</th>
+<th>Distribution</th>
+<th>Key Features</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><a href="../tutorials/cantilever_beam/">Cantilever Beam</a></td>
+<td><code>GaussianCopulaMixed</code></td>
+<td>6 inputs, LogNormal + Normal marginals, 3 correlated dimensional parameters, RS-HDMR surrogate comparison</td>
+</tr>
+<tr>
+<td><a href="../tutorials/borehole/">Borehole Function</a></td>
+<td><code>GaussianCopulaFull</code></td>
+<td>8 inputs, Normal + LogNormal + Uniform marginals, optional geological correlations, Sobol + Shapley from single run</td>
+</tr>
+<tr>
+<td><a href="../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a></td>
+<td><code>TruncatedMultivariateNormal</code> (built-in)</td>
+<td>3 inputs, per-dimension truncation, multiple truncation schemes, RS-HDMR surrogate comparison</td>
+</tr>
+<tr>
+<td><a href="../tutorials/iooss_prieur_ishigami_correlation/">Iooss &amp; Prieur Correlation Sweep</a></td>
+<td><code>GaussianCopulaUniform</code> (built-in)</td>
+<td>3 inputs, Shapley + <span class="arithmatex">\(S_i\)</span> + <span class="arithmatex">\(T_i\)</span> vs correlation <span class="arithmatex">\(\rho\)</span>, exhaustive and permutation methods</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="see-also">See Also</h2>
+<ul>
+<li><a href="../../how-to-guides/mc-shapley/">MC Shapley How-to Guide</a> — usage instructions</li>
+<li><a href="../theory/#shapley-effects-with-correlated-inputs">Theory: Shapley Effects with Correlated Inputs</a></li>
+<li><a href="../../reference/mc_shapley/">MC Shapley Reference</a> — API documentation</li>
+<li><a href="https://arxiv.org/abs/1704.06942">Owen &amp; Prieur (2017)</a> — the covariance formulation</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../theory/" class="btn btn-neutral float-left" title="Theory"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../ard_theory/" class="btn btn-neutral float-right" title="ARD Theory">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../theory/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../ard_theory/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/explanation/theory/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Theory - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Theory";
+        var mkdocs_page_input_path = "explanation/theory.md";
+        var mkdocs_page_url = "/shapleyx/explanation/theory/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul class="current">
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Theory</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#shapley-values-in-sensitivity-analysis">Shapley Values in Sensitivity Analysis</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#shapley-effects-mathematical-formulation">Shapley Effects — Mathematical Formulation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#relationship-to-sobol-indices">Relationship to Sobol Indices</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#advantages-of-shapley-effects">Advantages of Shapley Effects</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#implementation-via-rs-hdmr-independent-inputs">Implementation via RS-HDMR (Independent Inputs)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#shapley-effects-with-correlated-inputs">Shapley Effects with Correlated Inputs</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#the-covariance-based-formulation">The Covariance-Based Formulation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#mc-sobol-indices-as-a-by-product">MC Sobol Indices as a By-Product</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#distribution-classes">Distribution Classes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#computation-methods">Computation Methods</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#coalition-truncation">Coalition Truncation</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../distributions/">Distribution Classes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../performance/">Performance</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Explanation</li>
+      <li class="breadcrumb-item active">Theory</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/explanation/theory.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="theoretical-background">Theoretical Background</h1>
+<h2 id="shapley-values-in-sensitivity-analysis">Shapley Values in Sensitivity Analysis</h2>
+<p>Shapley values originate from cooperative game theory and provide a principled way to:</p>
+<ol>
+<li>Fairly distribute the "payout" (output variance) among "players" (input parameters)</li>
+<li>Account for all possible interaction effects</li>
+<li>Provide unique attribution under certain axioms (efficiency, symmetry, dummy, additivity)</li>
+</ol>
+<h2 id="shapley-effects-mathematical-formulation">Shapley Effects — Mathematical Formulation</h2>
+<p>For a model output <span class="arithmatex">\(Y = f(X_1, X_2, \ldots, X_d)\)</span>, the Shapley effect <span class="arithmatex">\(\phi_i\)</span> for parameter <span class="arithmatex">\(X_i\)</span> is:</p>
+<div class="arithmatex">\[
+\phi_i = \sum_{S \subseteq D \setminus \{i\}} \frac{|S|!\,(d-|S|-1)!}{d!}\,
+\Big[\text{Var}\big(E[Y \mid X_{S \cup \{i\}}]\big) - \text{Var}\big(E[Y \mid X_S]\big)\Big]
+\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(D = \{1, 2, \ldots, d\}\)</span> is the set of all input parameters</li>
+<li><span class="arithmatex">\(S\)</span> is a subset of parameters excluding <span class="arithmatex">\(i\)</span></li>
+<li><span class="arithmatex">\(X_S\)</span> represents the parameters in subset <span class="arithmatex">\(S\)</span></li>
+<li>The weight <span class="arithmatex">\(\frac{|S|!\,(d-|S|-1)!}{d!}\)</span> ensures each coalition size is equally represented</li>
+</ul>
+<h2 id="relationship-to-sobol-indices">Relationship to Sobol Indices</h2>
+<p>Shapley effects generalise Sobol indices by combining all order effects involving a parameter:</p>
+<ul>
+<li>A Sobol index <span class="arithmatex">\(S_u\)</span> quantifies the contribution of subset <span class="arithmatex">\(u\)</span> <strong>alone</strong></li>
+<li>A Shapley effect <span class="arithmatex">\(\phi_i\)</span> redistributes every interaction term equally among its participating variables</li>
+</ul>
+<p>This yields a complete decomposition where:</p>
+<ul>
+<li><span class="arithmatex">\(\sum_{i=1}^d \phi_i = \text{Var}(Y)\)</span> (efficiency)</li>
+<li>Each <span class="arithmatex">\(\phi_i \geq 0\)</span> (non-negativity under independent inputs)</li>
+</ul>
+<h2 id="advantages-of-shapley-effects">Advantages of Shapley Effects</h2>
+<ol>
+<li><strong>Complete Attribution</strong>: Accounts for all interactions, unlike first-order Sobol indices</li>
+<li><strong>Additivity</strong>: Effects sum to total output variance</li>
+<li><strong>Interpretability</strong>: Direct measure of importance in variance units</li>
+<li><strong>Single number per input</strong>: Avoids the proliferation of <span class="arithmatex">\(2^d - 1\)</span> Sobol indices</li>
+</ol>
+<h2 id="implementation-via-rs-hdmr-independent-inputs">Implementation via RS-HDMR (Independent Inputs)</h2>
+<p>ShapleyX computes Shapley effects from a sparse polynomial surrogate model built by:</p>
+<ul>
+<li><strong>Polynomial chaos expansion</strong> using shifted Legendre polynomials (orthonormal on <span class="arithmatex">\([0, 1]\)</span>)</li>
+<li><strong>Automatic Relevance Determination (ARD)</strong> for sparse Bayesian regression — prunes irrelevant basis terms</li>
+<li><strong>Coefficient-based index extraction</strong>: squared coefficients are grouped by variable labels and distributed according to the Shapley weights</li>
+</ul>
+<p>Under independent inputs, the variance contributed by a basis term <span class="arithmatex">\(\psi_u(\mathbf{x})\)</span> is simply its squared coefficient. The Shapley effect for variable <span class="arithmatex">\(i\)</span> is then the sum of all coefficient-squared terms divided equally among the variables appearing in each term's label.</p>
+<h2 id="shapley-effects-with-correlated-inputs">Shapley Effects with Correlated Inputs</h2>
+<p>When inputs are correlated, the coefficient-based decomposition used by RS-HDMR breaks down because:</p>
+<ul>
+<li>The variance of a product term no longer factorises into independent contributions</li>
+<li>Conditional expectations <span class="arithmatex">\(E[Y \mid X_S]\)</span> depend on the joint distribution in a non-trivial way</li>
+</ul>
+<p>The <strong>Monte Carlo Shapley</strong> method addresses this by directly estimating the conditional variance terms from samples of the joint distribution.</p>
+<h3 id="the-covariance-based-formulation">The Covariance-Based Formulation</h3>
+<p>Owen &amp; Prieur (2017) showed that the Shapley value function can be written as:</p>
+<div class="arithmatex">\[
+v(u) = \text{Cov}\big[f(\mathbf{X}),\, f(\mathbf{X}_u)\big]
+\]</div>
+<p>where <span class="arithmatex">\(\mathbf{X}_u\)</span> is a random vector constructed by:</p>
+<ol>
+<li>Drawing a joint sample <span class="arithmatex">\(\mathbf{x} \sim P_{\mathbf{X}}\)</span></li>
+<li>Fixing the coordinates in <span class="arithmatex">\(u\)</span> to <span class="arithmatex">\(\mathbf{x}_u\)</span></li>
+<li>Drawing the remaining coordinates from the conditional distribution <span class="arithmatex">\(P(\mathbf{X}_{-u} \mid \mathbf{X}_u = \mathbf{x}_u)\)</span></li>
+</ol>
+<p>The MC Shapley algorithm estimates <span class="arithmatex">\(v(u)\)</span> for each subset by Monte Carlo, then assembles the Shapley effects via the standard coalition formula.</p>
+<h3 id="mc-sobol-indices-as-a-by-product">MC Sobol Indices as a By-Product</h3>
+<p>The same <span class="arithmatex">\(v(u)\)</span> values equal the <strong>closed Sobol indices</strong>:</p>
+<div class="arithmatex">\[v(u) = \text{Cov}[f(\mathbf{X}), f(\mathbf{X}_u)] = \mathbb{V}[\mathbb{E}(f(\mathbf{X}) \mid \mathbf{X}_u)]\]</div>
+<p>This is a direct consequence of the Owen &amp; Prieur (2017) formulation — see the
+<a href="https://arxiv.org/abs/1704.06942">proof in their paper</a>.  From <span class="arithmatex">\(v(u)\)</span> we obtain
+both first-order and total-order Sobol indices without additional model evaluations:</p>
+<div class="arithmatex">\[S_i = \frac{v(\{i\})}{v(\text{full})}, \qquad
+T_i = 1 - \frac{v(\text{all}\setminus\{i\})}{v(\text{full})}\]</div>
+<p>where <span class="arithmatex">\(v(\text{full}) = \mathbb{V}(f(\mathbf{X}))\)</span> is the total output variance.</p>
+<p>The <code>MCShapley.compute()</code> method returns <code>sobol_first</code> and <code>sobol_total</code> columns
+alongside the Shapley effects, with bootstrap confidence intervals available
+via <code>bootstrap_sobol()</code>.  This gives practitioners three complementary perspectives
+from a single data collection: <span class="arithmatex">\(S_i\)</span> (main effect), Shapley (fair attribution
+including interactions), and <span class="arithmatex">\(T_i\)</span> (total effect).</p>
+<p><strong>Important:</strong> Under correlated inputs, the standard inequality <span class="arithmatex">\(S_i \leq T_i\)</span> can
+break down — correlation inflates <span class="arithmatex">\(S_i\)</span> (shared information through dependence) and
+deflates <span class="arithmatex">\(T_i\)</span> (other variables proxy for <span class="arithmatex">\(X_i\)</span>).  The Shapley effect remains
+axiomatically interpretable regardless of the correlation structure.</p>
+<h3 id="distribution-classes">Distribution Classes</h3>
+<p>ShapleyX provides two distribution families with built-in conditional sampling:</p>
+<table>
+<thead>
+<tr>
+<th>Class</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>GaussianCopulaUniform</code></td>
+<td>Uniform marginals <span class="arithmatex">\([a_i, b_i]\)</span> with dependence induced by a latent multivariate normal. Correlation matrix <span class="arithmatex">\(\mathbf{R}\)</span> controls dependence.</td>
+</tr>
+<tr>
+<td><code>MultivariateNormal</code></td>
+<td>Jointly normal with mean <span class="arithmatex">\(\boldsymbol{\mu}\)</span> and covariance <span class="arithmatex">\(\boldsymbol{\Sigma}\)</span>. Conditional distributions are analytically tractable.</td>
+</tr>
+<tr>
+<td><code>TruncatedMultivariateNormal</code></td>
+<td>Jointly normal with per-dimension truncation bounds <span class="arithmatex">\([a_i, b_i]\)</span>. Both joint and conditional sampling use Gibbs sampling, making it suitable for any hyper-rectangular truncation region.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="computation-methods">Computation Methods</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Description</th>
+<th>Complexity</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>'exhaustive'</code></td>
+<td>Enumerates all <span class="arithmatex">\(2^d - 1\)</span> non-empty subsets. Each subset requires <span class="arithmatex">\(N\)</span> Monte Carlo iterations.</td>
+<td><span class="arithmatex">\(O(2^d \cdot N)\)</span></td>
+</tr>
+<tr>
+<td><code>'permutation'</code></td>
+<td>Evaluates only subsets encountered in random permutations, with lazy caching.</td>
+<td><span class="arithmatex">\(O(n_{\text{perm}} \cdot d \cdot N)\)</span></td>
+</tr>
+<tr>
+<td><code>'exhaustive'</code> with <code>k_max</code></td>
+<td>Enumerates only subsets up to size <span class="arithmatex">\(k_{\max}\)</span> (plus the full set). Exact when interactions are bounded at order <span class="arithmatex">\(k_{\max}\)</span>.</td>
+<td><span class="arithmatex">\(O(d^{k_{\max}} \cdot N)\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>Bootstrap confidence intervals are available for all methods by resampling the stored output arrays.</p>
+<h3 id="coalition-truncation">Coalition Truncation</h3>
+<p>The exhaustive method's <span class="arithmatex">\(O(2^d)\)</span> complexity limits its use to <span class="arithmatex">\(d \leq 8\)</span> in
+practice.  However, many models — particularly RS-HDMR surrogates — have
+<strong>bounded interaction order</strong>.  An RS-HDMR model built with <code>polys=[10, 5]</code>
+contains only first-order (main effects) and second-order (pairwise)
+interactions; all higher-order terms are identically zero.</p>
+<p>When the model's HDMR decomposition has no interactions above order <span class="arithmatex">\(k\)</span>, the
+Shapley value for variable <span class="arithmatex">\(i\)</span> simplifies: coalitions larger than <span class="arithmatex">\(k\)</span> contribute
+nothing beyond what is already captured by their sub-coalitions of size <span class="arithmatex">\(\leq k\)</span>.
+Formally, for any <span class="arithmatex">\(u\)</span> with <span class="arithmatex">\(|u| &gt; k\)</span>:</p>
+<div class="arithmatex">\[v(u) = \sum_{w \subseteq u, |w| \leq k} \sigma_w^2\]</div>
+<p>and the Shapley difference <span class="arithmatex">\(v(u \cup \{i\}) - v(u)\)</span> only involves terms where
+<span class="arithmatex">\(i \in w\)</span> and <span class="arithmatex">\(|w| \leq k\)</span>.  The Shapley weight for coalitions of size <span class="arithmatex">\(|u| &gt; k\)</span>
+distributes these contributions identically to how they are distributed through
+the sub-coalitions already evaluated.</p>
+<p>This justifies setting <code>k_max</code> to the highest interaction order of the
+surrogate model.  ShapleyX <strong>auto-detects</strong> this from the <code>polys</code> parameter
+(<span class="arithmatex">\(k_{\max} = \text{len}(\text{polys})\)</span>) when using <code>model.get_mc_shapley()</code>.
+For general models where the interaction order is unknown, <code>k_max</code> provides a
+controlled approximation that converges to the exact result as <span class="arithmatex">\(k_{\max} \to d\)</span>.</p>
+<hr />
+<p><strong>Reference</strong>: Owen, A. B., &amp; Prieur, C. (2017). On Shapley value for measuring importance of dependent inputs. <em>SIAM/ASA Journal on Uncertainty Quantification</em>, 5(1), 986–1004.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../../reference/mc_shapley/" class="btn btn-neutral float-left" title="MC Shapley"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../distributions/" class="btn btn-neutral float-right" title="Distribution Classes">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../../reference/mc_shapley/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../distributions/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

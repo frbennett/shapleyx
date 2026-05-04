@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/explanation/performance/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Performance - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Performance";
+        var mkdocs_page_input_path = "explanation/performance.md";
+        var mkdocs_page_url = "/shapleyx/explanation/performance/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../distributions/">Distribution Classes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Performance</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#overview-of-the-hot-path">Overview of the Hot Path</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1-surrogate-model-prediction-predictorpy">1. Surrogate Model Prediction (predictor.py)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#11-bypass-sklearn-predict-overhead">1.1 Bypass sklearn predict overhead</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#12-numba-compiled-legendre-polynomials">1.2 Numba-compiled Legendre polynomials</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#13-compiled-prediction-pipeline">1.3 Compiled prediction pipeline</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#14-batch-size-routing">1.4 Batch-size routing</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-monte-carlo-sampling-mc_shapleypy">2. Monte Carlo Sampling (mc_shapley.py)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#21-batched-conditional-sampling">2.1 Batched conditional sampling</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#22-batched-data-collection-functions">2.2 Batched data-collection functions</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#23-benched-summary-d8-n2000-analytical-g-function">2.3 Benched summary (d=8, N=2000, analytical G-function)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#24-coalition-truncation-k_max">2.4 Coalition truncation (k_max)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-shapley-computation-and-bootstrap">3. Shapley Computation and Bootstrap</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#31-precomputed-shapley-weights">3.1 Precomputed Shapley weights</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#32-compiled-bootstrap-exhaustive-method">3.2 Compiled bootstrap (exhaustive method)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#summary-of-speedup-factors">Summary of Speedup Factors</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#compatibility-and-fallbacks">Compatibility and Fallbacks</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Explanation</li>
+      <li class="breadcrumb-item active">Performance</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/explanation/performance.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="performance-optimisations">Performance Optimisations</h1>
+<p>ShapleyX v0.3 includes a suite of performance optimisations that
+collectively accelerate Monte Carlo Shapley effect estimation by
+<strong>10–30×</strong> when using an RS-HDMR surrogate model.  This document
+describes each optimisation, the motivation behind it, and the
+measured impact.</p>
+<hr />
+<h2 id="overview-of-the-hot-path">Overview of the Hot Path</h2>
+<p>The MC Shapley algorithm spends virtually all of its time evaluating
+the model function <span class="arithmatex">\(f(\mathbf{x})\)</span> inside nested Monte Carlo loops.
+For <span class="arithmatex">\(d\)</span> input dimensions and <span class="arithmatex">\(N\)</span> samples per subset, each run of the
+<strong>exhaustive</strong> method requires</p>
+<div class="arithmatex">\[
+(2^d - 2) \times 2N + N
+\]</div>
+<p>function evaluations.  With <span class="arithmatex">\(d=8\)</span> and <span class="arithmatex">\(N=3000\)</span> this is
+<span class="arithmatex">\(\approx 1.5\)</span>&nbsp;million calls to <code>predict()</code>.</p>
+<p>Every <code>predict()</code> call on the surrogate model must:</p>
+<ol>
+<li>Normalise the input to <span class="arithmatex">\([0,1]^d\)</span></li>
+<li>Evaluate shifted Legendre polynomials for each active basis term</li>
+<li>Compute the dot product of the design vector with the RVM
+   coefficients</li>
+</ol>
+<p>The optimisations target steps&nbsp;2 and&nbsp;3, plus the
+surrounding Monte Carlo infrastructure.</p>
+<hr />
+<h2 id="1-surrogate-model-prediction-predictorpy">1. Surrogate Model Prediction (predictor.py)</h2>
+<h3 id="11-bypass-sklearn-predict-overhead">1.1 Bypass <code>sklearn</code> predict overhead</h3>
+<p><strong>Change:</strong> Replaced <code>self.ridgereg.predict(design)</code> with the direct
+computation <code>design @ self._coef + self._intercept</code>.</p>
+<p><strong>Why:</strong> <code>sklearn.linear_model.Ridge.predict()</code> validates and
+type-checks its input on every call.  The actual computation is a
+single dot product.  Skipping the validation eliminates Python-level
+dispatch overhead for each of the millions of predictions made during
+MC Shapley.</p>
+<p><strong>Impact:</strong> ~1.1&times; speedup on the <code>predict</code> path.</p>
+<h3 id="12-numba-compiled-legendre-polynomials">1.2 Numba-compiled Legendre polynomials</h3>
+<p><strong>Change:</strong> Replaced <code>scipy.special.eval_sh_legendre</code> with a
+recurrence-based shifted Legendre evaluation compiled with
+<code>@njit(cache=True)</code>.</p>
+<p><strong>Why:</strong> <code>eval_sh_legendre</code> is a general-purpose Fortran routine
+reached through SciPy's Python wrapper.  For the low-degree
+polynomials used in RS-HDMR (typically <span class="arithmatex">\(n \le 10\)</span>), the recurrence</p>
+<div class="arithmatex">\[
+\begin{aligned}
+\hat{P}_0(x) &amp;= 1, \\
+\hat{P}_1(x) &amp;= 2x - 1, \\
+\hat{P}_{k+1}(x) &amp;= \frac{(2k+1)(2x-1)\hat{P}_k(x) - k\hat{P}_{k-1}(x)}{k+1},
+\end{aligned}
+\]</div>
+<p>requires only a handful of floating-point operations and can be fully
+inlined by Numba's LLVM compiler.  The normalisation factor
+<span class="arithmatex">\(\sqrt{2n+1}\)</span> is applied at the end.</p>
+<p><strong>Impact:</strong> 2–3&times; speedup on Legendre evaluation within
+single-sample predictions (Python↔SciPy boundary crossing
+eliminated).</p>
+<h3 id="13-compiled-prediction-pipeline">1.3 Compiled prediction pipeline</h3>
+<p><strong>Change:</strong> The entire surrogate prediction — normalise, build design
+matrix, dot product — is compiled into a single <code>@njit</code> function
+<code>_predict_numba(X_arr, mins, maxs, term_cols, term_degs,
+term_n_factors, coef, intercept)</code>.</p>
+<p><strong>Why:</strong> When the MC Shapley loop evaluates <span class="arithmatex">\(f(x)\)</span> on single samples
+(or small batches), the Python interpreter executes the same sequence
+of NumPy operations millions of times.  Compiling that sequence
+eliminates all interpreter overhead: type checks, attribute look-ups,
+function-call dispatch.</p>
+<p><strong>The <code>term_cols</code> / <code>term_degs</code> representation.</strong>  The surrogate's
+basis expansion is a product of Legendre polynomials for specific
+input columns:</p>
+<div class="arithmatex">\[
+\psi_i(\mathbf{x}) = \prod_{f=1}^{n_i} \hat{P}_{d_{i,f}}(x_{c_{i,f}})
+\]</div>
+<p>During <code>fit()</code>, the string-based labels (e.g., <code>"X1_3*X2_5"</code>) are
+converted to padded integer arrays:</p>
+<ul>
+<li><code>term_cols[i, f]</code> — column index of factor <span class="arithmatex">\(f\)</span> in term <span class="arithmatex">\(i\)</span></li>
+<li><code>term_degs[i, f]</code> — degree of that factor</li>
+<li><code>term_n_factors[i]</code> — number of factors in term <span class="arithmatex">\(i\)</span></li>
+</ul>
+<p>These are the only data the compiled function needs; no Python
+strings or dictionaries cross the JIT boundary.</p>
+<h3 id="14-batch-size-routing">1.4 Batch-size routing</h3>
+<p><strong>Change:</strong> <code>predict()</code> now routes to the compiled path when
+<span class="arithmatex">\(n_\text{rows} \le 1000\)</span> and to the original NumPy/SciPy path for
+larger batches.</p>
+<p><strong>Why:</strong> For large batches (<span class="arithmatex">\(n_\text{rows} \gg 1000\)</span>), NumPy's
+column-vectorised Legendre evaluation (each <code>eval_sh_legendre</code> call
+processes a full column array inside pre-compiled C) beats Numba's
+per-term loop.  For small batches — the MC Shapley regime — the
+compiled path wins by eliminating Python overhead.  The threshold of
+1000 rows sits safely below the crossover.</p>
+<p><strong>Benchmark (120-term surrogate, d=8):</strong></p>
+<table>
+<thead>
+<tr>
+<th>Batch size</th>
+<th style="text-align: right;">Original</th>
+<th style="text-align: right;">Numba</th>
+<th>Winner</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1 row (MC Shapley per-sample)</td>
+<td style="text-align: right;">1,571&nbsp;calls/s</td>
+<td style="text-align: right;">9,339&nbsp;calls/s</td>
+<td><strong>Numba (5.9×)</strong></td>
+</tr>
+<tr>
+<td>50,000 rows</td>
+<td style="text-align: right;">308K&nbsp;samples/s</td>
+<td style="text-align: right;">161K&nbsp;samples/s</td>
+<td>Original (1.9×)</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="2-monte-carlo-sampling-mc_shapleypy">2. Monte Carlo Sampling (mc_shapley.py)</h2>
+<h3 id="21-batched-conditional-sampling">2.1 Batched conditional sampling</h3>
+<p><strong>Change:</strong> Added <code>sample_conditional_batch(u_indices, fixed_X)</code> to
+both <code>MultivariateNormal</code> and <code>GaussianCopulaUniform</code>.  Uses a single
+Cholesky decomposition of the conditional covariance matrix plus one
+<span class="arithmatex">\((N, |v|)\)</span> standard-normal draw, transformed in one matrix multiply —
+instead of <span class="arithmatex">\(N\)</span> separate <code>multivariate_normal</code> calls.</p>
+<p>The common conditional-distribution parameters
+(<span class="arithmatex">\(\Sigma_{uu}^{-1}\Sigma_{uv}\)</span>, <span class="arithmatex">\(\Sigma_{vv} - \Sigma_{vu}\Sigma_{uu}^{-1}\Sigma_{uv}\)</span>)
+are computed once per subset and shared across all <span class="arithmatex">\(N\)</span> draws.</p>
+<p><strong>Impact:</strong> Eliminates the Python <code>for</code>-loop of <span class="arithmatex">\(N\)</span> iterations inside
+each conditional-sampling step.  Combined with the batched predict
+path, the entire Side&nbsp;B of the MC loop becomes two function
+calls (one batch draw, one batch predict).</p>
+<p><em>Note on <code>TruncatedMultivariateNormal</code>.</em>  The truncated-normal class
+also implements <code>sample_conditional_batch</code>, but uses <strong>vectorised
+Gibbs sampling</strong> rather than a single Cholesky draw — the conditional
+distribution of a truncated MVN does not have a closed-form sampler.
+Each Gibbs iteration sweeps over all <span class="arithmatex">\(|v|\)</span> variables, drawing from
+univariate truncated normals conditioned on the current values of the
+other variables.  The per-iteration cost is comparable to the
+Cholesky-based batch draw for small <span class="arithmatex">\(|v|\)</span>, but <span class="arithmatex">\(n_\text{iter}\)</span>
+iterations are needed (default 5 for conditional draws).  This adds a
+constant factor of <span class="arithmatex">\(n_\text{iter}\)</span> compared to the untruncated case.</p>
+<h3 id="22-batched-data-collection-functions">2.2 Batched data-collection functions</h3>
+<p><strong>Before:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Side B — conditional draws</span>
+<span class="n">Y2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">N</span><span class="p">):</span>
+    <span class="n">x_cond</span> <span class="o">=</span> <span class="n">joint</span><span class="o">.</span><span class="n">sample_conditional</span><span class="p">(</span><span class="n">u_list</span><span class="p">,</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">u_list</span><span class="p">])</span>
+    <span class="n">Y2</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">x_cond</span><span class="p">)</span>       <span class="c1"># single-sample predict</span>
+</code></pre></div>
+<p><strong>After:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Side B — conditional draws (batched)</span>
+<span class="n">X_cond</span> <span class="o">=</span> <span class="n">joint</span><span class="o">.</span><span class="n">sample_conditional_batch</span><span class="p">(</span><span class="n">u_list</span><span class="p">,</span> <span class="n">X</span><span class="p">[:,</span> <span class="n">u_list</span><span class="p">])</span>
+<span class="n">Y2</span> <span class="o">=</span> <span class="n">predict_batch</span><span class="p">(</span><span class="n">X_cond</span><span class="p">)</span>  <span class="c1"># single batch predict</span>
+</code></pre></div>
+<p>Both <code>collect_shapley_data</code> (exhaustive method) and
+<code>compute_subset_data</code> (permutation method) now batch both the
+unconditional and conditional sides.  When <code>predict_batch</code> is
+available (always the case for the surrogate model), the
+Python-level per-sample loop disappears entirely from the
+data-collection phase.</p>
+<p><strong>Impact:</strong> 3–5&times; speedup on the MC sampling phase beyond the
+predict-compilation gains.</p>
+<h3 id="23-benched-summary-d8-n2000-analytical-g-function">2.3 Benched summary (d=8, N=2000, analytical G-function)</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Before optimisation</th>
+<th>After optimisation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Exhaustive (255 subsets, no bootstrap)</td>
+<td>~3.5s</td>
+<td><strong>0.8s</strong></td>
+</tr>
+<tr>
+<td>Permutation (500 perms, no bootstrap)</td>
+<td>~4s</td>
+<td><strong>0.9s</strong></td>
+</tr>
+</tbody>
+</table>
+<p><em>Measured with the analytical G-function to isolate MC infrastructure
+from surrogate-model cost.</em></p>
+<h3 id="24-coalition-truncation-k_max">2.4 Coalition truncation (<code>k_max</code>)</h3>
+<p><strong>Change:</strong> Added <code>k_max</code> parameter to <code>collect_shapley_data()</code> and
+<code>shapley_from_data()</code>.  When <code>k_max &lt; d</code>, only subsets up to size
+<span class="arithmatex">\(k_{\max}\)</span> are evaluated (plus the full set for total variance).</p>
+<p><strong>Why:</strong> The standard exhaustive method evaluates <span class="arithmatex">\(2^d - 1\)</span> subsets.
+For RS-HDMR surrogate models with bounded interaction order (e.g.,
+<code>polys=[10,5]</code> has only second-order terms), coalitions larger than the
+expansion order contribute nothing that isn't already captured by their
+sub-coalitions.  Evaluating only up to the surrogate's interaction order
+is <strong>exact</strong> and reduces the subset count from <span class="arithmatex">\(O(2^d)\)</span> to <span class="arithmatex">\(O(d^{k_{\max}})\)</span>.</p>
+<p><strong>Auto-detection:</strong> <code>model.get_mc_shapley()</code> sets <span class="arithmatex">\(k_{\max} =
+\text{len}(\text{polys})\)</span> automatically, requiring no user configuration.</p>
+<p><strong>Subset reduction examples:</strong></p>
+<table>
+<thead>
+<tr>
+<th><span class="arithmatex">\(d\)</span></th>
+<th style="text-align: right;">Full (<span class="arithmatex">\(2^d-1\)</span>)</th>
+<th style="text-align: right;"><span class="arithmatex">\(k_{\max}=2\)</span></th>
+<th style="text-align: right;">Factor</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>6</td>
+<td style="text-align: right;">63</td>
+<td style="text-align: right;">22</td>
+<td style="text-align: right;">2.9×</td>
+</tr>
+<tr>
+<td>8</td>
+<td style="text-align: right;">255</td>
+<td style="text-align: right;">37</td>
+<td style="text-align: right;">6.9×</td>
+</tr>
+<tr>
+<td>10</td>
+<td style="text-align: right;">1,023</td>
+<td style="text-align: right;">56</td>
+<td style="text-align: right;">18×</td>
+</tr>
+<tr>
+<td>12</td>
+<td style="text-align: right;">4,095</td>
+<td style="text-align: right;">79</td>
+<td style="text-align: right;">52×</td>
+</tr>
+<tr>
+<td>15</td>
+<td style="text-align: right;">32,767</td>
+<td style="text-align: right;">121</td>
+<td style="text-align: right;">270×</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Impact:</strong> For a second-order RS-HDMR model (<span class="arithmatex">\(k_{\max}=2\)</span>) at <span class="arithmatex">\(d=10\)</span>,
+the MC sampling phase evaluates 56 subsets instead of 1,023 — an 18×
+reduction — with zero loss of accuracy.  At <span class="arithmatex">\(d=15\)</span> the reduction is 270×.</p>
+<hr />
+<h2 id="3-shapley-computation-and-bootstrap">3. Shapley Computation and Bootstrap</h2>
+<h3 id="31-precomputed-shapley-weights">3.1 Precomputed Shapley weights</h3>
+<p><strong>Change:</strong> The Shapley weight</p>
+<div class="arithmatex">\[
+w(k, d) = \frac{k!\,(d-k-1)!}{d!}
+\]</div>
+<p>depends only on the subset size <span class="arithmatex">\(k\)</span> and the dimensionality <span class="arithmatex">\(d\)</span>.
+Previously, <code>math.factorial</code> was called for every <span class="arithmatex">\((i, u)\)</span> pair
+inside the nested Shapley accumulation loop — <span class="arithmatex">\(d \times 2^d\)</span>
+invocations per bootstrap iteration.  For <span class="arithmatex">\(d=18\)</span> and <span class="arithmatex">\(B=100\)</span>, this
+would be <span class="arithmatex">\(18 \times 262{,}144 \times 100 \approx 472\)</span>&nbsp;million
+factorial calls.</p>
+<p>The weights are now computed once per dimensionality and stored in a
+module-level cache (<code>_shapley_weight_cache</code>).  The array has <span class="arithmatex">\(d+1\)</span>
+entries; index <span class="arithmatex">\(d\)</span> (the full set) is a zero-valued guard.</p>
+<h3 id="32-compiled-bootstrap-exhaustive-method">3.2 Compiled bootstrap (exhaustive method)</h3>
+<p><strong>Change:</strong> A new <code>@njit</code> function <code>_bootstrap_iter_numba</code> performs
+<span class="arithmatex">\(B\)</span> bootstrap iterations of <em>resample</em> → <em>compute v(u)</em> → <em>compute
+Shapley</em> entirely inside compiled code.</p>
+<p><strong>Data conversion.</strong>  The Python <code>dict</code>-of-tuples produced by the
+data-collection phase is converted once to flat <code>float64</code> arrays via
+<code>_data_to_arrays</code>:</p>
+<ul>
+<li><code>Y_full</code> — <span class="arithmatex">\((N,)\)</span> outputs for the full set</li>
+<li><code>pair_Y1</code>, <code>pair_Y2</code> — <span class="arithmatex">\((n_\text{pairs}, N)\)</span> paired outputs</li>
+<li><code>subset_sizes</code> — <span class="arithmatex">\((2^d,)\)</span> array of <span class="arithmatex">\(|u|\)</span> per canonical subset</li>
+<li><code>union_lookup</code> — <span class="arithmatex">\((2^d, d)\)</span> precomputed index of <span class="arithmatex">\(u \cup \{i\}\)</span>
+  (or <span class="arithmatex">\(-1\)</span> if <span class="arithmatex">\(i \in u\)</span>)</li>
+</ul>
+<p>The compiled loop then does:</p>
+<div class="highlight"><pre><span></span><code>for b in range(B):
+    idx = random_choice(N)                # bootstrap resample
+    v[full] = var(Y_full[idx])
+    for each pair subset s:
+        v[s] = cov(Y1_s[idx], Y2_s[idx])
+    for each subset s (including empty):
+        for each variable i:
+            if i not in s:
+                sh[i] += w(|s|) * (v[s ∪ {i}] - v[s])
+    boot_effects[b] = sh / v[full]
+</code></pre></div>
+<p>The empty set (<span class="arithmatex">\(s = 0\)</span>, <span class="arithmatex">\(v[0] = 0\)</span>) is included so that the
+<span class="arithmatex">\(\emptyset \to \{i\}\)</span> contribution — weight <span class="arithmatex">\(1/d\)</span>, value <span class="arithmatex">\(v(\{i\})\)</span> —
+is correctly accumulated.</p>
+<p><strong>Impact:</strong> The bootstrap phase of the exhaustive method runs in
+compiled code from start to finish.  For <span class="arithmatex">\(d=8\)</span>, <span class="arithmatex">\(B=200\)</span>, this phase
+takes <strong>0.9s</strong> (including JIT compilation of the first call).</p>
+<hr />
+<h2 id="summary-of-speedup-factors">Summary of Speedup Factors</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Optimisation</th>
+<th>Module</th>
+<th>Approx. Speedup</th>
+<th>Applies To</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Bypass sklearn predict overhead</td>
+<td><code>predictor.py</code></td>
+<td>1.1×</td>
+<td>Surrogate predict</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Numba Legendre polynomials</td>
+<td><code>predictor.py</code></td>
+<td>2–3×</td>
+<td>Per-sample predict</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Compiled predict pipeline</td>
+<td><code>predictor.py</code></td>
+<td>5–6×</td>
+<td>MC Shapley hot path</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Batch-size routing</td>
+<td><code>predictor.py</code></td>
+<td>—</td>
+<td>Prevents regression on large batches</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Batched conditional sampling</td>
+<td><code>mc_shapley.py</code></td>
+<td>3–5×</td>
+<td>Both MC methods</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Batched data collection</td>
+<td><code>mc_shapley.py</code></td>
+<td>2–3×</td>
+<td>Both MC methods</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Precomputed Shapley weights</td>
+<td><code>mc_shapley.py</code></td>
+<td>2–5×</td>
+<td>Bootstrap (<span class="arithmatex">\(d \ge 10\)</span>)</td>
+</tr>
+<tr>
+<td>8</td>
+<td>Compiled bootstrap</td>
+<td><code>mc_shapley.py</code></td>
+<td>3–10×</td>
+<td>Exhaustive bootstrap</td>
+</tr>
+</tbody>
+</table>
+<p>The combined effect for a typical workflow (RS-HDMR surrogate,
+<span class="arithmatex">\(d=8\)</span>, <span class="arithmatex">\(N=3000\)</span>, <span class="arithmatex">\(B=100\)</span>) is a <strong>10–30× reduction</strong> in wall-clock time
+compared to the unoptimised v0.2 code path.</p>
+<hr />
+<h2 id="compatibility-and-fallbacks">Compatibility and Fallbacks</h2>
+<p>All optimisations are backwards-compatible and degrade gracefully:</p>
+<ul>
+<li>
+<p><strong>Numba unavailable:</strong> The compiled Legendre, predict, and bootstrap
+  paths are replaced with pure-Python equivalents.  The sklearn bypass
+  and batched sampling are always active (pure NumPy).</p>
+</li>
+<li>
+<p><strong>Numba version:</strong> Requires Numba ≥&nbsp;0.60 with NumPy &lt;&nbsp;2.4.
+  The <code>@njit(cache=True)</code> decorator caches compiled functions on disk
+  so that JIT compilation cost is paid only once per Python session.</p>
+</li>
+<li>
+<p><strong>Prediction routing:</strong> <code>predict(use_numba=True)</code> is the default;
+  pass <code>use_numba=False</code> to force the original SciPy-based path.</p>
+</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../ard_theory/" class="btn btn-neutral float-left" title="ARD Theory"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../ard_theory/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
