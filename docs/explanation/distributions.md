@@ -153,22 +153,6 @@ if params[0] == 'uniform':
     return norm.ppf(u)
 ```
 
-### `ConstrainedGaussianCopula` — Fire Spread Model
-
-Extends the copula pattern with **rejection sampling** for physical
-constraints (positivity, upper bounds).  Defined in `Examples/fire_spread.ipynb`.
-
-```python
-class ConstrainedGaussianCopula:
-    def _is_valid(self, X):        # check domain constraints
-    def sample_joint(self, n):     # over-sample, reject, repeat
-    def sample_conditional_batch:  # reject + re-sample invalid rows
-```
-
-**Key pattern:** rejection sampling is applied after the latent→original
-mapping.  The acceptance rate depends on the constraint tightness; for
-moderate constraints the overhead is small.
-
 ---
 
 ## Writing Your Own Distribution Class
@@ -245,7 +229,6 @@ prediction, and progress bars.
 |---|---|---|
 | [Cantilever Beam](../tutorials/cantilever_beam/) | `GaussianCopulaMixed` | 6 inputs, LogNormal + Normal marginals, 3 correlated dimensional parameters, RS-HDMR surrogate comparison |
 | [Borehole Function](../tutorials/borehole/) | `GaussianCopulaFull` | 8 inputs, Normal + LogNormal + Uniform marginals, optional geological correlations, Sobol + Shapley from single run |
-| [Fire Spread Model](../tutorials/fire_spread/) | `ConstrainedGaussianCopula` | 10 inputs, scaled LogNormal marginals, rejection sampling for physical constraints, Rothermel model implementation |
 | [Truncated Normal](../tutorials/mc_shapley_truncated_normal/) | `TruncatedMultivariateNormal` (built-in) | 3 inputs, per-dimension truncation, multiple truncation schemes, RS-HDMR surrogate comparison |
 | [Iooss & Prieur Correlation Sweep](../tutorials/iooss_prieur_ishigami_correlation/) | `GaussianCopulaUniform` (built-in) | 3 inputs, Shapley + $S_i$ + $T_i$ vs correlation $\rho$, exhaustive and permutation methods |
 

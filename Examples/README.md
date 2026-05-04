@@ -18,7 +18,6 @@ ShapleyX.  Each notebook is self-contained and can be run independently.
 | 9 | [`owen_product_function.ipynb`](owen_product_function.ipynb) | 6 | **Owen product function.**  High-order interaction benchmark with analytical Sobol' indices.  RS-HDMR surrogate vs exact Shapley effects. | Validation against closed-form values. |
 | 10 | [`cantilever_beam.ipynb`](cantilever_beam.ipynb) | 6 | **Cantilever beam (Demange-Chryst 2022, Ex. 4.2).**  Mixed LogNormal + Normal marginals with correlations.  Variance-based and target Shapley effects.  RS-HDMR surrogate comparison. | `GaussianCopulaMixed` custom distribution class. |
 | 11 | [`borehole.ipynb`](borehole.ipynb) | 8 | **Borehole function (Harper & Gupta 1983).**  Normal + LogNormal + Uniform marginals.  MC Shapley + Sobol from single run.  Correlated vs independent surrogate comparison; literature validation (Saltelli 2004). | `GaussianCopulaFull` custom distribution class. |
-| 12 | [`fire_spread.ipynb`](fire_spread.ipynb) | 10 | **Rothermel fire spread model (Demange-Chryst 2022, Ex. 4.3).**  Scaled LogNormal marginals, physical constraints via rejection sampling, Gaussian copula with correlation.  Permutation method at $d=10$. | `ConstrainedGaussianCopula` custom distribution class. |
 
 ## Learning Path
 
@@ -39,4 +38,3 @@ ShapleyX.  Each notebook is self-contained and can be run independently.
 | `mc_shapley_truncated_normal.ipynb` | `TruncatedMultivariateNormal` | Built-in (Gibbs sampling) |
 | `cantilever_beam.ipynb` | `GaussianCopulaMixed` | Custom (Normal + LogNormal) |
 | `borehole.ipynb` | `GaussianCopulaFull` | Custom (Normal + LogNormal + Uniform) |
-| `fire_spread.ipynb` | `ConstrainedGaussianCopula` | Custom (rejection sampling) |
