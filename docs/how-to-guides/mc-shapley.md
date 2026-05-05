@@ -274,4 +274,6 @@ tutorial for a detailed explanation.
 
 - [MC Shapley Reference](../reference/mc_shapley.md) — complete API documentation
 - [Theory: Shapley Effects with Correlated Inputs](../explanation/theory.md#shapley-effects-with-correlated-inputs)
+- [Distribution Classes](../explanation/distributions.md) — built-in and custom distributions
+- [Case Study Reports](../explanation/case_studies.md) — detailed PDF reports for cantilever beam and wing weight examples
 - [Examples: MC Shapley Notebook](https://github.com/frbennett/shapleyx/blob/main/Examples/mc_shapley.ipynb)

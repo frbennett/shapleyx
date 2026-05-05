@@ -227,11 +227,11 @@ prediction, and progress bars.
 
 | Notebook | Distribution | Key Features |
 |---|---|---|
-| [Cantilever Beam](../tutorials/cantilever_beam/) | `GaussianCopulaMixed` | 6 inputs, LogNormal + Normal marginals, correlated dimensional parameters, analytical and surrogate target Shapley effects validated against Demange-Chryst (2022) |
+| [Cantilever Beam](../tutorials/cantilever_beam/) | `GaussianCopulaMixed` | 6 inputs, LogNormal + Normal marginals, correlated dimensional parameters, analytical and surrogate target Shapley effects validated against Demange-Chryst (2022) [[PDF report](case_study_reports/cantilever_case_study.pdf)] |
 | [Borehole Function](../tutorials/borehole/) | `GaussianCopulaFull` | 8 inputs, Normal + LogNormal + Uniform marginals, optional geological correlations, Sobol + Shapley from single run |
 | [Truncated Normal](../tutorials/mc_shapley_truncated_normal/) | `TruncatedMultivariateNormal` (built-in) | 3 inputs, per-dimension truncation, multiple truncation schemes, RS-HDMR surrogate comparison |
 | [Iooss & Prieur Correlation Sweep](../tutorials/iooss_prieur_ishigami_correlation/) | `GaussianCopulaUniform` (built-in) | 3 inputs, Shapley + $S_i$ + $T_i$ vs correlation $\rho$, exhaustive and permutation methods |
-| [Wing Weight Function](../tutorials/wing_weight/) | `GaussianCopulaUniform` (built-in) | 10 inputs, all Uniform spanning 5 orders of magnitude, independent and correlated analyses, validated against OpenTURNS reference |
+| [Wing Weight Function](../tutorials/wing_weight/) | `GaussianCopulaUniform` (built-in) | 10 inputs, all Uniform spanning 5 orders of magnitude, independent and correlated analyses, validated against OpenTURNS reference [[PDF report](case_study_reports/wing_weight_case_study.pdf)] |
 
 ---
 
