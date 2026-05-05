@@ -232,7 +232,7 @@ prediction, and progress bars.
 | [Truncated Normal](../tutorials/mc_shapley_truncated_normal/) | `TruncatedMultivariateNormal` (built-in) | 3 inputs, per-dimension truncation, multiple truncation schemes, RS-HDMR surrogate comparison |
 | [Iooss & Prieur Correlation Sweep](../tutorials/iooss_prieur_ishigami_correlation/) | `GaussianCopulaUniform` (built-in) | 3 inputs, Shapley + $S_i$ + $T_i$ vs correlation $\rho$, exhaustive and permutation methods |
 | [Wing Weight Function](../tutorials/wing_weight/) | `GaussianCopulaUniform` (built-in) | 10 inputs, all Uniform spanning 5 orders of magnitude, independent and correlated analyses, validated against OpenTURNS reference [[PDF report](../case_study_reports/wing_weight_case_study.pdf)] |
-| [Fire Spread Model](../tutorials/fire_spread/) | `GaussianCopulaFire` | 10 inputs, mixed LogNormal + Normal + scaled LogNormal with truncation, target Shapley effects without IS, demonstrates MC limits for rare events ($p_f \\approx 10^{-4}$) |
+| [Fire Spread Model](../tutorials/fire_spread/) | `GaussianCopulaFire` | 10 inputs, mixed LogNormal + Normal + scaled LogNormal with truncation, target Shapley effects without IS, demonstrates MC limits for rare events ($p_f \\approx 10^{-4}$) [[PDF report](../case_study_reports/fire_spread_case_study.pdf)] |
 
 ---
 
