@@ -54,6 +54,7 @@ nav:
     - Truncated Normal: tutorials/mc_shapley_truncated_normal.ipynb
     - Correlated Ishigami: tutorials/iooss_prieur_ishigami_correlation.ipynb
     - Wing Weight: tutorials/wing_weight.ipynb
+    - Fire Spread: tutorials/fire_spread.ipynb
   - How-to Guides:
     - Common Tasks: how-to-guides/common-tasks.md
     - MC Shapley: how-to-guides/mc-shapley.md
