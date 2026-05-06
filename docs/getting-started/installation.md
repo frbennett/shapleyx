@@ -7,34 +7,47 @@
 
 ## Installing ShapleyX
 
-Not currently available from PyPI:
+### From PyPI (recommended)
 
+```bash
+pip install shapleyx
+```
 
+To upgrade an existing installation:
 
-Install from source:
+```bash
+pip install --upgrade shapleyx
+```
+
+### From GitHub (development version)
+
+```bash
+pip install https://github.com/frbennett/shapleyx/archive/main.zip
+```
+
+Or clone and install in development mode:
 
 ```bash
 git clone https://github.com/frbennett/shapleyx.git
 cd shapleyx
-pip install .
+pip install -e .
 ```
 
 ## Dependencies
 
-ShapleyX requires the following Python packages:
+ShapleyX requires the following Python packages (installed automatically):
 
-- numpy
-- scipy
-- pandas
-- scikit-learn
-- matplotlib
-
-These will be installed automatically when installing ShapleyX.
+| Required | Optional |
+|---|---|
+| `numpy` | `numba` (compiled bootstrap & Legendre evaluation) |
+| `scipy` | `tqdm` (progress bars during MC sampling) |
+| `pandas` | |
+| `matplotlib` | |
+| `scikit-learn` | |
 
 ## Verifying Installation
 
-After installation, you can verify it works by running:
-
 ```python
-import shapleyx
-print(shapleyx.__version__)
+from importlib.metadata import version
+print(f"ShapleyX v{version('shapleyx')}")
+```

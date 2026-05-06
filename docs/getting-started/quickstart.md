@@ -1,15 +1,14 @@
 # Quickstart Guide
 
-This guide will walk you through a basic sensitivity analysis using ShapleyX.
+This guide walks through a basic sensitivity analysis using ShapleyX.
 
 ## Loading Data
 
-First, prepare your data in CSV format with columns for input parameters and one column for output (named 'Y'):
+Prepare your data in CSV format with columns for input parameters and
+one column for output (named `'Y'`):
 
 ```python
 import pandas as pd
-
-# Load your data
 data = pd.read_csv('input_data.csv')
 ```
 
@@ -18,58 +17,74 @@ data = pd.read_csv('input_data.csv')
 ```python
 from shapleyx import rshdmr
 
-# Initialize analyzer
+# Initialise the analyser
 analyzer = rshdmr(
-    data_file='input_data.csv',  # or pass DataFrame directly
-    polys=[10, 5],              # polynomial orders
-    method='ard',               # regression method
-    verbose=True                # show progress
+    data,                       # DataFrame or path to CSV
+    polys=[10, 5],              # up to 10th-degree univariate, 5th-degree bivariate
+    n_iter=300,                 # ARD iterations
+    method='ard_cv',            # ARD with Bayesian cross-validation
+    cv_method='bayesian',
+    cv_tol=0.01,
+    resampling=True,            # bootstrap confidence intervals
+    number_of_resamples=500,
 )
 
-# Run complete analysis pipeline
-sobol_indices, shapley_effects, total_index = analyzer.run_all()
+# Run the complete pipeline
+sobol, shapley, total = analyzer.run_all()
 ```
 
 ## Viewing Results
 
 ```python
-# Sobol indices
-print("Sobol Indices:")
-print(sobol_indices)
+# Shapley effects (scaled to sum to 1)
+print(shapley[['label', 'scaled effect', 'lower', 'upper']])
 
-# Shapley effects  
-print("\nShapley Effects:")
-print(shapley_effects)
+# Sobol indices to arbitrary order
+print(sobol[['derived_labels', 'index', 'lower', 'upper']])
 
-# Total indices
-print("\nTotal Indices:")
-print(total_index)
+# Total sensitivity indices
+print(total)
 ```
 
-## Plotting Results
+## Plotting
 
 ```python
-# Plot predicted vs actual
+# Predicted vs actual
 analyzer.run_plot_hdmr()
 ```
 
-## Going Further
+## Monte Carlo Shapley for Correlated Inputs
 
 ```python
-# MC Shapley effects for correlated inputs
-mc_results = analyzer.get_mc_shapley(N=2000, B=200)
-print(mc_results[['variable', 'effect', 'lower', 'upper']])
+# With a correlation matrix (uses Gaussian copula)
+import numpy as np
+corr = np.array([
+    [1.0, 0.0, 0.8],
+    [0.0, 1.0, 0.0],
+    [0.8, 0.0, 1.0],
+])
+mc = analyzer.get_mc_shapley(corr=corr, N=5000, method='exhaustive', B=500)
 
-# Moment-free sensitivity indices
-pawn = analyzer.get_pawn(S=10)
-delta = analyzer.get_deltax(1000, 500)
-h_idx = analyzer.get_hx(1000, 500)
+# With a custom distribution
+from shapleyx.utilities.mc_shapley import MultivariateNormal
+joint = MultivariateNormal(mean=[0, 0, 0], cov=[[1, 0.5, 0], [0.5, 1, 0], [0, 0, 1]])
+mc = analyzer.get_mc_shapley(joint=joint, N=5000, B=500)
 
-# Owen-Shapley interaction values
-interactions = analyzer.get_interactions(order=1)
+# Coalition truncation (auto-detected from polys)
+mc = analyzer.get_mc_shapley(N=5000, method='exhaustive')
+# df now includes sobol_first, sobol_total alongside Shapley effects
+```
+
+## Moment-Free Measures
+
+```python
+pawn  = analyzer.get_pawnx(1000, 500, 100)   # PAWN (density-based)
+delta = analyzer.get_deltax(1000, 500)       # Delta (moment-independent)
+h_idx = analyzer.get_hx(1000, 500)           # H-index (distribution-based)
 ```
 
 ## Next Steps
 
-- See [Tutorials](../tutorials/basic-usage.md) for more detailed examples
-- Explore [How-to Guides](../how-to-guides/common-tasks.md) for customisation options
+- [Tutorials](../tutorials/basic-usage.md) — detailed walkthroughs
+- [MC Shapley How-to](../how-to-guides/mc-shapley.md) — correlated inputs guide
+- [Example Notebooks](https://github.com/frbennett/shapleyx/tree/main/Examples) — full case studies
