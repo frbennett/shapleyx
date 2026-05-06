@@ -68,6 +68,7 @@ nav:
     - Distribution Classes: explanation/distributions.md
     - Case Studies: explanation/case_studies.md
     - ARD Theory: explanation/ard_theory.md
+    - Moment-Free Measures: explanation/moment-free.md
     - Performance: explanation/performance.md
 
 markdown_extensions:
