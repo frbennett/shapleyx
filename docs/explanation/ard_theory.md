@@ -126,3 +126,120 @@ $$
 5. Repeat until convergence (no feature changes and small $\alpha_i$ updates).
 
 This approach provides a **sparse, probabilistic, and robust** solution to regression/classification problems. The code efficiently implements these steps using numerical optimizations (Cholesky decomposition, Woodbury identity for matrix inversions).
+
+---
+
+### **8. Cross-Validation Model Selection**
+
+When the ARD model is configured with `cv=True`, an outer layer of
+K-fold cross-validation is run at **every ARD iteration** to guide model
+selection.  Rather than relying on the ARD algorithm's internal convergence
+criteria alone, the CV score provides an independent estimate of
+generalisation performance for the current active feature set and
+hyperparameter state.
+
+#### 8.1 Predictive Log-Likelihood Score
+
+The recommended scoring method (`cv_method='bayesian'` or `'predictive'`)
+uses the **log predictive likelihood**:
+
+$$
+\mathcal{L}_{\text{CV}} = \frac{1}{K} \sum_{k=1}^{K}
+\log p(\mathbf{y}_{\text{val}}^{(k)} \mid
+\mathbf{X}_{\text{val}}^{(k)}, \mathcal{D}_{\text{train}}^{(k)})
+$$
+
+where $\mathcal{D}_{\text{train}}^{(k)} = (\mathbf{X}_{\text{train}}^{(k)},
+\mathbf{y}_{\text{train}}^{(k)})$ is the $k$-th training fold.  For each
+fold:
+
+1. **Per-fold centering** — the training data is centered using
+   **only** the training-fold statistics $\bar{\mathbf{x}}_{\text{train}}$
+   and $\bar{y}_{\text{train}}$:
+
+   $$
+   \begin{aligned}
+   \mathbf{X}_{\text{train}}^{(c)} &=
+   \mathbf{X}_{\text{train}} - \bar{\mathbf{x}}_{\text{train}} \\[2pt]
+   \mathbf{y}_{\text{train}}^{(c)} &=
+   \mathbf{y}_{\text{train}} - \bar{y}_{\text{train}} \\[2pt]
+   \mathbf{X}_{\text{val}}^{(c)} &=
+   \mathbf{X}_{\text{val}} - \bar{\mathbf{x}}_{\text{train}}
+   \end{aligned}
+   $$
+
+   This is critical: centering on the full dataset before splitting would
+   leak information from the validation fold into the transformation,
+   producing systematically optimistic scores.
+
+2. **Posterior computation** — the ARD posterior is computed on the
+   centered training data using the current global precision estimates
+   $\alpha_i$ and $\beta$:
+
+   $$
+   \mathbf{S}^{-1} = \beta \mathbf{X}_{\text{train}}^{(c)T}
+   \mathbf{X}_{\text{train}}^{(c)} + \mathbf{A},
+   \qquad
+   \mathbf{m} = \beta \mathbf{S} \, \mathbf{X}_{\text{train}}^{(c)T}
+   \mathbf{y}_{\text{train}}^{(c)}
+   $$
+
+3. **Predictive distribution** — predictions are converted back to the
+   original scale:
+
+   $$
+   \hat{\mathbf{y}}_{\text{val}} = \mathbf{X}_{\text{val}}^{(c)}
+   \mathbf{m} + \bar{y}_{\text{train}}
+   $$
+
+   with predictive variance:
+
+   $$
+   \sigma^2_i = \frac{1}{\beta} + \mathbf{x}_{\text{val},i}^{(c)T}
+   \mathbf{S} \, \mathbf{x}_{\text{val},i}^{(c)}
+   $$
+
+4. **Log-likelihood** — the score for the fold is:
+
+   $$
+   \ell_k = -\frac{1}{2} \sum_{i=1}^{n_{\text{val}}}
+   \left[ \log(2\pi\sigma_i^2) +
+   \frac{(y_{\text{val},i} - \hat{y}_{\text{val},i})^2}{\sigma_i^2} \right]
+   $$
+
+#### 8.2 Retrospective Selection
+
+CV scores are recorded for every ARD iteration.  After the main ARD loop
+completes (either by convergence or reaching `n_iter`), the iteration with
+the **highest** CV score is retrospectively selected as the final model.
+This is controlled by the `retrospective_selection=True` parameter (the
+default).
+
+This approach has two advantages over early-stopping based on CV:
+
+- **Decouples ARD convergence from model selection** — the ARD algorithm
+  is allowed to explore the full sparsity path without premature
+  termination.
+- **Avoids threshold tuning** — no `cv_tol` parameter is needed to decide
+  when CV improvement has "plateaued".
+
+#### 8.3 Ridge CV (Legacy)
+
+The `cv_method='ridge'` option uses scikit-learn's `Ridge` regression
+with default L2 penalty inside `cross_val_score`.  This evaluates the
+ARD-discovered active feature set under a **non-sparse** model, which is
+statistically inconsistent with the ARD framework.  It is retained for
+backward compatibility but is not recommended for new work.
+
+#### 8.4 Practical Considerations
+
+- **Computational cost** — each CV evaluation fits the ARD posterior on
+  $K$ training folds.  For high-dimensional problems ($d > 100$), this
+  dominates the runtime.  Consider using `method='ard'` (no CV) for
+  exploratory work.
+- **Frozen hyperparameters** — the current global $\alpha_i$ and $\beta$
+  are used in all folds; they are not re-optimised per fold.  This
+  approximation is valid because the active set and precision estimates
+  evolve smoothly across ARD iterations.
+- **Reproducibility** — the KFold split uses `random_state=42`.  For
+  production work, consider exposing this as a configurable parameter.

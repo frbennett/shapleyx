@@ -41,9 +41,8 @@ class RegressionARD(RegressorMixin, LinearModel):
                 Defaults to False.
             cv_method (str, optional): Method for cross-validation scoring. Options:
                 'ridge' - Uses ridge regression (legacy, not recommended),
-                'bayesian' - Uses Bayesian marginal likelihood (recommended),
-                'predictive' - Uses predictive log likelihood,
-                'hybrid' - Combines multiple metrics.
+                'bayesian' - Uses predictive log-likelihood CV (recommended),
+                'predictive' - Alias for 'bayesian'.
                 Defaults to 'bayesian'.
             cv_folds (int, optional): Number of folds for cross-validation. Defaults to 10.
             retrospective_selection (bool, optional): If True, runs all iterations and
@@ -151,6 +150,9 @@ class RegressionARD(RegressorMixin, LinearModel):
             Returns the instance itself.
         '''
         X, y = check_X_y(X, y, dtype=np.float64, y_numeric=True)
+        # Save original-scale data for cross-validation (prevents leakage
+        # from full-dataset centering into per-fold evaluation).
+        X_orig, y_orig = X.copy(), y.copy()
         X, y, X_mean, y_mean, X_std = self._center_data(X, y)
         n_samples, n_features = X.shape
         
@@ -239,7 +241,7 @@ class RegressionARD(RegressorMixin, LinearModel):
             # --- Cross-validation scoring (if enabled) ---
             cv_score = None
             if self.cv:
-                cv_score = self._compute_cv_score(X, y, active, beta, A, XX, XY,
+                cv_score = self._compute_cv_score(X_orig, y_orig, active, beta, A, XX, XY,
                                                  X_mean, y_mean, X_std)
                 
                 # Store in history
@@ -515,13 +517,13 @@ class RegressionARD(RegressorMixin, LinearModel):
     def _compute_cv_score(self, X, y, active, beta, A, XX, XY, X_mean, y_mean, X_std):
         '''
         Compute cross-validation score using the selected method.
-        
+
         Parameters
         ----------
         X : array, shape (n_samples, n_features)
-            Training data.
+            Training data in ORIGINAL scale (not centered).
         y : array, shape (n_samples,)
-            Target values.
+            Target values in ORIGINAL scale (not centered).
         active : array, dtype=bool, shape (n_features,)
             Boolean array indicating active features.
         beta : float
@@ -529,16 +531,16 @@ class RegressionARD(RegressorMixin, LinearModel):
         A : array, shape (n_features,)
             Coefficient precisions.
         XX : array, shape (n_features, n_features)
-            X' * X matrix.
+            X' * X matrix (precomputed from centered data; not used by most methods).
         XY : array, shape (n_features,)
-            X' * y vector.
+            X' * y vector (precomputed from centered data; not used by most methods).
         X_mean : array, shape (n_features,)
-            Mean of X used for centering.
+            Mean of X (full-data centering; NOT used — per-fold centering avoids leakage).
         y_mean : float
-            Mean of y used for centering.
+            Mean of y (full-data centering; NOT used — per-fold centering avoids leakage).
         X_std : array, shape (n_features,)
-            Standard deviation of X (not used in current implementation).
-            
+            Standard deviation of X (not used by current methods).
+
         Returns
         -------
         cv_score : float
@@ -546,22 +548,16 @@ class RegressionARD(RegressorMixin, LinearModel):
         '''
         if not self.cv:
             return None
-            
+
         if self.cv_method == 'ridge':
             # Legacy ridge regression CV
             return self._ridge_cv_score(X, y, active)
-        elif self.cv_method == 'bayesian':
-            # Bayesian marginal likelihood CV
-            return self._bayesian_cv_score(X, y, active, beta, A, XX, XY)
-        elif self.cv_method == 'predictive':
-            # Predictive log likelihood CV
-            return self._predictive_cv_score(X, y, active, beta, A, XX, XY, X_mean, y_mean, X_std)
-        elif self.cv_method == 'hybrid':
-            # Hybrid scoring combining multiple metrics
-            return self._hybrid_cv_score(X, y, active, beta, A, XX, XY, X_mean, y_mean, X_std)
+        elif self.cv_method in ('bayesian', 'predictive'):
+            # Predictive log-likelihood CV (per-fold centering, no data leakage)
+            return self._predictive_cv_score(X, y, active, beta, A)
         else:
             raise ValueError(f"Unknown cv_method: {self.cv_method}. "
-                           f"Supported methods: 'ridge', 'bayesian', 'predictive', 'hybrid'")
+                           f"Supported methods: 'ridge', 'bayesian', 'predictive'")
 
     def _ridge_cv_score(self, X, y, active):
         '''
@@ -571,158 +567,90 @@ class RegressionARD(RegressorMixin, LinearModel):
         X_active = X[:, active]
         if X_active.shape[1] == 0:
             return -np.inf  # No active features, poor score
-            
+
         cv_model = linear_model.Ridge()
         cv_scores = cross_val_score(cv_model, X_active, y, cv=self.cv_folds)
         return cv_scores.mean()
 
-    def _bayesian_cv_score(self, X, y, active, beta, A, XX, XY):
+    def _predictive_cv_score(self, X, y, active, beta, A):
         '''
-        Bayesian marginal likelihood cross-validation score.
-        
-        Computes the log marginal likelihood of the ARD model using k-fold CV.
-        This is conceptually aligned with the ARD framework as it uses the same
-        probabilistic model for scoring.
+        Predictive log-likelihood cross-validation score.
+
+        Uses K-fold CV with per-fold centering to eliminate data leakage.
+        Within each fold the training data is centered independently; the
+        validation data is transformed with the training-fold statistics.
+        The score is the log predictive likelihood of the validation data
+        under the ARD posterior fitted on the training fold.
+
+        Parameters
+        ----------
+        X : array, shape (n_samples, n_features)
+            Training data in ORIGINAL scale (not pre-centered).
+        y : array, shape (n_samples,)
+            Target values in ORIGINAL scale (not pre-centered).
+        active : array, dtype=bool, shape (n_features,)
+            Boolean array indicating active features.
+        beta : float
+            Noise precision (from current ARD iteration).
+        A : array, shape (n_features,)
+            Coefficient precisions (from current ARD iteration).
+
+        Returns
+        -------
+        cv_score : float
+            Mean predictive log-likelihood across folds (higher is better).
         '''
         from sklearn.model_selection import KFold
         kf = KFold(n_splits=self.cv_folds, shuffle=True, random_state=42)
-        
+
+        active_features = active.copy()
+
         log_likelihoods = []
         for train_idx, val_idx in kf.split(X):
             X_train, X_val = X[train_idx], X[val_idx]
             y_train, y_val = y[train_idx], y[val_idx]
-            
-            # Fit ARD on training fold (simplified - using current state as approximation)
-            # In practice, we would re-fit but that's expensive. Instead, we compute
-            # marginal likelihood using the current model parameters.
-            active_train = active.copy()
-            if not np.any(active_train):
-                # No active features, use simple Gaussian likelihood
-                var_y = np.var(y_train)
-                if var_y == 0:
+
+            # --- per-fold centering (no leakage from validation data) ---
+            X_train_mean = np.mean(X_train, axis=0)
+            y_train_mean = np.mean(y_train)
+            X_train_c = X_train - X_train_mean
+            y_train_c = y_train - y_train_mean
+            X_val_c = X_val - X_train_mean
+
+            if not np.any(active_features):
+                # No active features: predict with training mean
+                var_y = np.var(y_train_c)
+                if var_y < np.finfo(np.float64).eps:
                     var_y = 1e-10
-                ll = -0.5 * len(y_val) * np.log(2 * np.pi * var_y) - 0.5 * np.sum((y_val - np.mean(y_train))**2) / var_y
-            else:
-                # Compute marginal likelihood using ARD model
-                XX_train = np.dot(X_train[:, active_train].T, X_train[:, active_train])
-                XY_train = np.dot(X_train[:, active_train].T, y_train)
-                A_active = A[active_train]
-                
-                # Compute posterior for training data
-                Mn, Sn, _ = self._posterior_dist(A_active, beta, XX_train, XY_train, full_covar=True)
-                
-                # Predictive mean and variance for validation data
-                X_val_active = X_val[:, active_train]
-                y_pred = np.dot(X_val_active, Mn)
-                sigma2 = 1.0 / beta + np.sum(np.dot(X_val_active, Sn) * X_val_active, axis=1)
-                
-                # Add small epsilon for numerical stability
-                sigma2 = np.maximum(sigma2, np.finfo(np.float64).eps)
-                
-                # Log likelihood of validation data under predictive distribution
-                ll = -0.5 * np.sum(np.log(2 * np.pi * sigma2) + (y_val - y_pred)**2 / sigma2)
-            
-            log_likelihoods.append(ll)
-        
-        return np.mean(log_likelihoods)
-
-    def _predictive_cv_score(self, X, y, active, beta, A, XX, XY, X_mean, y_mean, X_std):
-        '''
-        Predictive log likelihood cross-validation score.
-        
-        Uses the predictive distribution of the ARD model on validation data.
-        This is a proper scoring rule that accounts for both predictive accuracy
-        and uncertainty calibration.
-        
-        Note: This method works in centered space (same as _bayesian_cv_score)
-        to maintain consistency. The input X and y are already centered from fit().
-        '''
-        from sklearn.model_selection import KFold
-        kf = KFold(n_splits=self.cv_folds, shuffle=True, random_state=42)
-        
-        predictive_lls = []
-        for train_idx, val_idx in kf.split(X):
-            X_train, X_val = X[train_idx], X[val_idx]
-            y_train, y_val = y[train_idx], y[val_idx]
-            
-            # X and y are already centered from fit(), use directly
-            # No need to subtract X_mean and y_mean again
-            
-            # Fit ARD on training fold
-            active_train = active.copy()
-            if not np.any(active_train):
-                # No active features
-                predictive_lls.append(-np.inf)
+                ll = -0.5 * len(y_val) * np.log(2 * np.pi * var_y) \
+                     - 0.5 * np.sum((y_val - y_train_mean)**2) / var_y
+                log_likelihoods.append(ll)
                 continue
-                
-            XX_train = np.dot(X_train[:, active_train].T, X_train[:, active_train])
-            XY_train = np.dot(X_train[:, active_train].T, y_train)
-            A_active = A[active_train]
-            
-            # Compute posterior
-            Mn, Sn, _ = self._posterior_dist(A_active, beta, XX_train, XY_train, full_covar=True)
-            
-            # Predictive distribution for validation data
-            # X_val is already centered, use directly
-            X_val_active = X_val[:, active_train]
-            
-            # Predictions in centered space (consistent with y_val)
-            y_pred = np.dot(X_val_active, Mn)
-            sigma2 = 1.0 / beta + np.sum(np.dot(X_val_active, Sn) * X_val_active, axis=1)
-            
-            # Add small epsilon for numerical stability
-            sigma2 = np.maximum(sigma2, np.finfo(np.float64).eps)
-            
-            # Log predictive likelihood
-            ll = -0.5 * np.sum(np.log(2 * np.pi * sigma2) + (y_val - y_pred)**2 / sigma2)
-            predictive_lls.append(ll)
-        
-        return np.mean(predictive_lls)
 
-    def _hybrid_cv_score(self, X, y, active, beta, A, XX, XY, X_mean, y_mean, X_std):
-        '''
-        Hybrid cross-validation score combining multiple metrics.
-        
-        Combines:
-        1. Predictive log likelihood (weight: 0.6)
-        2. Number of active features (sparsity penalty, weight: 0.2)
-        3. Mean squared error (weight: 0.2)
-        
-        Returns a composite score where higher is better.
-        '''
-        # Get predictive score
-        predictive_score = self._predictive_cv_score(X, y, active, beta, A, XX, XY, X_mean, y_mean, X_std)
-        
-        # Normalize predictive score (rough normalization)
-        if predictive_score > -100:
-            norm_predictive = predictive_score / 100.0
-        else:
-            norm_predictive = -1.0
-            
-        # Sparsity score (penalize too many features)
-        n_active = np.sum(active)
-        n_features = X.shape[1]
-        sparsity_score = 1.0 - (n_active / n_features)  # Higher for sparser models
-        
-        # MSE score (simplified)
-        if n_active > 0:
-            X_active = X[:, active]
-            XXa = XX[active, :][:, active]
-            XYa = XY[active]
-            Aa = A[active]
-            Mn, _, _ = self._posterior_dist(Aa, beta, XXa, XYa, full_covar=False)
-            y_pred = np.dot(X_active, Mn) + y_mean
-            mse = np.mean((y - y_pred) ** 2)
-            mse_score = 1.0 / (1.0 + mse)  # Higher for lower MSE
-        else:
-            mse_score = 0.0
-            
-        # Composite score
-        composite_score = (0.6 * norm_predictive +
-                          0.2 * sparsity_score +
-                          0.2 * mse_score)
-        
-        return composite_score
+            # Subset to active features
+            X_train_a = X_train_c[:, active_features]
+            X_val_a   = X_val_c[:, active_features]
+            A_active  = A[active_features]
+
+            # Compute posterior on training fold
+            XX_train = np.dot(X_train_a.T, X_train_a)
+            XY_train = np.dot(X_train_a.T, y_train_c)
+            Mn, Sn, _ = self._posterior_dist(A_active, beta, XX_train, XY_train,
+                                             full_covar=True)
+
+            # Predict validation data (convert back to original scale)
+            y_pred = np.dot(X_val_a, Mn) + y_train_mean
+
+            # Predictive variance
+            sigma2 = 1.0 / beta + np.sum(np.dot(X_val_a, Sn) * X_val_a, axis=1)
+            sigma2 = np.maximum(sigma2, np.finfo(np.float64).eps)
+
+            # Log predictive likelihood
+            ll = -0.5 * np.sum(np.log(2 * np.pi * sigma2)
+                               + (y_val - y_pred)**2 / sigma2)
+            log_likelihoods.append(ll)
+
+        return np.mean(log_likelihoods)
 
 
 

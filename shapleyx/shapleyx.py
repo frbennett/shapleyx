@@ -86,6 +86,16 @@ class rshdmr():
         CI (float, optional): Confidence interval percentage. Defaults to 95.0.
         number_of_resamples (int, optional): Number of bootstrap samples. Defaults to 1000.
         cv_tol (float, optional): Cross-validation tolerance. Defaults to 0.05.
+        cv_method (str, optional): Cross-validation scoring method used when
+            ``method='ard_cv'``. Options:
+
+            - ``'bayesian'`` — Predictive log-likelihood CV with per-fold
+              centering (recommended).
+            - ``'predictive'`` — Alias for ``'bayesian'``.
+            - ``'ridge'`` — Legacy Ridge regression CV (not recommended).
+
+            Defaults to ``'ridge'`` for backward compatibility; set to
+            ``'bayesian'`` for the recommended likelihood-based selection.
 
     Attributes:
         X (pd.DataFrame): Input features dataframe.
