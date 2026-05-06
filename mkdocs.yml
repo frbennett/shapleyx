@@ -55,6 +55,7 @@ nav:
     - Correlated Ishigami: tutorials/iooss_prieur_ishigami_correlation.ipynb
     - Wing Weight: tutorials/wing_weight.ipynb
     - Fire Spread: tutorials/fire_spread.ipynb
+    - Sobol G50: tutorials/sobolG_function.ipynb
   - How-to Guides:
     - Common Tasks: how-to-guides/common-tasks.md
     - MC Shapley: how-to-guides/mc-shapley.md

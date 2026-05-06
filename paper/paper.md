@@ -183,6 +183,7 @@ methodology:
 | Wing weight function | 10 | All Uniform inputs across 5 orders of magnitude, independent and correlated analyses, validated against OpenTURNS reference |
 | Rothermel fire spread | 10 | Mixed LogNormal + Normal marginals with truncation, target Shapley effects without importance sampling, demonstrates MC limits for rare events |
 | Owen product function | 6 | High-order interactions, analytical Sobol validation |
+| Sobol' G50 function | 50 | High-dimensional sparse benchmark, 8/50 variables influential, RS-HDMR vs analytical Shapley effects |
 
 The Ishigami and borehole examples include comparisons with published reference
 values from Saltelli [-@Saltelli2004] and Iooss & Prieur [-@Iooss2019].

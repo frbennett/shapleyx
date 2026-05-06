@@ -20,6 +20,7 @@ ShapleyX.  Each notebook is self-contained and can be run independently.
 | 11 | [`borehole.ipynb`](borehole.ipynb) | 8 | **Borehole function (Harper & Gupta 1983).**  Normal + LogNormal + Uniform marginals.  MC Shapley + Sobol from single run.  Correlated vs independent surrogate comparison; literature validation (Saltelli 2004). | `GaussianCopulaFull` custom distribution class. |
 | 12 | [`wing_weight.ipynb`](wing_weight.ipynb) | 10 | **Wing weight function (Forrester et al. 2008).**  All Uniform inputs spanning 5 orders of magnitude.  Independent and correlated analyses with RS-HDMR surrogate.  Validated against OpenTURNS reference Sobol indices. | `GaussianCopulaUniform` built-in class. |
 | 13 | [`fire_spread.ipynb`](fire_spread.ipynb) | 10 | **Rothermel fire spread model (Demange-Chryst 2022, Ex. 4.3).**  Mixed LogNormal + Normal marginals with truncation and correlation.  Target Shapley effects without importance sampling — demonstrates the limit of standard MC for rare events ($p_f \\approx 10^{-4}$).  Validated against paper reference values. | `GaussianCopulaFire` custom distribution class. |
+| 14 | [`sobolG_function.ipynb`](sobolG_function.ipynb) | 50 | **Sobol' G50 function — high-dimensional sparse benchmark.**  2,048 samples, only 8 of 50 variables influential.  RS-HDMR surrogate vs analytical Shapley effects.  Tests sparse recovery at scale. | ARD pruning; analytical validation. |
 
 ## Learning Path
 
