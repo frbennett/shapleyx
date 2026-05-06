@@ -45,18 +45,18 @@ All three share the same core experimental design:
 
 1.  **Unconditioned reference** — sample the surrogate model across the
     full input space to estimate the full output distribution
-    \\(p(y)\\).
+    $p(y)$.
 
-2.  **Conditioned distribution** — for each input \\(X_i\\), fix it to one
-    value \\(x_i\\) and sample all other inputs freely to estimate the
-    conditional output distribution \\(p(y \\mid X_i = x_i)\\).
+2.  **Conditioned distribution** — for each input $X_i$, fix it to one
+    value $x_i$ and sample all other inputs freely to estimate the
+    conditional output distribution $p(y \mid X_i = x_i)$.
 
 3.  **Compare** — measure the distance between the conditioned
-    distribution and the unconditioned reference.  If fixing \\(X_i\\)
-    produces a noticeably different output distribution, \\(X_i\\) is
+    distribution and the unconditioned reference.  If fixing $X_i$
+    produces a noticeably different output distribution, $X_i$ is
     influential.
 
-4.  **Aggregate** — repeat for many values of \\(x_i\\) and average
+4.  **Aggregate** — repeat for many values of $x_i$ and average
     the distances to produce a single sensitivity index per input.
 
 Where they differ is in **which distance metric** they use — and
@@ -66,7 +66,7 @@ therefore *what kind* of distributional change they're most sensitive to.
 
 ## 1. PAWN (Pianosi & Wagener, 2015, 2018)
 
-**Core question:** *Does conditioning on \\(X_i\\) produce a
+**Core question:** *Does conditioning on $X_i$ produce a
 statistically distinguishable output CDF?*
 
 ### Distance Measure
@@ -76,19 +76,19 @@ maximum vertical distance between two empirical cumulative distribution
 functions:
 
 $$
-D_{ks} = \\sup_y \\left| F_{Y}(y) - F_{Y|X_i}(y) \\right|
+D_{ks} = \sup_y \left| F_{Y}(y) - F_{Y|X_i}(y) \right|
 $$
 
-where \\(F_{Y}\\) is the unconditional CDF and \\(F_{Y|X_i}\\) is the
-CDF conditioned on \\(X_i\\) falling in a particular interval.
+where $F_{Y}$ is the unconditional CDF and $F_{Y|X_i}$ is the
+CDF conditioned on $X_i$ falling in a particular interval.
 
 ### Algorithm
 
-1.  Divide each input variable's range into \\(S\\) equal-probability
-    intervals (default \\(S = 10\\)).
+1.  Divide each input variable's range into $S$ equal-probability
+    intervals (default $S = 10$).
 2.  For each interval, subset the output samples that fall into that
-    slice and compute \\(D_{ks}\\) against the full unconditioned output.
-3.  Across the \\(S\\) intervals, report the **minimum, mean, median,
+    slice and compute $D_{ks}$ against the full unconditioned output.
+3.  Across the $S$ intervals, report the **minimum, mean, median,
     and maximum** KS statistic.
 
 The median KS statistic is the primary PAWN index used for ranking.
@@ -105,7 +105,7 @@ distribution across a wider range of conditioning values.
 | `maximum` | Strongest local effect (may be driven by an extreme interval) |
 | `CV` | Coefficient of variation (std / mean) — consistency across intervals |
 | `stdev` | Standard deviation of KS across intervals |
-| `null hyp` | Accept/reject: is the conditioned distribution distinguishable at \\(\\alpha=0.05\\)? |
+| `null hyp` | Accept/reject: is the conditioned distribution distinguishable at $\alpha=0.05$? |
 
 ### Key Properties
 
@@ -140,7 +140,7 @@ pawn = analyzer.get_pawnx(num_unconditioned=1000, num_conditioned=500,
 ## 2. Delta Index (Borgonovo, 2007)
 
 **Core question:** *What is the expected shift in the output's probability
-density when you pin \\(X_i\\) to a fixed value?*
+density when you pin $X_i$ to a fixed value?*
 
 ### Distance Measure
 
@@ -149,37 +149,37 @@ functions** — the total area between the unconditioned and conditioned
 PDFs:
 
 $$
-\\delta_i = \\mathbb{E}_{X_i} \\left[
-   \\frac{1}{2} \\int \\left| p(y) - p(y \\mid X_i) \\right| dy
-\\right]
+\delta_i = \mathbb{E}_{X_i} \left[
+   \frac{1}{2} \int \left| p(y) - p(y \mid X_i) \right| dy
+\right]
 $$
 
-The factor \\(\\frac{1}{2}\\) ensures \\(\\delta_i \\in [0, 1]\\).
-The expectation is taken over the distribution of \\(X_i\\), so this is
-the *average* PDF shift when \\(X_i\\) is varied across its range.
+The factor $\frac{1}{2}$ ensures $\delta_i \in [0, 1]$.
+The expectation is taken over the distribution of $X_i$, so this is
+the *average* PDF shift when $X_i$ is varied across its range.
 
 ### Algorithm
 
 1.  Estimate the **unconditioned PDF** of the surrogate output via
     Gaussian KDE with Silverman bandwidth.
-2.  For each input \\(X_i\\), repeat \\(N\\) times:
-    - Fix \\(X_i = x_i\\) (randomly drawn from its range).
+2.  For each input $X_i$, repeat $N$ times:
+    - Fix $X_i = x_i$ (randomly drawn from its range).
     - Set all other inputs to the unconditioned reference sample but
-      overwrite column \\(i\\) with \\(x_i\\).
+      overwrite column $i$ with $x_i$.
     - Predict via the surrogate to obtain the conditioned output sample.
     - Estimate the **conditioned PDF** via Gaussian KDE.
     - Compute the area between the two KDEs via `np.trapz`.
-3.  Average the areas across all \\(N\\) conditioning values — that's
-    \\(\\delta_i\\).
+3.  Average the areas across all $N$ conditioning values — that's
+    $\delta_i$.
 
-The Delta index is then normalised so that \\(\\sum_i \\delta_i = 1\\),
+The Delta index is then normalised so that $\sum_i \delta_i = 1$,
 giving the **normalised Delta** (`delta_norm`).
 
 ### What It Returns
 
 | Column | Meaning |
 |--------|---------|
-| `delta` | Expected shift in output PDF when \\(X_i\\) is fixed |
+| `delta` | Expected shift in output PDF when $X_i$ is fixed |
 | `delta_norm` | Normalised delta (sums to 1 across all variables) |
 | `Var` | Input variable label |
 
@@ -187,11 +187,11 @@ giving the **normalised Delta** (`delta_norm`).
 
 - **Sensitive to all distributional changes** — mean shifts, variance
   changes, shape changes, multi-modality.
-- **Single interpretable number** — raw \\(\\delta\\) is the expected
+- **Single interpretable number** — raw $\delta$ is the expected
   proportion of the output PDF that shifts when the input is known.
 - **Always non-negative, normalisable** — natural ranking.
 - **Symmetric** — the L₁ distance is symmetric, so the order of
-  \\(p(y)\\) and \\(p(y|X_i)\\) doesn't matter.
+  $p(y)$ and $p(y|X_i)$ doesn't matter.
 - **More expensive than PAWN** — KDE construction per conditioning value
   adds computational cost.
 - **General-purpose** — the best single-number moment-free importance
@@ -223,37 +223,37 @@ information-theoretic measure of how one probability distribution
 diverges from a reference:
 
 $$
-h_i = \\mathbb{E}_{X_i} \\left[
-   D_{KL}\\left( p(y \\mid X_i) \\;\\|\\; p(y) \\right)
-\\right]
+h_i = \mathbb{E}_{X_i} \left[
+   D_{KL}\left( p(y \mid X_i) \;\|\; p(y) \right)
+\right]
 $$
 
 where
 
 $$
-D_{KL}(p \\| q) = \\int p(y) \\log\\frac{p(y)}{q(y)} \\, dy
+D_{KL}(p \| q) = \int p(y) \log\frac{p(y)}{q(y)} \, dy
 $$
 
 ### Algorithm
 
 The H-index follows the same structure as Delta:
 
-1.  Estimate the unconditioned PDF \\(p(y)\\) via Gaussian KDE.
-2.  For each input \\(X_i\\), repeat \\(N\\) times:
-    - Fix \\(X_i = x_i\\) and obtain the conditioned output sample.
-    - Estimate \\(p(y \\mid X_i)\\) via Gaussian KDE.
-    - Compute \\(D_{KL}(p(y \\mid X_i) \\| p(y))\\) — KL divergence
+1.  Estimate the unconditioned PDF $p(y)$ via Gaussian KDE.
+2.  For each input $X_i$, repeat $N$ times:
+    - Fix $X_i = x_i$ and obtain the conditioned output sample.
+    - Estimate $p(y \mid X_i)$ via Gaussian KDE.
+    - Compute $D_{KL}(p(y \mid X_i) \| p(y))$ — KL divergence
       from the *conditioned* distribution to the *unconditioned* one.
-3.  Average across conditioning values — that's \\(h_i\\).
+3.  Average across conditioning values — that's $h_i$.
 
-A small \\(\\epsilon\\) (default \\(10^{-10}\\)) is added to KDE
+A small $\epsilon$ (default $10^{-10}$) is added to KDE
 evaluations to prevent numerical issues from near-zero density regions.
 
 ### What It Returns
 
 | Column | Meaning |
 |--------|---------|
-| `delta` | Mean KL divergence when \\(X_i\\) is fixed |
+| `delta` | Mean KL divergence when $X_i$ is fixed |
 | `delta_norm` | Normalised (sums to 1 across all variables) |
 | `Var` | Input variable label |
 
@@ -272,14 +272,14 @@ evaluations to prevent numerical issues from near-zero density regions.
   produces a tight, peaked distribution, KL divergence is large because
   the unconditioned distribution assigns low probability to those
   regions.
-- **Asymmetric** — \\(D_{KL}(p \\| q) \\neq D_{KL}(q \\| p)\\).
+- **Asymmetric** — $D_{KL}(p \| q) \neq D_{KL}(q \| p)$.
   The H-index measures divergence *from the conditioned* to the
   *unconditioned*, so it's sensitive to cases where the input
   concentrates the output into a narrow range.
 - **Sensitive to tail behaviour** — heavy or light tails in the
   conditioned distribution produce large KL values.
-- **No upper bound** — unlike Delta (\\(\\in [0,1]\\)), KL divergence
-  is \\(\\in [0, \\infty)\\), so absolute values are not directly
+- **No upper bound** — unlike Delta ($\in [0,1]$), KL divergence
+  is $\in [0, \infty)$, so absolute values are not directly
   interpretable as proportions.  Use `delta_norm` for ranking.
 - **Computationally similar to Delta** — KDE construction per
   conditioning value dominates cost.
@@ -317,7 +317,7 @@ print(h_idx[['Var', 'delta', 'delta_norm']])
 | | PAWN | Delta | H-index |
 |------|------|-------|---------|
 | **Distance measure** | KS statistic (CDF) | L₁ area between PDFs | KL divergence (information) |
-| **Range of raw index** | \\([0, 1]\\) | \\([0, 1]\\) | \\([0, \\infty)\\) |
+| **Range of raw index** | $[0, 1]$ | $[0, 1]$ | $[0, \infty)$ |
 | **Statistical test?** | ✓ Yes (p-values) | ✗ No | ✗ No |
 | **Interpretation** | "How distinguishable?" | "How much density shifts?" | "How much information lost?" |
 | **Sensitive to** | Any CDF change | Any PDF change | Tails, narrow peaks, concentration |
@@ -381,7 +381,7 @@ print(comparison.round(3))
 
 - **All three methods** operate on the RS‑HDMR surrogate, so their
   accuracy depends on the quality of the surrogate fit.  Check the
-  \\(R^2\\) or explained variance (`evs`) before interpreting
+  $R^2$ or explained variance (`evs`) before interpreting
   moment-free results.
 - **KDE-based methods** (Delta, H-index) can be unreliable with very
   small samples or strongly multi-modal outputs.  Increase
