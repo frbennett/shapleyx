@@ -68,6 +68,18 @@ class regression():
                 lazy_basis, cv=10, max_iter=self.n_iter,
                 n_jobs=self.n_jobs, verbose=self.verbose,
             )
+
+        elif self.method == 'ard_stream':
+            print('running Streaming ARD')
+            from .streaming import StreamingARD
+            if lazy_basis is None:
+                raise ValueError(
+                    "lazy_basis is required for method='ard_stream'"
+                )
+            self.clf = StreamingARD(
+                lazy_basis, n_iter=self.n_iter,
+                verbose=self.verbose,
+            )
             
         elif self.method == 'ard_sk':
             print('running ARD_SK')
@@ -111,7 +123,7 @@ class regression():
             self.clf = RegressionARD(num_iterations, verbose=self.verbose)
              
 #        self.clf = ARDRegression(n_iter=self.n_iter, verbose=True, tol=1.0e-3)
-        if self.method in ('omp_stream', 'omp_cv_stream'):
+        if self.method in ('omp_stream', 'omp_cv_stream', 'ard_stream'):
             self.clf.fit(self.Y)
         else:
             self.clf.fit(self.X_T_L,self.Y)
@@ -132,7 +144,7 @@ class regression():
 
         print(" ")
 
-        if self.method in ('omp_stream', 'omp_cv_stream'):
+        if self.method in ('omp_stream', 'omp_cv_stream', 'ard_stream'):
             y_pred = self.clf.predict(lazy_basis)
         else:
             y_pred = self.clf.predict(self.X_T_L)

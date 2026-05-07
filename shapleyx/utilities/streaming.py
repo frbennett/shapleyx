@@ -227,6 +227,46 @@ if _NUMBA_AVAILABLE:
             col *= primitives[:, prim_idx]
         return col
 
+    @njit(cache=True, parallel=True, nogil=True)
+    def _precompute_XXd_numba(
+        primitives: np.ndarray,
+        prim_indices: np.ndarray,
+        n_factors: np.ndarray,
+    ) -> np.ndarray:
+        """Compute :math:`\\|x_i\\|^2` for every basis column.
+
+        Uses :func:`prange` over features — each feature's squared norm
+        is independent.
+        """
+        n_features = prim_indices.shape[0]
+        n_samples = primitives.shape[0]
+        result = np.zeros(n_features, dtype=np.float64)
+
+        for i in prange(n_features):
+            nf = n_factors[i]
+            s = 0.0
+            if nf == 1:
+                idx = prim_indices[i, 0]
+                for j in range(n_samples):
+                    v = primitives[j, idx]
+                    s += v * v
+            elif nf == 2:
+                idx0 = prim_indices[i, 0]
+                idx1 = prim_indices[i, 1]
+                for j in range(n_samples):
+                    v = primitives[j, idx0] * primitives[j, idx1]
+                    s += v * v
+            else:
+                for j in range(n_samples):
+                    prod = 1.0
+                    for f in range(nf):
+                        idx = prim_indices[i, f]
+                        prod *= primitives[j, idx]
+                    s += prod * prod
+            result[i] = s
+
+        return result
+
 else:
     # ------------------------------------------------------------------
     # Pure NumPy fallbacks — slower but always available.
@@ -999,4 +1039,437 @@ class StreamingOMPCV:
         return (
             f"StreamingOMPCV(max_iter={self.max_iter}, cv={self.cv}, "
             f"n_selected={nz}, fitted={fitted})"
+        )
+
+
+# ============================================================================
+# StreamingARD — Automatic Relevance Determination on a lazy basis
+# ============================================================================
+
+
+class StreamingARD:
+    """Streaming ARD (Automatic Relevance Determination) on a lazy basis.
+
+    A memory-efficient implementation of Sparse Bayesian Learning
+    that operates on a :class:`LazyBasisMatrix` instead of a dense
+    design matrix.  The full Gram matrix ``XᵀX`` (which would be
+    ``(p, p)`` — e.g. 51 GB for 80K features) is never materialised.
+
+    Instead, the algorithm maintains an **incremental** compact
+    representation ``XX_active`` — the dot products of every feature
+    with the current active set.  Since the active set grows/shrinks
+    by at most one feature per iteration, this is updated with a
+    single correlation scan per feature ever added.
+
+    Parameters
+    ----------
+    lazy_basis : LazyBasisMatrix
+    n_iter : int, optional
+        Maximum ARD iterations.  Default 300.
+    tol : float, optional
+        Convergence threshold for precision parameter changes.
+        Default 1e-3.
+    fit_intercept : bool, optional
+        Default ``True`` (matches ``RegressionARD``).
+    verbose : bool, optional
+        Default ``False``.
+
+    Attributes
+    ----------
+    coef_ : ndarray of float64, shape (n_features,)
+    intercept_ : float
+    active_ : ndarray of bool, shape (n_features,)
+    alpha_ : float — estimated noise precision
+    lambda_ : ndarray of float64, shape (n_features,) — coefficient precisions
+    sigma_ : ndarray — posterior covariance (active subset)
+    n_iter_ : int — iterations performed
+    """
+
+    def __init__(
+        self,
+        lazy_basis: LazyBasisMatrix,
+        n_iter: int = 300,
+        tol: float = 1e-3,
+        fit_intercept: bool = True,
+        verbose: bool = False,
+    ) -> None:
+        self.lazy_basis = lazy_basis
+        self.n_iter = int(n_iter)
+        self.tol = float(tol)
+        self.fit_intercept = bool(fit_intercept)
+        self.verbose = bool(verbose)
+
+        self.coef_: np.ndarray | None = None
+        self.intercept_: float = 0.0
+        self.active_: np.ndarray | None = None
+        self.alpha_: float | None = None
+        self.lambda_: np.ndarray | None = None
+        self.sigma_: np.ndarray | None = None
+        self.n_iter_: int = 0
+        self.scores_: list[float] = []
+
+    def fit(self, y: np.ndarray) -> "StreamingARD":
+        """Fit the ARD model.
+
+        Parameters
+        ----------
+        y : array-like, shape (n_samples,)
+
+        Returns
+        -------
+        self
+        """
+        # Import ARD utilities at runtime to avoid circular imports
+        from .ARD import update_precisions
+        from scipy.linalg import solve_triangular, pinvh
+        from numpy.linalg import LinAlgError
+
+        y = np.asarray(y, dtype=np.float64)
+        n_features = self.lazy_basis.n_features
+        n_samples = len(y)
+
+        # --- centre y if fitting intercept ---
+        if self.fit_intercept:
+            y_mean = float(np.mean(y))
+            y_c = np.asarray(y - y_mean, dtype=np.float64)
+        else:
+            y_mean = 0.0
+            y_c = y.copy()
+
+        # ================================================================
+        # Phase 1: precompute XY and XXd (one correlation-scan pass)
+        # ================================================================
+        # XY[j] = dot(column_j, y_c)
+        # We already have dot_with_residual which does Xᵀr — use it!
+        XY = self.lazy_basis.dot_with_residual(y_c)
+
+        # XXd[j] = ||column_j||² — precompute via a separate scan
+        if _NUMBA_AVAILABLE:
+            XXd = _precompute_XXd_numba(
+                self.lazy_basis.primitives,
+                self.lazy_basis.recipes.prim_indices,
+                self.lazy_basis.recipes.n_factors,
+            )
+        else:
+            XXd = self._precompute_XXd()
+
+        # ================================================================
+        # Phase 2: ARD initialisation
+        # ================================================================
+        var_y = float(np.var(y_c))
+        if var_y < np.finfo(np.float64).eps:
+            beta = 0.01  # φ
+        else:
+            beta = 1.0 / var_y
+
+        A = np.full(n_features, np.inf, dtype=np.float64)
+        active = np.zeros(n_features, dtype=bool)
+
+        # Initialise with the feature having largest projection on targets
+        proj = XY ** 2 / np.maximum(XXd, np.finfo(np.float64).eps)
+        start = int(np.argmax(proj))
+        active[start] = True
+        A[start] = XXd[start] / max(proj[start] - var_y, np.finfo(np.float64).eps)
+
+        # Maintain XX_active incrementally: (n_features, |active|)
+        # Track ordered list of active features for column mapping
+        XX_active = self._compute_XX_column(start).reshape(-1, 1)
+        active_list = [start]  # ordered list matching XX_active columns
+        # XX_active[:, k] = Xᵀ · col_{active_list[k]}
+
+        warning_flag = 0
+        n_iter_done = 0
+        scores_list: list[float] = []
+
+        # ================================================================
+        # Phase 3: ARD main loop
+        # ================================================================
+        for n_iter_done in range(self.n_iter):
+            # Extract active-set sub-blocks
+            active_indices = np.where(active)[0]
+            n_active = len(active_indices)
+
+            if n_active == 0:
+                break
+
+            XXa = XX_active[active, :]  # (|A|, |A|) — Gram among active
+            XYa = XY[active]            # (|A|,)
+            Aa = A[active]              # (|A|,)
+
+            # --- posterior distribution ---
+            try:
+                Sinv = beta * XXa
+                diag_view = np.diag(Sinv).copy()
+                diag_view += Aa
+                np.fill_diagonal(Sinv, diag_view)
+                R = np.linalg.cholesky(Sinv)
+                Z = solve_triangular(
+                    R, beta * XYa, check_finite=False, lower=True
+                )
+                Mn = solve_triangular(
+                    R.T, Z, check_finite=False, lower=False
+                )
+                Ri = solve_triangular(
+                    R,
+                    np.eye(n_active, dtype=np.float64),
+                    check_finite=False,
+                    lower=True,
+                )
+                Sdiag = np.sum(Ri ** 2, axis=0)
+                cholesky_ok = True
+            except LinAlgError:
+                Sn = pinvh(Sinv)
+                Mn = beta * np.dot(Sn, XYa)
+                Sdiag = np.diag(Sn).copy()
+                Ri = Sn
+                cholesky_ok = False
+                warning_flag += 1
+                if warning_flag == 1:
+                    import warnings
+                    warnings.warn(
+                        "Cholesky failed — using pinvh (slower)"
+                    )
+
+            # --- sparsity & quality ---
+            bxy = beta * XY
+            bxx = beta * XXd
+
+            if cholesky_ok:
+                xxr = np.dot(XX_active, Ri.T)
+                rxy = np.dot(Ri, XYa)
+                Svec = bxx - beta ** 2 * np.sum(xxr ** 2, axis=1)
+                Qvec = bxy - beta ** 2 * np.dot(xxr, rxy)
+            else:
+                XS = np.dot(XX_active, Ri)
+                Svec = bxx - beta ** 2 * np.sum(XS * XX_active, axis=1)
+                Qvec = bxy - beta ** 2 * np.dot(XS, XYa)
+
+            qi = Qvec.copy()
+            si = Svec.copy()
+            Qa, Sa = Qvec[active], Svec[active]
+            qi[active] = Aa * Qa / (Aa - Sa + np.finfo(np.float64).eps)
+            si[active] = Aa * Sa / (Aa - Sa + np.finfo(np.float64).eps)
+
+            # --- update noise precision ---
+            X_active_design = self.lazy_basis.active_submatrix(
+                active_indices.tolist()
+            )
+            rss = np.dot(
+                y_c - np.dot(X_active_design, Mn),
+                y_c - np.dot(X_active_design, Mn),
+            )
+            beta_update = (
+                n_samples - n_active + np.dot(Aa, Sdiag)
+            )
+            beta = beta_update / (rss + np.finfo(np.float64).eps)
+
+            # Save old active set for incremental update
+            old_active = active.copy()
+
+            # --- update precision parameters ---
+            A, converged = update_precisions(
+                Qvec, Svec, qi, si, A, active, self.tol, n_samples, False
+            )
+
+            # --- incremental update of XX_active ---
+            # Determine which features were added / deleted
+            new_active_set = set(np.where(active)[0].tolist())
+            old_active_set = set(np.where(old_active)[0].tolist())
+            added = new_active_set - old_active_set
+            deleted = old_active_set - new_active_set
+
+            if added or deleted:
+                if deleted:
+                    # Remove deleted columns from XX_active
+                    del_indices = [
+                        k for k, idx in enumerate(active_list)
+                        if idx in deleted
+                    ]
+                    XX_active = np.delete(XX_active, del_indices, axis=1)
+                    active_list = [
+                        idx for idx in active_list if idx not in deleted
+                    ]
+
+                if added:
+                    # Compute and append new columns
+                    for new_idx in sorted(added):
+                        new_col = self._compute_XX_column(new_idx)
+                        XX_active = np.column_stack(
+                            [XX_active, new_col.reshape(-1, 1)]
+                        )
+                        active_list.append(new_idx)
+
+            # --- progress ---
+            if self.verbose:
+                r2 = 1.0 - rss / np.dot(y_c, y_c) if np.dot(y_c, y_c) > 0 else 0.0
+                print(
+                    f"  ARD iter {n_iter_done + 1:<4d}/{self.n_iter}"
+                    f"  active={n_active:<4d}"
+                    f"  R²={r2:.4f}"
+                )
+
+            if converged:
+                if self.verbose:
+                    print(f"  Converged at iteration {n_iter_done + 1}")
+                break
+
+        n_iter_done += 1
+
+        # ================================================================
+        # Phase 4: final posterior and coefficient packing
+        # ================================================================
+        active_indices = np.where(active)[0]
+        n_active = len(active_indices)
+
+        if n_active > 0:
+            XXa = XX_active[active, :]
+            XYa = XY[active]
+            Aa = A[active]
+            try:
+                Sinv = beta * XXa
+                diag_view = np.diag(Sinv).copy()
+                diag_view += Aa
+                np.fill_diagonal(Sinv, diag_view)
+                R = np.linalg.cholesky(Sinv)
+                Z = solve_triangular(R, beta * XYa, check_finite=False, lower=True)
+                Mn = solve_triangular(R.T, Z, check_finite=False, lower=False)
+                Ri = solve_triangular(
+                    R, np.eye(n_active, dtype=np.float64),
+                    check_finite=False, lower=True,
+                )
+                Sn = np.dot(Ri.T, Ri)
+            except LinAlgError:
+                Sn = pinvh(Sinv)
+                Mn = beta * np.dot(Sn, XYa)
+        else:
+            Sn = np.zeros((0, 0))
+            Mn = np.zeros(0)
+
+        self.coef_ = np.zeros(n_features, dtype=np.float64)
+        if n_active > 0:
+            self.coef_[active] = Mn
+        self.sigma_ = Sn
+        self.active_ = active
+        self.lambda_ = A
+        self.alpha_ = float(beta)
+        self.intercept_ = y_mean
+        self.n_iter_ = n_iter_done
+        self.scores_ = scores_list
+
+        return self
+
+    def predict(self, lazy_basis: LazyBasisMatrix) -> np.ndarray:
+        """Predict using the fitted ARD coefficients."""
+        if self.coef_ is None:
+            raise RuntimeError("StreamingARD has not been fitted.")
+        active_indices = np.where(self.active_)[0]
+        if len(active_indices) == 0:
+            return np.full(
+                lazy_basis.n_samples, self.intercept_, dtype=np.float64
+            )
+        X_active = lazy_basis.active_submatrix(active_indices.tolist())
+        return X_active @ self.coef_[active_indices] + self.intercept_
+
+    # ------------------------------------------------------------------
+    # Internal helpers
+    # ------------------------------------------------------------------
+
+    def _precompute_XXd(self) -> np.ndarray:
+        """Compute diagonal of XᵀX — squared norms of each basis column.
+
+        Uses the primitive terms and feature recipes rather than
+        materialising columns.
+        """
+        n_features = self.lazy_basis.n_features
+        primitives = self.lazy_basis.primitives
+        recipes = self.lazy_basis.recipes
+        result = np.zeros(n_features, dtype=np.float64)
+
+        # 1st-order: squared norm of a single primitive column
+        mask_1 = recipes.n_factors == 1
+        if mask_1.any():
+            idxs = recipes.prim_indices[mask_1, 0]
+            result[mask_1] = np.sum(primitives[:, idxs] ** 2, axis=0)
+
+        # 2nd-order: squared norm of (prim_a * prim_b)
+        mask_2 = recipes.n_factors == 2
+        if mask_2.any():
+            idxs_0 = recipes.prim_indices[mask_2, 0]
+            idxs_1 = recipes.prim_indices[mask_2, 1]
+            products = primitives[:, idxs_0] * primitives[:, idxs_1]
+            result[mask_2] = np.sum(products ** 2, axis=0)
+
+        # 3rd+ order: per-feature loop
+        mask_n = recipes.n_factors >= 3
+        for i in np.where(mask_n)[0]:
+            nf = recipes.n_factors[i]
+            col = np.ones(primitives.shape[0], dtype=np.float64)
+            for f in range(nf):
+                col *= primitives[:, recipes.prim_indices[i, f]]
+            result[i] = np.dot(col, col)
+
+        return result
+
+    def _compute_XX_column(self, feat_idx: int) -> np.ndarray:
+        """Compute Xᵀ · col_feat — one column of the Gram matrix.
+
+        Uses dot_with_residual: treat the feature column as the
+        'residual' vector.  Since dot_with_residual computes
+        Xᵀr for the full virtual X, this gives us the dot products
+        of every feature with col_feat.
+
+        Parameters
+        ----------
+        feat_idx : int
+            Which feature's column to compute dot products against.
+
+        Returns
+        -------
+        col : ndarray of float64, shape (n_features,)
+            Gram matrix column: XX[:, feat_idx]
+        """
+        # Build the feature column from primitives
+        col_feat = _compute_single_column(
+            self.lazy_basis.primitives,
+            self.lazy_basis.recipes.prim_indices,
+            self.lazy_basis.recipes.n_factors,
+            feat_idx,
+        )
+        # Compute dot products of every feature with this column
+        return self.lazy_basis.dot_with_residual(col_feat)
+
+    def _build_XX_active(
+        self, active_indices: np.ndarray
+    ) -> np.ndarray:
+        """Build the incremental Gram matrix XX_active.
+
+        XX_active[i, j] = dot(column_i, column_j) for
+        i in 0..p-1, j in active_indices.
+
+        Builds each column by computing the feature column,
+        then using dot_with_residual.
+
+        Parameters
+        ----------
+        active_indices : ndarray of int, shape (n_active,)
+
+        Returns
+        -------
+        XX_active : ndarray of float64, shape (n_features, n_active)
+        """
+        n_active = len(active_indices)
+        n_features = self.lazy_basis.n_features
+        XX_active = np.zeros((n_features, n_active), dtype=np.float64)
+
+        for k, a_idx in enumerate(active_indices):
+            XX_active[:, k] = self._compute_XX_column(a_idx)
+
+        return XX_active
+
+    def __repr__(self) -> str:
+        fitted = self.coef_ is not None
+        n_active = int(np.sum(self.active_)) if fitted else "?"
+        return (
+            f"StreamingARD(n_iter={self.n_iter}, "
+            f"n_active={n_active}, fitted={fitted})"
         )

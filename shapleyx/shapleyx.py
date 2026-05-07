@@ -232,7 +232,7 @@ class rshdmr():
                 label-only DataFrame (streaming).
             self._lazy_basis: LazyBasisMatrix (streaming only).
         """
-        self._streaming = self.method in ('omp_stream', 'omp_cv_stream')
+        self._streaming = self.method in ('omp_stream', 'omp_cv_stream', 'ard_stream')
 
         expansion_data = legendre.legendre_expand(self.X_T, self.polys)
 

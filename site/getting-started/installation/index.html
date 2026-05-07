@@ -14,7 +14,7 @@
       <script>
         // Current page data
         var mkdocs_page_name = "Installation";
-        var mkdocs_page_input_path = "getting-started\\installation.md";
+        var mkdocs_page_input_path = "getting-started/installation.md";
         var mkdocs_page_url = "/shapleyx/getting-started/installation/";
       </script>
     
@@ -51,6 +51,12 @@
     <li class="toctree-l2"><a class="reference internal" href="#prerequisites">Prerequisites</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#installing-shapleyx">Installing ShapleyX</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#from-pypi-recommended">From PyPI (recommended)</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#from-github-development-version">From GitHub (development version)</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#dependencies">Dependencies</a>
     </li>
@@ -81,6 +87,10 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../tutorials/wing_weight/">Wing Weight</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/fire_spread/">Fire Spread</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sobolG_function/">Sobol G50</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">How-to Guides</span></p>
               <ul>
@@ -97,16 +107,24 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/streaming-omp/">Streaming OMP</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Explanation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/rs_hdmr/">RS-HDMR Construction</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/distributions/">Distribution Classes</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/case_studies/">Case Studies</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/streaming-omp/">Streaming Basis Expansion</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/moment-free/">Moment-Free Measures</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/performance/">Performance</a>
                   </li>
@@ -143,27 +161,56 @@
 <li>pip package manager</li>
 </ul>
 <h2 id="installing-shapleyx">Installing ShapleyX</h2>
-<p>Not currently available from PyPI:</p>
-<p>Install from source:</p>
+<h3 id="from-pypi-recommended">From PyPI (recommended)</h3>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>shapleyx
+</code></pre></div>
+<p>To upgrade an existing installation:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>--upgrade<span class="w"> </span>shapleyx
+</code></pre></div>
+<h3 id="from-github-development-version">From GitHub (development version)</h3>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>https://github.com/frbennett/shapleyx/archive/main.zip
+</code></pre></div>
+<p>Or clone and install in development mode:</p>
 <div class="highlight"><pre><span></span><code>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/frbennett/shapleyx.git
 <span class="nb">cd</span><span class="w"> </span>shapleyx
-pip<span class="w"> </span>install<span class="w"> </span>.
+pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
 </code></pre></div>
 <h2 id="dependencies">Dependencies</h2>
-<p>ShapleyX requires the following Python packages:</p>
-<ul>
-<li>numpy</li>
-<li>scipy</li>
-<li>pandas</li>
-<li>scikit-learn</li>
-<li>matplotlib</li>
-</ul>
-<p>These will be installed automatically when installing ShapleyX.</p>
+<p>ShapleyX requires the following Python packages (installed automatically):</p>
+<table>
+<thead>
+<tr>
+<th>Required</th>
+<th>Optional</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>numpy</code></td>
+<td><code>numba</code> (compiled bootstrap &amp; Legendre evaluation)</td>
+</tr>
+<tr>
+<td><code>scipy</code></td>
+<td><code>tqdm</code> (progress bars during MC sampling)</td>
+</tr>
+<tr>
+<td><code>pandas</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>matplotlib</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>scikit-learn</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
 <h2 id="verifying-installation">Verifying Installation</h2>
-<p>After installation, you can verify it works by running:</p>
-<p>```python
-import shapleyx
-print(shapleyx.<strong>version</strong>)</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">importlib.metadata</span><span class="w"> </span><span class="kn">import</span> <span class="n">version</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;ShapleyX v</span><span class="si">{</span><span class="n">version</span><span class="p">(</span><span class="s1">&#39;shapleyx&#39;</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
               
             </div>
           </div><footer>

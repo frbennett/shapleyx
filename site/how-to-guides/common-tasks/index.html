@@ -14,7 +14,7 @@
       <script>
         // Current page data
         var mkdocs_page_name = "Common Tasks";
-        var mkdocs_page_input_path = "how-to-guides\\common-tasks.md";
+        var mkdocs_page_input_path = "how-to-guides/common-tasks.md";
         var mkdocs_page_url = "/shapleyx/how-to-guides/common-tasks/";
       </script>
     
@@ -71,6 +71,10 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../tutorials/wing_weight/">Wing Weight</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/fire_spread/">Fire Spread</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sobolG_function/">Sobol G50</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">How-to Guides</span></p>
               <ul class="current">
@@ -83,6 +87,18 @@
     <li class="toctree-l2"><a class="reference internal" href="#saving-and-loading-results">Saving and Loading Results</a>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#comparing-different-methods">Comparing Different Methods</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#streaming-omp-for-high-dimensional-problems">Streaming OMP for High-Dimensional Problems</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#basic-streaming-omp">Basic Streaming OMP</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#streaming-omp-with-cross-validation">Streaming OMP with Cross-Validation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#when-to-use-streaming">When to Use Streaming</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#requirements">Requirements</a>
+    </li>
+        </ul>
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#computing-shapley-effects-for-correlated-inputs">Computing Shapley Effects for Correlated Inputs</a>
     </li>
@@ -109,16 +125,24 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
                   </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/streaming-omp/">Streaming OMP</a>
+                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Explanation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/rs_hdmr/">RS-HDMR Construction</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/distributions/">Distribution Classes</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/case_studies/">Case Studies</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/streaming-omp/">Streaming Basis Expansion</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/moment-free/">Moment-Free Measures</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/performance/">Performance</a>
                   </li>
@@ -188,6 +212,76 @@
 <span class="n">ard_results</span> <span class="o">=</span> <span class="n">analyzer_ard</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
 <span class="n">omp_results</span> <span class="o">=</span> <span class="n">analyzer_omp</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
 </code></pre></div>
+<h2 id="streaming-omp-for-high-dimensional-problems">Streaming OMP for High-Dimensional Problems</h2>
+<p>For problems with many input variables (<span class="arithmatex">\(d \\ge 12\)</span>) or high-degree
+expansions, the standard OMP path materialises a dense design matrix
+that can exceed available RAM.  The streaming OMP path avoids this by
+computing basis columns on the fly from compact <em>primitive</em> Legendre
+terms, using <strong>50–100× less memory</strong> while running <strong>4–10× faster</strong>
+(when Numba is installed).</p>
+<h3 id="basic-streaming-omp">Basic Streaming OMP</h3>
+<div class="highlight"><pre><span></span><code><span class="n">analyzer</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span>
+    <span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;data.csv&#39;</span><span class="p">,</span>
+    <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>            <span class="c1"># 3rd-order expansion</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;omp_stream&#39;</span><span class="p">,</span>        <span class="c1"># streaming OMP</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">80</span><span class="p">,</span>                  <span class="c1"># max coefficients</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>               <span class="c1"># show per-iteration R² progress</span>
+<span class="p">)</span>
+<span class="n">sobol</span><span class="p">,</span> <span class="n">shapley</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="streaming-omp-with-cross-validation">Streaming OMP with Cross-Validation</h3>
+<div class="highlight"><pre><span></span><code><span class="n">analyzer</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span>
+    <span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;data.csv&#39;</span><span class="p">,</span>
+    <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;omp_cv_stream&#39;</span><span class="p">,</span>     <span class="c1"># streaming OMP + CV</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>                 <span class="c1"># max sparsity to consider</span>
+    <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>                   <span class="c1"># parallel CV fold evaluation</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>               <span class="c1"># show CV scores per sparsity level</span>
+<span class="p">)</span>
+<span class="n">sobol</span><span class="p">,</span> <span class="n">shapley</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="when-to-use-streaming">When to Use Streaming</h3>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(d \\le 10\)</span>, moderate <code>polys</code></td>
+<td><code>method='ard_cv'</code> — ARD gives best feature selection</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(d \\le 10\)</span>, quick exploration</td>
+<td><code>method='omp'</code> — fastest, no CV overhead</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(d \\ge 12\)</span>, any <code>polys</code></td>
+<td><code>method='omp_stream'</code> — memory-efficient</td>
+</tr>
+<tr>
+<td>High-dimensional, need CV</td>
+<td><code>method='omp_cv_stream'</code> with <code>n_jobs=4</code></td>
+</tr>
+<tr>
+<td>A/B comparison</td>
+<td>Run both dense and streaming on a small problem — they agree</td>
+</tr>
+</tbody>
+</table>
+<h3 id="requirements">Requirements</h3>
+<ul>
+<li><strong>Numba</strong> (recommended): <code>pip install numba</code> — provides 4–10× speedup
+  via JIT-compiled correlation scans.  Without Numba the streaming path
+  still works but is slower than dense OMP.</li>
+<li><strong>joblib</strong> (optional): <code>pip install joblib</code> — required for parallel CV
+  fold evaluation (<code>n_jobs &gt; 1</code>).</li>
+</ul>
+<p>See the <a href="../../explanation/streaming-omp/">Streaming Basis Expansion</a>
+explanation and <a href="../../reference/streaming-omp/">Streaming OMP</a> API
+reference for benchmarks and architecture details.</p>
 <h2 id="computing-shapley-effects-for-correlated-inputs">Computing Shapley Effects for Correlated Inputs</h2>
 <p>When inputs are correlated, use the MC Shapley method instead of the default coefficient-based approach:</p>
 <div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -251,7 +345,7 @@
             </div>
           </div><footer>
     <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
-        <a href="../../tutorials/wing_weight/" class="btn btn-neutral float-left" title="Wing Weight"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../tutorials/sobolG_function/" class="btn btn-neutral float-left" title="Sobol G50"><span class="icon icon-circle-arrow-left"></span> Previous</a>
         <a href="../mc-shapley/" class="btn btn-neutral float-right" title="MC Shapley">Next <span class="icon icon-circle-arrow-right"></span></a>
     </div>
 
@@ -279,7 +373,7 @@
         </span>
     
     
-      <span><a href="../../tutorials/wing_weight/" style="color: #fcfcfc">&laquo; Previous</a></span>
+      <span><a href="../../tutorials/sobolG_function/" style="color: #fcfcfc">&laquo; Previous</a></span>
     
     
       <span><a href="../mc-shapley/" style="color: #fcfcfc">Next &raquo;</a></span>
