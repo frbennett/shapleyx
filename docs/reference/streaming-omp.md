@@ -61,7 +61,7 @@ $$\text{prim\_idx}(v, d) = v \cdot \max(\text{polys}) + (d - 1)$$
 
 **Key methods:**
 
-`dot_with_residual(residual)` — Compute $X^\top r$ (the correlation of every feature with the residual vector).  This is the OMP hot path.  For 16K features and 2K samples, a single scan takes ~137 ms (Numba).
+- `dot_with_residual(residual)` — Compute $X^\top r$ (the correlation of every feature with the residual vector).  This is the OMP hot path.  For 16K features and 2K samples, a single scan takes ~40 ms (Numba, parallelised via `prange`).
 
 `active_submatrix(indices)` — Build the design submatrix for a small set of features (used by the OMP least-squares step).
 
@@ -160,7 +160,7 @@ coefficients.  Numba 0.65.1, Intel i7 (8 cores):
 | Method | Time | Memory | R² |
 |--------|------|--------|----|
 | Dense OMP (`method='omp'`) | 49.5 s | 258 MB | 0.9803 |
-| Streaming OMP (`method='omp_stream'`) | **11.2 s** | 3 MB | 0.9802 |
+| Streaming OMP (`method='omp_stream'`) | **4.5 s** | 3 MB | 0.9802 |
 | Streaming OMP-CV 10-fold, seq | 51.0 s | 3 MB | 0.8271 (CV) |
 | Streaming OMP-CV 10-fold, 4 jobs | **35.3 s** | 3 MB | 0.8271 (CV) |
 
