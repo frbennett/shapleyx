@@ -485,12 +485,14 @@ class StreamingOMP:
         fit_intercept: bool = True,
         tol: float = 1e-12,
         verbose: bool = False,
+        record_path: bool = False,
     ) -> None:
         self.lazy_basis = lazy_basis
         self.n_nonzero_coefs = int(n_nonzero_coefs)
         self.fit_intercept = bool(fit_intercept)
         self.tol = float(tol)
         self.verbose = bool(verbose)
+        self.record_path = bool(record_path)
 
         # Set after fit
         self.coef_: np.ndarray | None = None
@@ -498,6 +500,9 @@ class StreamingOMP:
         self.active_: np.ndarray | None = None
         self.n_nonzero_coefs_: int = 0
         self.n_iter_: int = 0
+
+        # Path history (populated when record_path=True)
+        self.path_: list[dict] | None = None if not record_path else []
 
     def fit(self, y: np.ndarray) -> "StreamingOMP":
         """Run OMP on target vector *y*.
@@ -573,6 +578,14 @@ class StreamingOMP:
             rss = float(np.dot(y - y_pred, y - y_pred))
             if rss < self.tol * y_norm_sq:
                 break
+
+            # --- record path state (for CV scoring along the path) ---
+            if self.record_path and coef_active is not None:
+                self.path_.append({
+                    "active": list(active),           # copy of selected indices
+                    "coef": coef_active.copy(),       # coefficients at this step
+                    "intercept": self.intercept_,     # intercept at this step
+                })
 
             if self.verbose:
                 n_active = len(active)
@@ -650,9 +663,11 @@ def _evaluate_fold_path(
 ) -> np.ndarray:
     """Evaluate the full OMP sparsity path for a single CV fold.
 
-    Returns an array of scores, one per sparsity level (1 … max_iter).
-    Called by :class:`StreamingOMPCV` via :mod:`joblib` for parallel
-    fold evaluation.
+    Runs OMP **once** up to ``max_iter`` with ``record_path=True``,
+    then scores each step along the recorded path against the
+    validation data.  This replaces the O(k²) correlation-scan
+    approach (fit from scratch for each sparsity level) with an
+    O(k) approach — a 50× speedup at max_iter=100.
 
     Parameters
     ----------
@@ -676,29 +691,59 @@ def _evaluate_fold_path(
     train_lazy = LazyBasisMatrix(train_prim, recipes)
     val_lazy = LazyBasisMatrix(val_prim, recipes)
 
-    n_train = len(train_y)
+    # Single OMP run up to max_iter, record the full path
+    omp = StreamingOMP(
+        train_lazy,
+        n_nonzero_coefs=max_iter,
+        fit_intercept=fit_intercept,
+        record_path=True,
+    )
+    omp.fit(train_y)
+
+    n_path = len(omp.path_) if omp.path_ else 0
     scores = np.empty(max_iter, dtype=np.float64)
 
-    for n_nz in range(1, max_iter + 1):
-        omp = StreamingOMP(train_lazy, n_nonzero_coefs=n_nz,
-                           fit_intercept=fit_intercept)
-        omp.fit(train_y)
-
-        if omp.n_nonzero_coefs_ == 0:
-            y_pred = np.full(len(val_prim), omp.intercept_,
-                             dtype=np.float64)
+    for step in range(max_iter):
+        if step < n_path:
+            state = omp.path_[step]
+            active = state["active"]
+            coef = state["coef"]
+            intercept = state["intercept"]
+        elif n_path > 0:
+            # OMP converged early — reuse last state
+            state = omp.path_[-1]
+            active = state["active"]
+            coef = state["coef"]
+            intercept = state["intercept"]
         else:
-            y_pred = omp.predict(val_lazy)
+            # No features selected at all
+            y_pred = np.full(len(val_prim),
+                             omp.intercept_ if fit_intercept else 0.0,
+                             dtype=np.float64)
+            if scoring == "r2":
+                ss_res = np.dot(val_y - y_pred, val_y - y_pred)
+                ss_tot = np.dot(val_y - val_y.mean(), val_y - val_y.mean())
+                scores[step] = (1.0 - ss_res / ss_tot) if ss_tot > 1e-15 else 0.0
+            else:
+                scores[step] = -np.mean((val_y - y_pred) ** 2)
+            continue
+
+        # Predict using only the active features at this step
+        X_val = val_lazy.active_submatrix(active)
+        if fit_intercept:
+            y_pred = X_val @ coef + intercept
+        else:
+            y_pred = X_val @ coef
 
         if scoring == "r2":
-            ss_res = np.sum((val_y - y_pred) ** 2)
-            ss_tot = np.sum((val_y - np.mean(val_y)) ** 2)
+            ss_res = np.dot(val_y - y_pred, val_y - y_pred)
+            ss_tot = np.dot(val_y - val_y.mean(), val_y - val_y.mean())
             if ss_tot < 1e-15:
-                scores[n_nz - 1] = 0.0
+                scores[step] = 0.0
             else:
-                scores[n_nz - 1] = 1.0 - ss_res / ss_tot
+                scores[step] = 1.0 - ss_res / ss_tot
         elif scoring == "mse":
-            scores[n_nz - 1] = -np.mean((val_y - y_pred) ** 2)
+            scores[step] = -np.mean((val_y - y_pred) ** 2)
         else:
             raise ValueError(f"Unknown scoring: {scoring}")
 
@@ -862,62 +907,92 @@ class StreamingOMPCV:
             self.best_cv_score_ = best_score
 
         # ------------------------------------------------------------------
-        # Sequential path (n_jobs=1)
+        # Sequential path (n_jobs=1) — also uses single-run-per-fold
         # ------------------------------------------------------------------
         else:
             best_score = -np.inf
             best_n_nonzero = 0
             self.cv_scores_ = []
 
-            for n_nz in range(1, self.max_iter + 1):
-                fold_scores: list[float] = []
+            # Evaluate each fold independently with a single OMP run
+            fold_scores_all: list[np.ndarray] = []
+            for train_idx, val_idx in fold_splits:
+                train_prim = self.lazy_basis.primitives[train_idx]
+                val_prim = self.lazy_basis.primitives[val_idx]
 
-                for train_idx, val_idx in fold_splits:
-                    train_prim = self.lazy_basis.primitives[train_idx]
-                    val_prim = self.lazy_basis.primitives[val_idx]
+                train_lazy = LazyBasisMatrix(train_prim, recipes)
+                val_lazy = LazyBasisMatrix(val_prim, recipes)
 
-                    train_lazy = LazyBasisMatrix(train_prim, recipes)
-                    val_lazy = LazyBasisMatrix(val_prim, recipes)
+                omp = StreamingOMP(
+                    train_lazy,
+                    n_nonzero_coefs=self.max_iter,
+                    fit_intercept=self.fit_intercept,
+                    record_path=True,
+                )
+                omp.fit(y[train_idx])
+                n_path = len(omp.path_) if omp.path_ else 0
+                fold_scores = np.empty(self.max_iter, dtype=np.float64)
 
-                    omp = StreamingOMP(
-                        train_lazy,
-                        n_nonzero_coefs=n_nz,
-                        fit_intercept=self.fit_intercept,
-                    )
-                    omp.fit(y[train_idx])
-
-                    if omp.n_nonzero_coefs_ == 0:
-                        y_pred = np.full(
-                            len(val_idx), omp.intercept_,
-                            dtype=np.float64
-                        )
+                for step in range(self.max_iter):
+                    if step < n_path:
+                        state = omp.path_[step]
+                        active = state["active"]
+                        coef = state["coef"]
+                        intercept = state["intercept"]
+                    elif n_path > 0:
+                        state = omp.path_[-1]
+                        active = state["active"]
+                        coef = state["coef"]
+                        intercept = state["intercept"]
                     else:
-                        y_pred = omp.predict(val_lazy)
+                        y_pred = np.full(len(val_idx),
+                                         omp.intercept_ if self.fit_intercept else 0.0,
+                                         dtype=np.float64)
+                        if self.scoring == "r2":
+                            ss_res = np.dot(y[val_idx] - y_pred, y[val_idx] - y_pred)
+                            ss_tot = np.dot(y[val_idx] - y[val_idx].mean(),
+                                            y[val_idx] - y[val_idx].mean())
+                            fold_scores[step] = (1.0 - ss_res / ss_tot) if ss_tot > 1e-15 else 0.0
+                        else:
+                            fold_scores[step] = -np.mean((y[val_idx] - y_pred) ** 2)
+                        continue
+
+                    X_val = val_lazy.active_submatrix(active)
+                    if self.fit_intercept:
+                        y_pred = X_val @ coef + intercept
+                    else:
+                        y_pred = X_val @ coef
 
                     if self.scoring == "r2":
-                        score = r2_score(y[val_idx], y_pred)
-                    elif self.scoring == "mse":
-                        score = -np.mean((y[val_idx] - y_pred) ** 2)
+                        ss_res = np.dot(y[val_idx] - y_pred, y[val_idx] - y_pred)
+                        ss_tot = np.dot(y[val_idx] - y[val_idx].mean(),
+                                        y[val_idx] - y[val_idx].mean())
+                        if ss_tot < 1e-15:
+                            fold_scores[step] = 0.0
+                        else:
+                            fold_scores[step] = 1.0 - ss_res / ss_tot
                     else:
-                        raise ValueError(
-                            f"Unknown scoring: {self.scoring}"
-                        )
+                        fold_scores[step] = -np.mean((y[val_idx] - y_pred) ** 2)
 
-                    fold_scores.append(score)
+                fold_scores_all.append(fold_scores)
 
-                mean_score = float(np.mean(fold_scores))
-                std_score = float(np.std(fold_scores))
-                self.cv_scores_.append((n_nz, mean_score, std_score))
+            # Aggregate across folds: mean + std per sparsity level
+            fold_array = np.column_stack(fold_scores_all)  # (max_iter, n_folds)
+            mean_scores = fold_array.mean(axis=1)
+            std_scores = fold_array.std(axis=1)
 
+            for n_nz in range(1, self.max_iter + 1):
+                ms = float(mean_scores[n_nz - 1])
+                ss = float(std_scores[n_nz - 1])
+                self.cv_scores_.append((n_nz, ms, ss))
                 if self.verbose:
-                    marker = " *" if mean_score > best_score else ""
+                    marker = " *" if ms > best_score else ""
                     print(
                         f"  CV nz={n_nz:<4d}/{self.max_iter}"
-                        f"  score={mean_score:.4f} ±{std_score:.4f}{marker}"
+                        f"  score={ms:.4f} ±{ss:.4f}{marker}"
                     )
-
-                if mean_score > best_score:
-                    best_score = mean_score
+                if ms > best_score:
+                    best_score = ms
                     best_n_nonzero = n_nz
 
             self.best_cv_score_ = best_score
