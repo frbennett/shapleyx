@@ -54,7 +54,7 @@ except ImportError:
 # Optional Numba acceleration
 # ---------------------------------------------------------------------------
 try:
-    from numba import njit
+    from numba import njit, prange
 
     _NUMBA_AVAILABLE = True
 except ImportError:
@@ -115,7 +115,7 @@ class FeatureRecipes:
 
 if _NUMBA_AVAILABLE:
 
-    @njit(cache=True)
+    @njit(cache=True, parallel=True, nogil=True)
     def _correlations_fused(
         primitives: np.ndarray,
         prim_indices: np.ndarray,
@@ -127,6 +127,10 @@ if _NUMBA_AVAILABLE:
         This is the streaming-OMP workhorse.  For each feature *i* the
         dot-product of its (virtual) design column with the residual
         vector is accumulated in one pass over the samples.
+
+        The outer feature loop is parallelised via :func:`numba.prange`
+        — each feature's dot product is independent and writes to a
+        non-overlapping slot in the result array.
 
         Parameters
         ----------
@@ -149,7 +153,7 @@ if _NUMBA_AVAILABLE:
         n_samples = primitives.shape[0]
         result = np.zeros(n_features, dtype=np.float64)
 
-        for i in range(n_features):
+        for i in prange(n_features):
             nf = n_factors[i]
             s = 0.0
             if nf == 1:
