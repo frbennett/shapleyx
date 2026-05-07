@@ -85,5 +85,6 @@ mc_corr = analyzer.get_mc_shapley(corr=corr, N=2000, B=200)
 
 - Try with your own dataset
 - Experiment with different polynomial orders and regression methods
+- For high-dimensional problems ($d \\ge 12$), try the streaming OMP path (`method='omp_stream'` or `method='omp_cv_stream'`) — see the [Common Tasks guide](../how-to-guides/common-tasks.md#streaming-omp-for-high-dimensional-problems)
 - See the [MC Shapley guide](../how-to-guides/mc-shapley.md) for correlated inputs
 - Explore the [Common Tasks](../how-to-guides/common-tasks.md) for advanced usage
