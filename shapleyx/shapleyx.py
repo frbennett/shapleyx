@@ -268,7 +268,8 @@ class rshdmr():
             verbose=self.verbose,
             cv_tol=self.cv_tol,
             starting_iter=self.starting_iter,
-            cv_method=self.cv_method 
+            cv_method=self.cv_method,
+            n_jobs=self.n_jobs,
         )
         if self._streaming:
             self.coef_, self.y_pred = regression_instance.run_regression(
