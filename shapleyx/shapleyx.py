@@ -220,17 +220,35 @@ class rshdmr():
 
         Uses the `legendre.legendre_expand` utility.
 
+        For streaming methods ('omp_stream', 'omp_cv_stream'), builds a
+        :class:`LazyBasisMatrix` instead of materialising the full design
+        matrix, and creates a lightweight DataFrame with column labels only
+        for downstream compatibility.
+
         Updates the following attributes:
             self.primitive_variables: Primitive variables from the expansion.
             self.poly_orders: Polynomial orders used in the expansion.
-            self.X_T_L (pd.DataFrame): The expanded data matrix including Legendre terms.
+            self.X_T_L (pd.DataFrame): The expanded data matrix (dense) or a
+                label-only DataFrame (streaming).
+            self._lazy_basis: LazyBasisMatrix (streaming only).
         """
-        expansion_data = legendre.legendre_expand(self.X_T, self.polys)
-        expansion_data.build_basis_set() 
+        self._streaming = self.method in ('omp_stream', 'omp_cv_stream')
 
-        self.primitive_variables = expansion_data.get_primitive_variables() 
-        self.poly_orders = expansion_data.get_poly_orders()
-        self.X_T_L = expansion_data.get_expanded()  
+        expansion_data = legendre.legendre_expand(self.X_T, self.polys)
+
+        if self._streaming:
+            self._lazy_basis = expansion_data.build_basis_set_streaming()
+            # Create a lightweight DataFrame with column names only.
+            # Downstream code (indicies.py, shapley.py) reads .columns
+            # and never touches matrix values directly.
+            self._feature_names = expansion_data._feature_names
+            self.X_T_L = pd.DataFrame(columns=self._feature_names)
+        else:
+            expansion_data.build_basis_set()
+            self.X_T_L = expansion_data.get_expanded()
+
+        self.primitive_variables = expansion_data.get_primitive_variables()
+        self.poly_orders = expansion_data.get_poly_orders()  
 
 
     def run_regression(self):
@@ -252,7 +270,12 @@ class rshdmr():
             starting_iter=self.starting_iter,
             cv_method=self.cv_method 
         )
-        self.coef_, self.y_pred = regression_instance.run_regression()
+        if self._streaming:
+            self.coef_, self.y_pred = regression_instance.run_regression(
+                lazy_basis=self._lazy_basis
+            )
+        else:
+            self.coef_, self.y_pred = regression_instance.run_regression()
 
     def run_stats(self):
         """Calculates and stores evaluation statistics for the fitted model.
@@ -305,12 +328,28 @@ class rshdmr():
         dataset (`X_T_L`) that correspond to the labels with non-zero coefficients. Additionally,
         it includes the target variable (`Y`).
 
+        In streaming mode the active columns are computed on-the-fly from the lazy basis
+        matrix instead of being sliced from a dense DataFrame.
+
         Returns:
             pd.DataFrame: A DataFrame containing the pruned data with selected features and the target variable.
         """
         pruned_data = pd.DataFrame()
-        for label in self.non_zero_coefficients['labels'] :
-            pruned_data[label] = self.X_T_L[label]
+
+        if self._streaming:
+            # Build active columns from the lazy basis matrix
+            active_labels = list(self.non_zero_coefficients['labels'])
+            active_indices = [
+                self._feature_names.index(label)
+                for label in active_labels
+            ]
+            active_cols = self._lazy_basis.column_batch(active_indices)
+            for i, label in enumerate(active_labels):
+                pruned_data[label] = active_cols[:, i]
+        else:
+            for label in self.non_zero_coefficients['labels']:
+                pruned_data[label] = self.X_T_L[label]
+
         pruned_data['Y'] = self.Y
         return pruned_data
 

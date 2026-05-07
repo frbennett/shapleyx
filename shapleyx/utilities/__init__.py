@@ -17,6 +17,7 @@ from .pruned_model import *
 from .regression import *
 from .resampling import *
 from .stats import *
+from .streaming import *
 from .transformation import *
 
 __all__ = [
@@ -30,5 +31,6 @@ __all__ = [
     'regression',
     'resampling',
     'stats',
+    'streaming',
     'transformation'
 ]

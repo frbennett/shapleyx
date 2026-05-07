@@ -122,6 +122,82 @@ class legendre_expand():
         self.X_T_L = pd.DataFrame(basis_set, columns=features)
 
 
+    def build_basis_set_streaming(self):
+        """Build the Legendre basis in streaming (lazy) format.
+
+        Instead of materialising the full ``(n_samples × n_features)``
+        design matrix, this method returns a :class:`LazyBasisMatrix`
+        that computes columns on demand from pre-computed primitive
+        Legendre terms and recipe descriptors.
+
+        This is the entry point for ``method='omp_stream'`` and
+        ``method='omp_cv_stream'``.
+
+        Returns
+        -------
+        LazyBasisMatrix
+            Wraps primitive terms and feature recipes.
+        """
+        from .streaming import FeatureRecipes, LazyBasisMatrix
+
+        dims = len(self.X_T.columns)
+        labels = list(self.X_T.columns)
+
+        # Build a mapping: variable name → column index
+        var_to_idx = {name: i for i, name in enumerate(labels)}
+
+        if len(self.polys) == 1:
+            calculate_PC_basis_set_size(dims, self.polys[0])
+            features = get_polynomial_chaos_features(labels, self.polys[0])
+        else:
+            calculate_hdmr_basis_set_size(dims, self.polys)
+            features = get_hdmr_features(labels, self.polys)
+
+        num_features = len(features)
+        print(f"Total number of features in basis set is {num_features}")
+
+        # Compute primitive Legendre terms (same as do_expand)
+        self.do_expand()
+        primitives = self.X_T_L.values.astype(np.float64)
+        # primitives shape: (n_samples, dims × max_1st)
+        # Column ordering: var0_1, var0_2, ..., var0_max, var1_1, ...
+
+        # Parse feature name strings into primitive-index recipes
+        # A feature like "x0_3*x1_2" → primitive indices [2, 9]
+        #   x0_3: var_idx=0, deg=3 → 0*8 + (3-1) = 2
+        #   x1_2: var_idx=1, deg=2 → 1*8 + (2-1) = 9
+
+        max_factors = len(self.polys)  # maximum number of '*' separators
+        prim_indices = np.full(
+            (num_features, max_factors), -1, dtype=np.int32
+        )
+        n_factors = np.zeros(num_features, dtype=np.int32)
+
+        for i, feature in enumerate(features):
+            terms = feature.split("*")
+            n_factors[i] = len(terms)
+            for f, term in enumerate(terms):
+                # "x0_3" → var_name="x0", deg=3
+                # Split at the LAST underscore (variable names may contain
+                # underscores, but degrees are just integers at the end)
+                parts = term.rsplit("_", 1)
+                var_name = parts[0]
+                deg = int(parts[1])
+                var_idx = var_to_idx[var_name]
+                prim_idx = var_idx * self.max_1st + (deg - 1)
+                prim_indices[i, f] = prim_idx
+
+        recipes = FeatureRecipes(
+            feature_names=features,
+            prim_indices=prim_indices,
+            n_factors=n_factors,
+        )
+
+        # Store feature names for downstream label access
+        self._feature_names = features
+
+        return LazyBasisMatrix(primitives, recipes)
+
     def get_expanded(self):
         return self.X_T_L
     

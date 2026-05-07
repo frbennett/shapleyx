@@ -27,7 +27,7 @@ class regression():
         self.starting_iter = starting_iter 
         self.cv_method = cv_method 
 
-    def run_regression(self):
+    def run_regression(self, lazy_basis=None):
         start_time = time.perf_counter()
         if self.method == 'ard':
             print('running ARD')
@@ -43,6 +43,28 @@ class regression():
         elif self.method == 'omp_cv':
             print('running OMP_CV')
             self.clf = OrthogonalMatchingPursuitCV(max_iter=self.n_iter, cv=10) 
+
+        elif self.method == 'omp_stream':
+            print('running Streaming OMP')
+            from .streaming import StreamingOMP
+            if lazy_basis is None:
+                raise ValueError(
+                    "lazy_basis is required for method='omp_stream'"
+                )
+            self.clf = StreamingOMP(
+                lazy_basis, n_nonzero_coefs=self.n_iter
+            )
+
+        elif self.method == 'omp_cv_stream':
+            print('running Streaming OMP-CV')
+            from .streaming import StreamingOMPCV
+            if lazy_basis is None:
+                raise ValueError(
+                    "lazy_basis is required for method='omp_cv_stream'"
+                )
+            self.clf = StreamingOMPCV(
+                lazy_basis, cv=10, max_iter=self.n_iter
+            )
             
         elif self.method == 'ard_sk':
             print('running ARD_SK')
@@ -86,7 +108,10 @@ class regression():
             self.clf = RegressionARD(num_iterations, verbose=self.verbose)
              
 #        self.clf = ARDRegression(n_iter=self.n_iter, verbose=True, tol=1.0e-3)
-        self.clf.fit(self.X_T_L,self.Y)
+        if self.method in ('omp_stream', 'omp_cv_stream'):
+            self.clf.fit(self.Y)
+        else:
+            self.clf.fit(self.X_T_L,self.Y)
         end_time = time.perf_counter()
 
         if self.method == 'ompcv':
@@ -100,6 +125,9 @@ class regression():
 
         print(" ")
 
-        y_pred = self.clf.predict(self.X_T_L)
+        if self.method in ('omp_stream', 'omp_cv_stream'):
+            y_pred = self.clf.predict(lazy_basis)
+        else:
+            y_pred = self.clf.predict(self.X_T_L)
 
         return self.clf.coef_ , y_pred 
