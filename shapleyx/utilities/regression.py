@@ -17,7 +17,7 @@ from sklearn.model_selection import cross_val_score
 
 class regression():
 
-    def __init__(self, X_T_L, Y, method, n_iter, verbose, cv_tol, starting_iter,cv_method):
+    def __init__(self, X_T_L, Y, method, n_iter, verbose, cv_tol, starting_iter, cv_method, n_jobs=1):
         self.X_T_L = X_T_L
         self.Y = Y
         self.method = method
@@ -26,6 +26,7 @@ class regression():
         self.cv_tol = cv_tol
         self.starting_iter = starting_iter 
         self.cv_method = cv_method 
+        self.n_jobs = n_jobs
 
     def run_regression(self, lazy_basis=None):
         start_time = time.perf_counter()
@@ -52,7 +53,8 @@ class regression():
                     "lazy_basis is required for method='omp_stream'"
                 )
             self.clf = StreamingOMP(
-                lazy_basis, n_nonzero_coefs=self.n_iter
+                lazy_basis, n_nonzero_coefs=self.n_iter,
+                verbose=self.verbose,
             )
 
         elif self.method == 'omp_cv_stream':
@@ -63,7 +65,8 @@ class regression():
                     "lazy_basis is required for method='omp_cv_stream'"
                 )
             self.clf = StreamingOMPCV(
-                lazy_basis, cv=10, max_iter=self.n_iter
+                lazy_basis, cv=10, max_iter=self.n_iter,
+                n_jobs=self.n_jobs, verbose=self.verbose,
             )
             
         elif self.method == 'ard_sk':
