@@ -484,11 +484,13 @@ class StreamingOMP:
         n_nonzero_coefs: int = 300,
         fit_intercept: bool = True,
         tol: float = 1e-12,
+        verbose: bool = False,
     ) -> None:
         self.lazy_basis = lazy_basis
         self.n_nonzero_coefs = int(n_nonzero_coefs)
         self.fit_intercept = bool(fit_intercept)
         self.tol = float(tol)
+        self.verbose = bool(verbose)
 
         # Set after fit
         self.coef_: np.ndarray | None = None
@@ -571,6 +573,15 @@ class StreamingOMP:
             rss = float(np.dot(y - y_pred, y - y_pred))
             if rss < self.tol * y_norm_sq:
                 break
+
+            if self.verbose:
+                n_active = len(active)
+                r2 = float(1.0 - rss / float(np.dot(y - y.mean(), y - y.mean())))
+                print(
+                    f"  OMP iter {iteration + 1:<4d}/{max_iter}"
+                    f"  active={n_active:<4d}" 
+                    f"  R²={r2:.6f}"
+                )
 
         # Pack results
         n_active = len(active)
@@ -745,6 +756,7 @@ class StreamingOMPCV:
         scoring: str = "r2",
         random_state: int = 42,
         n_jobs: int = 1,
+        verbose: bool = False,
     ) -> None:
         self.lazy_basis = lazy_basis
         self.cv = int(cv)
@@ -753,6 +765,7 @@ class StreamingOMPCV:
         self.scoring = str(scoring)
         self.random_state = int(random_state)
         self.n_jobs = int(n_jobs)
+        self.verbose = bool(verbose)
 
         # Set after fit
         self.coef_: np.ndarray | None = None
@@ -801,8 +814,9 @@ class StreamingOMPCV:
             # sparsity path (1…max_iter) independently.  On Linux the
             # primitive arrays are shared read-only across forked
             # workers (zero-copy).
+            jl_verbosity = 10 if self.verbose else 0
             fold_results: list[np.ndarray] = Parallel(
-                n_jobs=self.n_jobs, verbose=0
+                n_jobs=self.n_jobs, verbose=jl_verbosity
             )(
                 delayed(_evaluate_fold_path)(
                     train_prim=self.lazy_basis.primitives[train_idx],
@@ -825,6 +839,9 @@ class StreamingOMPCV:
             mean_scores = fold_array.mean(axis=1)
             std_scores = fold_array.std(axis=1)
 
+            if self.verbose:
+                print("  Fold evaluation complete.  Aggregating CV scores...")
+
             self.cv_scores_ = []
             best_score = -np.inf
             best_n_nonzero = 0
@@ -832,6 +849,12 @@ class StreamingOMPCV:
                 ms = float(mean_scores[n_nz - 1])
                 ss = float(std_scores[n_nz - 1])
                 self.cv_scores_.append((n_nz, ms, ss))
+                if self.verbose:
+                    marker = " *" if ms > best_score else ""
+                    print(
+                        f"  CV nz={n_nz:<4d}/{self.max_iter}"
+                        f"  score={ms:.4f} ±{ss:.4f}{marker}"
+                    )
                 if ms > best_score:
                     best_score = ms
                     best_n_nonzero = n_nz
@@ -885,6 +908,13 @@ class StreamingOMPCV:
                 mean_score = float(np.mean(fold_scores))
                 std_score = float(np.std(fold_scores))
                 self.cv_scores_.append((n_nz, mean_score, std_score))
+
+                if self.verbose:
+                    marker = " *" if mean_score > best_score else ""
+                    print(
+                        f"  CV nz={n_nz:<4d}/{self.max_iter}"
+                        f"  score={mean_score:.4f} ±{std_score:.4f}{marker}"
+                    )
 
                 if mean_score > best_score:
                     best_score = mean_score

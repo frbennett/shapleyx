@@ -53,7 +53,8 @@ class regression():
                     "lazy_basis is required for method='omp_stream'"
                 )
             self.clf = StreamingOMP(
-                lazy_basis, n_nonzero_coefs=self.n_iter
+                lazy_basis, n_nonzero_coefs=self.n_iter,
+                verbose=self.verbose,
             )
 
         elif self.method == 'omp_cv_stream':
@@ -64,7 +65,8 @@ class regression():
                     "lazy_basis is required for method='omp_cv_stream'"
                 )
             self.clf = StreamingOMPCV(
-                lazy_basis, cv=10, max_iter=self.n_iter, n_jobs=self.n_jobs
+                lazy_basis, cv=10, max_iter=self.n_iter,
+                n_jobs=self.n_jobs, verbose=self.verbose,
             )
             
         elif self.method == 'ard_sk':
