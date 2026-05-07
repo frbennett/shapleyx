@@ -14,7 +14,7 @@
       <script>
         // Current page data
         var mkdocs_page_name = "Deployment";
-        var mkdocs_page_input_path = "getting-started/deployment.md";
+        var mkdocs_page_input_path = "getting-started\\deployment.md";
         var mkdocs_page_url = "/shapleyx/getting-started/deployment/";
       </script>
     
@@ -56,15 +56,11 @@
     </li>
     <li class="toctree-l2"><a class="reference internal" href="#manual-deployment-fallback">Manual Deployment (Fallback)</a>
     </li>
-    <li class="toctree-l2"><a class="reference internal" href="#testing-locally">Testing Locally</a>
-    </li>
     <li class="toctree-l2"><a class="reference internal" href="#troubleshooting">Troubleshooting</a>
         <ul>
     <li class="toctree-l3"><a class="reference internal" href="#permission-errors">Permission Errors</a>
     </li>
     <li class="toctree-l3"><a class="reference internal" href="#build-errors">Build Errors</a>
-    </li>
-    <li class="toctree-l3"><a class="reference internal" href="#notebook-rendering-issues">Notebook Rendering Issues</a>
     </li>
         </ul>
     </li>
@@ -89,10 +85,6 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../tutorials/wing_weight/">Wing Weight</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/fire_spread/">Fire Spread</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sobolG_function/">Sobol G50</a>
-                  </li>
               </ul>
               <p class="caption"><span class="caption-text">How-to Guides</span></p>
               <ul>
@@ -109,24 +101,16 @@
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
                   </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../../reference/streaming-omp/">Streaming OMP</a>
-                  </li>
               </ul>
               <p class="caption"><span class="caption-text">Explanation</span></p>
               <ul>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/theory/">Theory</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/rs_hdmr/">RS-HDMR Construction</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/distributions/">Distribution Classes</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/case_studies/">Case Studies</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/ard_theory/">ARD Theory</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/streaming-omp/">Streaming Basis Expansion</a>
-                  </li>
-                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/moment-free/">Moment-Free Measures</a>
                   </li>
                   <li class="toctree-l1"><a class="reference internal" href="../../explanation/performance/">Performance</a>
                   </li>
@@ -159,56 +143,45 @@
                 <h1 id="deployment-guide">Deployment Guide</h1>
 <h2 id="automated-deployment-recommended">Automated Deployment (Recommended)</h2>
 <ol>
-<li>Push changes to the <code>main</code> branch on GitHub</li>
+<li>Push changes to GitHub</li>
 <li>The workflow in <code>.github/workflows/gh-pages.yml</code> will automatically:</li>
-<li>Build the documentation with MkDocs</li>
+<li>Build the documentation</li>
 <li>Deploy to the <code>gh-pages</code> branch</li>
-<li>Publish at <code>https://frbennett.github.io/shapleyx/</code></li>
+<li>Make it available at <code>https://[your-username].github.io/shapleyx/</code></li>
 </ol>
-<p>The workflow triggers on changes to <code>docs/**</code>, <code>mkdocs.yml</code>, or the
-workflow file itself.</p>
 <h2 id="manual-deployment-fallback">Manual Deployment (Fallback)</h2>
 <p>If automated deployment fails:</p>
 <ol>
 <li>
-<p>Install documentation dependencies:
-<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>mkdocs<span class="w"> </span>mkdocstrings<span class="o">[</span>python<span class="o">]</span><span class="w"> </span>mkdocs-jupyter<span class="w"> </span>pymdown-extensions
+<p>Install requirements:
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>mkdocs-material<span class="w"> </span>mkdocstrings<span class="o">[</span>python<span class="o">]</span>
 </code></pre></div></p>
 </li>
 <li>
 <p>Build and deploy:
-<div class="highlight"><pre><span></span><code>mkdocs<span class="w"> </span>gh-deploy<span class="w"> </span>--force<span class="w"> </span>--remote-branch<span class="w"> </span>gh-pages
+<div class="highlight"><pre><span></span><code>mkdocs<span class="w"> </span>gh-deploy<span class="w"> </span>--force
 </code></pre></div></p>
 </li>
 <li>
-<p>If permission errors persist, ensure your GitHub token has write
-   access to the repository.</p>
+<p>If permission errors persist:
+<div class="highlight"><pre><span></span><code>git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>user.name<span class="w"> </span><span class="s2">&quot;Your Name&quot;</span>
+git<span class="w"> </span>config<span class="w"> </span>--global<span class="w"> </span>user.email<span class="w"> </span><span class="s2">&quot;your@email.com&quot;</span>
+mkdocs<span class="w"> </span>gh-deploy<span class="w"> </span>--force<span class="w"> </span>--remote-branch<span class="w"> </span>gh-pages
+</code></pre></div></p>
 </li>
 </ol>
-<h2 id="testing-locally">Testing Locally</h2>
-<div class="highlight"><pre><span></span><code>mkdocs<span class="w"> </span>serve
-</code></pre></div>
-<p>Then open <code>http://127.0.0.1:8000/</code> in your browser.  Changes to the
-<code>docs/</code> directory are reflected in real time.</p>
 <h2 id="troubleshooting">Troubleshooting</h2>
 <h3 id="permission-errors">Permission Errors</h3>
 <ul>
 <li>Ensure you have push access to the repository</li>
-<li>The automated workflow uses <code>GITHUB_TOKEN</code> with <code>contents: write</code></li>
-<li>For manual deployment, configure a personal access token</li>
+<li>Verify your GitHub token has repo permissions</li>
+<li>Try creating a personal access token with repo scope</li>
 </ul>
 <h3 id="build-errors">Build Errors</h3>
 <ul>
-<li>Check for broken links in your documentation</li>
-<li>Verify all Python modules referenced in API docs are importable
-  (the workflow runs <code>pip install .</code> before building)</li>
+<li>Check for broken links in your docs</li>
+<li>Verify all Python modules referenced in API docs exist</li>
 <li>Run <code>mkdocs serve</code> locally to test before deploying</li>
-</ul>
-<h3 id="notebook-rendering-issues">Notebook Rendering Issues</h3>
-<ul>
-<li>Notebooks are converted with <code>mkdocs-jupyter</code> using <code>execute=False</code></li>
-<li>Large notebooks may take time to convert; the workflow caches
-  converted notebooks in <code>.cache/mkdocs-jupyter/</code></li>
 </ul>
               
             </div>
