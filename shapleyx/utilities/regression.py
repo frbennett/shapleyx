@@ -121,7 +121,11 @@ class regression():
             print('Number of non-zero coefficeints from OMP_CV : ', self.clf.n_nonzero_coefs_)
 
 #        print('number of iterations ', self.clf.n_iter_)
-        print(f"Fit Execution Time : {end_time - start_time:0.6f}" ) 
+        print(f"Fit Execution Time : {end_time - start_time:0.6f}" )
+        n_selected = int(np.sum(self.clf.coef_ != 0))
+        n_total = self.clf.coef_.shape[0]
+        pct = 100.0 * n_selected / n_total
+        print(f"Basis functions selected: {n_selected} / {n_total} ({pct:.2f}%)")
         print('--') 
         print(" ")
         print(" Model complete ")
