@@ -57,7 +57,7 @@ ShapleyX fills this gap by providing:
 - **Coalition truncation** ($k_{\max}$) for the exhaustive method: when the
   model's interactions are bounded at a known order (as in RS-HDMR surrogates),
   coalitions larger than $k_{\max}$ are skipped with zero loss of accuracy,
-  reducing the subset count from $O(2^d)$ to $O(d^{k_{\max}})$ — a 270×
+  reducing the subset count from $O(2^d)$ to $O(d^{k_{\max}})$ --- a 270×
   reduction at $d=15$ for $k_{\max}=2$.
 - **Built-in distribution classes** for Gaussian copula models, multivariate
   normal, and truncated multivariate normal inputs, with a documented interface
@@ -66,8 +66,16 @@ ShapleyX fills this gap by providing:
   Carlo data at no additional computational cost, via the identity
   $v(u) = \text{Cov}[f(\mathbf{X}), f(\mathbf{X}_u)] = \mathbb{V}[\mathbb{E}(f(\mathbf{X}) \mid \mathbf{X}_u)]$.
 - **RS-HDMR surrogate modelling** with sparse Legendre polynomial expansion
-  and ARD regression, enabling accurate sensitivity analysis from a few hundred
-  model evaluations.
+  and a novel ARD regression methodology featuring retrospective $K$-fold
+  Bayesian cross-validation for automated model selection [@Bennett2026].
+  The CV scoring uses the predictive log-likelihood derived from the full
+  ARD posterior predictive distribution, providing a principled,
+  probabilistically coherent criterion that accounts for both prediction
+  accuracy and predictive uncertainty.  A per-fold centering correction
+  eliminates data leakage that would otherwise produce systematically
+  optimistic CV scores.  The implementation also supports a batch
+  evidence-maximization ARD variant with Gamma hyper-priors, matching
+  scikit-learn's \texttt{ARDRegression} sparsity behaviour.
 - **Moment-free measures** (PAWN, Delta, H-index) for distribution-based
   sensitivity analysis that does not rely on variance decomposition.
 
@@ -79,9 +87,26 @@ ShapleyX constructs a surrogate model $\hat{f}(\mathbf{x})$ using a sparse
 polynomial chaos expansion with shifted Legendre polynomials (orthonormal on
 $[0,1]^d$).  The basis set is defined by the `polys` parameter: e.g.,
 `polys=[10, 5]` includes up to 10th-degree univariate terms and 5th-degree
-bivariate interactions.  ARD regression [@Tipping2001] prunes irrelevant basis
-terms via Bayesian evidence maximisation, yielding a sparse representation with
-typically 10–100 active terms from thousands of candidates.
+bivariate interactions.  For high-dimensional problems the full design matrix
+can exceed available RAM (80K features × 10K samples ≈ 6.4 GB); a streaming
+Orthogonal Matching Pursuit (OMP) variant computes basis columns on-the-fly
+from compact primitive terms, reducing memory by 50–100×.
+
+Feature selection uses Automatic Relevance Determination (ARD) regression
+[@Tipping2001], which prunes irrelevant basis terms via Bayesian evidence
+maximisation, typically retaining 10–100 active terms from thousands of
+candidates.  A key innovation is the **retrospective Bayesian cross-validation**
+methodology [@Bennett2026]: ARD runs to convergence on the full dataset
+producing a path of candidate models, and each visited model state is scored
+via $K$-fold CV using the Bayesian predictive log-likelihood---a proper scoring
+rule that accounts for both prediction accuracy and predictive uncertainty.
+The state with the highest CV score is retrospectively selected, discarding
+marginal features that the ARD convergence criteria alone would retain.  A
+per-fold centering correction prevents data leakage that would otherwise
+inflate CV scores.  The `RegressionARD` class also supports a batch
+evidence-maximization algorithm with Gamma hyper-priors, matching scikit-learn's
+`ARDRegression` sparsity behaviour, and exposes per-fold CV score standard
+errors via a `return_std` option for quantifying model selection uncertainty.
 
 Under independent inputs, sensitivity indices are extracted directly from the
 squared coefficients grouped by variable labels [@Sudret2008].  Bootstrap
