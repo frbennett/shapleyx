@@ -7,7 +7,7 @@ long_description = readme_path.read_text(encoding='utf-8')
 
 setup(
     name='shapleyx',
-    version='0.5.1',
+    version='0.6.0',
     description='Global sensitivity analysis with RS-HDMR — Sobol, Shapley, PAWN, and more',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -39,6 +39,9 @@ setup(
             'mkdocstrings[python]',
             'mkdocs-jupyter',
             'pymdown-extensions',
+        ],
+        'streaming': [
+            'numba>=0.60',
         ],
     },
     project_urls={
