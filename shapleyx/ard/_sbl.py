@@ -50,7 +50,14 @@ class RegressionARD(RegressorMixin, LinearModel):
                 early stopping (deprecated). Defaults to True.
             store_history (bool, optional): If True, stores model states at each iteration
                 for debugging/analysis. Increases memory usage. Defaults to False.
-
+            threshold_lambda (float, optional): Post-fit pruning threshold.  After ARD
+                converges (and after retrospective CV selection, if enabled), any feature
+                whose estimated precision ``lambda_[i]`` exceeds this threshold has its
+                coefficient set to exactly zero.  This mirrors the pruning step in
+                sklearn's ``ARDRegression`` and produces sparser models for problems
+                where the SBL algorithm retains marginal features with large but finite
+                precisions.  Defaults to 10\,000.  Set to ``np.inf`` to disable.
+    
     Attributes:
         coef_ (array): Coefficients of the regression model (mean of the posterior distribution).
             Shape (n_features,).
@@ -82,7 +89,7 @@ class RegressionARD(RegressorMixin, LinearModel):
     def __init__( self, n_iter = 300, tol = 1e-3, fit_intercept = True,
                   copy_X = True, verbose = False, cv_tol = 0.1, cv=False,
                   cv_method='bayesian', cv_folds=10, retrospective_selection=True,
-                  store_history=False):
+                  store_history=False, threshold_lambda=1e4):
         self.n_iter          = n_iter
         self.tol             = tol
         self.fit_intercept   = fit_intercept
@@ -94,6 +101,7 @@ class RegressionARD(RegressorMixin, LinearModel):
         self.cv_folds        = cv_folds
         self.retrospective_selection = retrospective_selection
         self.store_history   = store_history
+        self.threshold_lambda = float(threshold_lambda)
 
         # Warn about deprecated cv_tol if retrospective_selection is True
         if retrospective_selection and cv_tol != 0.1:
@@ -330,6 +338,17 @@ class RegressionARD(RegressorMixin, LinearModel):
         self.active_       = active
         self.lambda_       = A
         self.alpha_        = beta
+        
+        # Post-fit pruning: zero out coefficients whose estimated
+        # precision exceeds threshold_lambda (mirrors sklearn ARDRegression).
+        if np.isfinite(self.threshold_lambda):
+            prune_mask = (self.lambda_ > self.threshold_lambda) & self.active_
+            self.coef_[prune_mask] = 0.0
+            self.active_[prune_mask] = False
+            if self.verbose and np.any(prune_mask):
+                print(f"  Pruned {np.sum(prune_mask)} features with "
+                      f"lambda > {self.threshold_lambda:.0f}")
+
         self._set_intercept(X_mean,y_mean,X_std)
         
         # Store scores for backward compatibility
