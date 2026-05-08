@@ -106,7 +106,8 @@ class RegressionARD(RegressorMixin, LinearModel):
                   store_history=False, threshold_lambda=1e4,
                   algorithm='sequential',
                   alpha_1=1e-6, alpha_2=1e-6,
-                  lambda_1=1e-6, lambda_2=1e-6):
+                  lambda_1=1e-6, lambda_2=1e-6,
+                  return_std=False):
         self.n_iter          = n_iter
         self.tol             = tol
         self.fit_intercept   = fit_intercept
@@ -124,6 +125,7 @@ class RegressionARD(RegressorMixin, LinearModel):
         self.alpha_2          = float(alpha_2)
         self.lambda_1         = float(lambda_1)
         self.lambda_2         = float(lambda_2)
+        self.return_std       = return_std
 
         if self.algorithm not in ('sequential', 'em'):
             raise ValueError(
@@ -517,6 +519,29 @@ class RegressionARD(RegressorMixin, LinearModel):
         self.active_ = keep_lambda
         self.scores_ = scores
         self.n_iter_ = it + 1
+
+        # ── Cross-validation scoring (post-hoc, single evaluation) ──
+        # EM converges in 5-10 iterations — the path is too short for
+        # meaningful retrospective selection.  Instead we score the
+        # converged model once and report that score.
+        if self.cv:
+            self.best_iteration_ = self.n_iter_
+            # Compute CV score on final model state
+            # The EM update equations are batch — we approximate β and α_i
+            # from the final lambda_ and alpha_ for the CV posterior.
+            beta_cv = float(alpha_)  # noise precision
+            A_cv = lambda_.copy()    # weight precisions
+            # Set inactive features' precisions to ∞ (pruned)
+            A_cv[~keep_lambda] = np.inf
+            cv_score = self._compute_cv_score(
+                X_orig, y_orig, keep_lambda, beta_cv, A_cv,
+                None, None, None, None, None  # XX, XY, means not needed; per-fold centering
+            )
+            self.best_cv_score_ = cv_score
+            self.scores_.append(cv_score)
+            if self.verbose:
+                print(f"  CV score on converged model: {cv_score:.4f}")
+
         self._set_intercept(X_mean, y_mean, X_std)
 
         return self
@@ -795,6 +820,10 @@ class RegressionARD(RegressorMixin, LinearModel):
         active_features = active.copy()
 
         log_likelihoods = []
+        if not hasattr(self, '_cv_fold_scores_'):
+            self._cv_fold_scores_ = []  # per-iteration per-fold scores for return_std
+        fold_scores_this_iter = []
+
         for train_idx, val_idx in kf.split(X):
             X_train, X_val = X[train_idx], X[val_idx]
             y_train, y_val = y[train_idx], y[val_idx]
@@ -838,6 +867,11 @@ class RegressionARD(RegressorMixin, LinearModel):
             ll = -0.5 * np.sum(np.log(2 * np.pi * sigma2)
                                + (y_val - y_pred)**2 / sigma2)
             log_likelihoods.append(ll)
+            if self.return_std:
+                fold_scores_this_iter.append(ll)
+
+        if self.return_std:
+            self._cv_fold_scores_.append(fold_scores_this_iter)
 
         return np.mean(log_likelihoods)
 
