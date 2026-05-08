@@ -56,7 +56,21 @@ class RegressionARD(RegressorMixin, LinearModel):
                 coefficient set to exactly zero.  This mirrors the pruning step in
                 sklearn's ``ARDRegression`` and produces sparser models for problems
                 where the SBL algorithm retains marginal features with large but finite
-                precisions.  Defaults to 10\,000.  Set to ``np.inf`` to disable.
+                precisions.  Defaults to 10\\,000.  Set to ``np.inf`` to disable.
+            algorithm (str, optional): Which ARD variant to use.
+                ``'sequential'`` (default) — Tipping & Faul (2003) fast sequential
+                SBL: picks one feature per iteration (add/recompute/delete).
+                ``'em'`` — batch evidence maximization (`MacKay 1992`_):
+                updates all weights simultaneously with Gamma hyper-priors
+                (``alpha_1, alpha_2, lambda_1, lambda_2``) and per-iteration
+                pruning via ``threshold_lambda``.  Typically produces sparser
+                models matching sklearn's ``ARDRegression`` behaviour.
+            alpha_1, alpha_2 : float, optional
+                Gamma hyper-prior shape/inverse-scale for the noise precision.
+                Only used when ``algorithm='em'``.  Default 1e-6.
+            lambda_1, lambda_2 : float, optional
+                Gamma hyper-prior shape/inverse-scale for the weight precisions.
+                Only used when ``algorithm='em'``.  Default 1e-6.
     
     Attributes:
         coef_ (array): Coefficients of the regression model (mean of the posterior distribution).
@@ -89,7 +103,10 @@ class RegressionARD(RegressorMixin, LinearModel):
     def __init__( self, n_iter = 300, tol = 1e-3, fit_intercept = True,
                   copy_X = True, verbose = False, cv_tol = 0.1, cv=False,
                   cv_method='bayesian', cv_folds=10, retrospective_selection=True,
-                  store_history=False, threshold_lambda=1e4):
+                  store_history=False, threshold_lambda=1e4,
+                  algorithm='sequential',
+                  alpha_1=1e-6, alpha_2=1e-6,
+                  lambda_1=1e-6, lambda_2=1e-6):
         self.n_iter          = n_iter
         self.tol             = tol
         self.fit_intercept   = fit_intercept
@@ -102,6 +119,17 @@ class RegressionARD(RegressorMixin, LinearModel):
         self.retrospective_selection = retrospective_selection
         self.store_history   = store_history
         self.threshold_lambda = float(threshold_lambda)
+        self.algorithm        = algorithm
+        self.alpha_1          = float(alpha_1)
+        self.alpha_2          = float(alpha_2)
+        self.lambda_1         = float(lambda_1)
+        self.lambda_2         = float(lambda_2)
+
+        if self.algorithm not in ('sequential', 'em'):
+            raise ValueError(
+                f"Unknown algorithm '{algorithm}'. "
+                f"Expected 'sequential' or 'em'."
+            )
 
         # Warn about deprecated cv_tol if retrospective_selection is True
         if retrospective_selection and cv_tol != 0.1:
@@ -147,6 +175,10 @@ class RegressionARD(RegressorMixin, LinearModel):
             Returns the instance itself.
         '''
         X, y = check_X_y(X, y, dtype=np.float64, y_numeric=True)
+        # ── Route to the appropriate algorithm ─────────────────
+        if self.algorithm == 'em':
+            return self._fit_em(X, y)
+        # ── Sequential SBL (Tipping & Faul 2003) ──────────────
         # Save original-scale data for cross-validation (prevents leakage
         # from full-dataset centering into per-fold evaluation).
         X_orig, y_orig = X.copy(), y.copy()
@@ -359,6 +391,155 @@ class RegressionARD(RegressorMixin, LinearModel):
         return self
         
         
+    def _fit_em(self, X_orig, y_orig):
+        """Batch evidence-maximization ARD (MacKay 1992).
+
+        Updates all weights, precisions, and the noise precision
+        simultaneously at each iteration, with Gamma hyper-priors
+        driving sparsity.  Mirrors sklearn's ``ARDRegression``.
+
+        Parameters
+        ----------
+        X_orig : ndarray (n_samples, n_features) — original scale
+        y_orig : ndarray (n_samples,) — original scale
+
+        Returns
+        -------
+        self
+        """
+        import numpy as np
+        from scipy.linalg import pinvh
+
+        n_samples, n_features = X_orig.shape
+        dtype = X_orig.dtype
+
+        # Centre data if fitting intercept
+        X = X_orig.copy()
+        y = y_orig.copy()
+        if self.fit_intercept:
+            X_mean = np.mean(X, axis=0)
+            y_mean = float(np.mean(y))
+            X -= X_mean
+            y -= y_mean
+        else:
+            X_mean = np.zeros(n_features, dtype=dtype)
+            y_mean = 0.0
+        X_std = np.ones(n_features, dtype=dtype)
+
+        # ── Initialisation ────────────────────────────────────
+        eps = np.finfo(np.float64).eps
+        alpha_ = 1.0 / (np.var(y) + eps)   # noise precision
+        lambda_ = np.ones(n_features, dtype=np.float64)  # weight precisions
+        coef_ = np.zeros(n_features, dtype=np.float64)
+        keep_lambda = np.ones(n_features, dtype=bool)
+
+        a1, a2 = self.alpha_1, self.alpha_2
+        l1, l2 = self.lambda_1, self.lambda_2
+        thresh = self.threshold_lambda
+        scores = []
+
+        coef_old = None
+
+        # ── Main loop ─────────────────────────────────────────
+        for it in range(self.n_iter):
+            # --- Posterior covariance (Woodbury when p > n) ---
+            active_idx = np.where(keep_lambda)[0]
+            if len(active_idx) == 0:
+                break
+
+            Xa = X[:, keep_lambda]
+            try:
+                # Standard route: (β XᵀX + Λ)⁻¹
+                XTX = np.dot(Xa.T, Xa)
+                Sinv = alpha_ * XTX + np.diag(lambda_[keep_lambda])
+                sigma_ = pinvh(Sinv)
+            except Exception:
+                # Fallback: use Woodbury when ill-conditioned
+                sigma_ = self._sigma_woodbury(X, alpha_, lambda_, keep_lambda)
+
+            # --- Weight update ---
+            coef_[:] = 0.0
+            coef_[keep_lambda] = alpha_ * np.linalg.multi_dot(
+                [sigma_, Xa.T, y]
+            )
+
+            # --- Update precisions with Gamma hyper-priors ---
+            gamma_ = 1.0 - lambda_[keep_lambda] * np.diag(sigma_)
+            gamma_ = np.maximum(gamma_, 0.0)
+
+            lambda_[keep_lambda] = (gamma_ + 2.0 * l1) / (
+                coef_[keep_lambda] ** 2 + 2.0 * l2
+            )
+            # sse = ||y - X @ coef||²
+            sse_ = np.dot(y - np.dot(Xa, coef_[keep_lambda]),
+                          y - np.dot(Xa, coef_[keep_lambda]))
+            alpha_ = (n_samples - gamma_.sum() + 2.0 * a1) / (
+                sse_ + 2.0 * a2
+            )
+
+            # --- Prune features whose precision exceeds threshold ---
+            keep_lambda = lambda_ < thresh
+            coef_[~keep_lambda] = 0.0
+
+            # --- Progress ---
+            if self.verbose:
+                n_active = int(np.sum(keep_lambda))
+                r2 = 1.0 - sse_ / np.dot(y, y) if np.dot(y, y) > 0 else 0.0
+                print(f"  EM iter {it+1:<4d}/{self.n_iter}"
+                      f"  active={n_active:<4d}  R²={r2:.4f}")
+
+            # --- Convergence check ---
+            if it > 0 and coef_old is not None:
+                delta = np.sum(np.abs(coef_old - coef_))
+                if delta < self.tol:
+                    if self.verbose:
+                        print(f"  Converged at iteration {it+1}")
+                    break
+            coef_old = coef_.copy()
+
+        # ── Final state ────────────────────────────────────────
+        if np.any(keep_lambda):
+            Xa = X[:, keep_lambda]
+            XTX = np.dot(Xa.T, Xa)
+            Sinv = alpha_ * XTX + np.diag(lambda_[keep_lambda])
+            sigma_ = pinvh(Sinv)
+            coef_[:] = 0.0
+            coef_[keep_lambda] = alpha_ * np.linalg.multi_dot(
+                [sigma_, Xa.T, y]
+            )
+        else:
+            sigma_ = np.zeros((0, 0))
+
+        self.coef_ = coef_
+        self.alpha_ = float(alpha_)
+        self.sigma_ = sigma_
+        self.lambda_ = lambda_
+        self.active_ = keep_lambda
+        self.scores_ = scores
+        self.n_iter_ = it + 1
+        self._set_intercept(X_mean, y_mean, X_std)
+
+        return self
+
+    @staticmethod
+    def _sigma_woodbury(X, alpha_, lambda_, keep_lambda):
+        """Compute posterior covariance via Woodbury identity.
+
+        Uses the Woodbury matrix identity to compute
+        (Λ + α XᵀX)⁻¹ efficiently when n < p_split.
+        """
+        keep_idx = np.where(keep_lambda)[0]
+        Lambda_inv = np.diag(1.0 / lambda_[keep_lambda])
+        Xa = X[:, keep_lambda]
+        # sigma = Λ⁻¹ - Λ⁻¹ Xᵀ (α⁻¹ I + X Λ⁻¹ Xᵀ)⁻¹ X Λ⁻¹
+        X_Linv = np.dot(Xa, Lambda_inv)
+        inner = np.eye(X.shape[0]) / alpha_ + np.dot(X_Linv, Xa.T)
+        try:
+            inner_inv = np.linalg.inv(inner)
+        except np.linalg.LinAlgError:
+            inner_inv = pinvh(inner)
+        return Lambda_inv - np.linalg.multi_dot([Lambda_inv, Xa.T, inner_inv, X_Linv.T])
+
     def _posterior_dist(self,A,beta,XX,XY,full_covar=False):
         '''
         Calculate the mean and covariance matrix of the posterior distribution of coefficients.
