@@ -293,6 +293,34 @@ The `n_iter` parameter controls the maximum number of basis functions to
 consider.  ARD typically converges within 100–300 iterations.  OMP needs
 more — 50–200 is usually sufficient.
 
+### ARD controls (new in v0.6.0)
+
+When using `method='ard'` or `method='ard_cv'`, five additional parameters
+give you fine-grained control over the ARD regression:
+
+| Parameter | Default | Purpose |
+|-----------|---------|---------|
+| `ard_algorithm` | `'sequential'` | `'sequential'` (Tipping & Faul 2003): picks one feature at a time, produces a full sparsity path for CV. `'em'` (sklearn-compatible): batch updates with Gamma hyper-priors, sparser results, 5–10 iterations. |
+| `threshold_lambda` | 10,000 | Post-fit pruning threshold. ARD sometimes retains marginal features with large but finite precisions. Setting this to, e.g., 5,000 zeroes them aggressively. Use `np.inf` to disable. |
+| `ard_tol` | 1e-3 | Convergence tolerance. Lower values (e.g., 1e-4) let ARD run longer for more thorough feature exploration at the cost of runtime. |
+| `cv_folds` | 10 | Number of CV folds when using `ard_cv`. Fewer folds (e.g., 5) are faster; more folds (e.g., 20) give smoother CV curves at a cost. |
+| `return_std` | `False` | Collects per-fold CV scores at each iteration. Post-fit you can compute SEM = std / √K to quantify model selection confidence. |
+
+**Example with all ARD controls:**
+
+```python
+model = rshdmr(
+    df, polys=[10, 5],
+    method='ard_cv',
+    cv_method='bayesian',
+    ard_algorithm='em',         # sklearn-compatible EM variant
+    threshold_lambda=5000,      # aggressive pruning
+    cv_folds=5,                 # faster CV
+    return_std=True,            # get CV confidence intervals
+    n_iter=100,
+)
+```
+
 ---
 
 ## 6. Understanding polynomial orders — the `polys` parameter

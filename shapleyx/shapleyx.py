@@ -97,6 +97,35 @@ class rshdmr():
             Defaults to ``'ridge'`` for backward compatibility; set to
             ``'bayesian'`` for the recommended likelihood-based selection.
 
+        ard_algorithm (str, optional): ARD optimisation strategy used when
+            ``method='ard'`` or ``method='ard_cv'``.  Options:
+
+            - ``'sequential'`` — Tipping & Faul (2003) fast sequential SBL
+              (default).  Selects one feature per iteration (add / recompute /
+              delete).  Produces a full sparsity path for retrospective CV
+              model selection.  Memory-efficient: $O(p \\times |\\mathcal{A}|)$.
+            - ``'em'`` — Batch evidence-maximization (MacKay 1992) with Gamma
+              hyper-priors.  Updates all weights simultaneously and converges
+              in 5–10 iterations.  Produces sparser models matching sklearn's
+              ``ARDRegression`` behaviour.
+
+        threshold_lambda (float, optional): Post-fit pruning threshold for ARD.
+            Features whose estimated precision exceeds this value have their
+            coefficients zeroed.  Defaults to $10\\,000$ (matches sklearn's
+            ``ARDRegression``).  Set to ``np.inf`` to disable.
+
+        ard_tol (float, optional): Convergence tolerance for ARD iterations.
+            Algorithm stops when the maximum change in coefficient values falls
+            below this threshold.  Defaults to $10^{-3}$.
+
+        cv_folds (int, optional): Number of cross-validation folds used when
+            ``method='ard_cv'``.  Defaults to 10.
+
+        return_std (bool, optional): If ``True``, collects per-fold CV scores
+            at each iteration and stores them in ``ard._cv_fold_scores_``.
+            Enables post-hoc computation of CV score standard errors for
+            model selection uncertainty quantification.  Defaults to ``False``.
+
     Attributes:
         X (pd.DataFrame): Input features dataframe.
         Y (pd.Series): Target variable series.
@@ -118,8 +147,10 @@ class rshdmr():
     **Examples:**
 
     ```python
-    # Initialize analyzer
-    analyzer = rshdmr(data_file='input.csv', polys=[10,5], method='ard')
+    # Initialize analyzer with ARD controls
+    analyzer = rshdmr(data_file='input.csv', polys=[10,5], method='ard_cv',
+                      cv_method='bayesian', ard_algorithm='sequential',
+                      threshold_lambda=1e4, cv_folds=10, return_std=True)
     
     # Run analysis
     sobol, shapley, total = analyzer.run_all()
