@@ -17,7 +17,9 @@ from sklearn.model_selection import cross_val_score
 
 class regression():
 
-    def __init__(self, X_T_L, Y, method, n_iter, verbose, cv_tol, starting_iter, cv_method, n_jobs=1):
+    def __init__(self, X_T_L, Y, method, n_iter, verbose, cv_tol, starting_iter, cv_method, n_jobs=1,
+                 ard_algorithm='sequential', threshold_lambda=1e4,
+                 cv_folds=10, return_std=False, ard_tol=1e-3):
         self.X_T_L = X_T_L
         self.Y = Y
         self.method = method
@@ -27,16 +29,33 @@ class regression():
         self.starting_iter = starting_iter 
         self.cv_method = cv_method 
         self.n_jobs = n_jobs
+        self.ard_algorithm = ard_algorithm
+        self.threshold_lambda = threshold_lambda
+        self.cv_folds = cv_folds
+        self.return_std = return_std
+        self.ard_tol = ard_tol
 
     def run_regression(self, lazy_basis=None):
         start_time = time.perf_counter()
         if self.method == 'ard':
             print('running ARD')
-            self.clf = RegressionARD(n_iter=self.n_iter, verbose=self.verbose, cv=False)
+            self.clf = RegressionARD(
+                n_iter=self.n_iter, verbose=self.verbose, cv=False,
+                algorithm=self.ard_algorithm,
+                threshold_lambda=self.threshold_lambda,
+                tol=self.ard_tol,
+            )
             
         if self.method == 'ard_cv':
             print('running ARD')
-            self.clf = RegressionARD(n_iter=self.n_iter, verbose=self.verbose, cv=True, cv_folds=10, cv_method=self.cv_method)
+            self.clf = RegressionARD(
+                n_iter=self.n_iter, verbose=self.verbose, cv=True,
+                cv_folds=self.cv_folds, cv_method=self.cv_method,
+                algorithm=self.ard_algorithm,
+                threshold_lambda=self.threshold_lambda,
+                return_std=self.return_std,
+                tol=self.ard_tol,
+            )
             
         elif self.method == 'omp':
             print('running OMP')

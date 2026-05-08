@@ -156,7 +156,12 @@ class rshdmr():
                  CI=95.0,
                  number_of_resamples=1000,
                  cv_tol = 0.05,
-                 cv_method = 'ridge'):
+                 cv_method = 'ridge',
+                 ard_algorithm = 'sequential',
+                 threshold_lambda = 1e4,
+                 cv_folds = 10,
+                 return_std = False,
+                 ard_tol = 1e-3):
 
         self.read_data(data_file)
         self.n_jobs = n_jobs
@@ -175,6 +180,11 @@ class rshdmr():
         self.number_of_resamples = number_of_resamples
         self.cv_tol = cv_tol 
         self.cv_method = cv_method 
+        self.ard_algorithm = ard_algorithm
+        self.threshold_lambda = threshold_lambda
+        self.cv_folds = cv_folds
+        self.return_std = return_std
+        self.ard_tol = ard_tol
         
     def read_data(self, data_file):
         """Reads data from a file or DataFrame.
@@ -270,6 +280,11 @@ class rshdmr():
             starting_iter=self.starting_iter,
             cv_method=self.cv_method,
             n_jobs=self.n_jobs,
+            ard_algorithm=self.ard_algorithm,
+            threshold_lambda=self.threshold_lambda,
+            cv_folds=self.cv_folds,
+            return_std=self.return_std,
+            ard_tol=self.ard_tol,
         )
         if self._streaming:
             self.coef_, self.y_pred = regression_instance.run_regression(
