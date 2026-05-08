@@ -109,7 +109,7 @@ class FeatureRecipes:
 
 if _NUMBA_AVAILABLE:
 
-    @njit(cache=True, parallel=True, nogil=True)
+    @njit(cache=False, parallel=True, nogil=True)
     def _correlations_fused(
         primitives: np.ndarray,
         prim_indices: np.ndarray,
