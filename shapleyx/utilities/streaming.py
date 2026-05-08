@@ -777,8 +777,7 @@ def _show_fold_progress(
     best_score = float(mean_scores[best_idx])
 
     print(
-        f"  Fold {completed}/{total}  "
-        f"best CV: nz={best_nz}  score={best_score:.4f}"
+        f"  Fold {completed}/{total}  done"
     )
 
 
@@ -945,27 +944,29 @@ class StreamingOMPCV:
         mean_scores = fold_array.mean(axis=1)
         std_scores = fold_array.std(axis=1)
 
+        # Find the globally-best nz FIRST
+        best_idx = int(np.argmax(mean_scores))
+        best_nz = best_idx + 1
+        best_score = float(mean_scores[best_idx])
+
         if self.verbose:
             print(f"  All {n_folds} folds complete.  Final CV path:")
+            print(f"  Best: nz={best_nz} (score={best_score:.4f})")
 
         self.cv_scores_ = []
-        best_score = -np.inf
-        best_n_nonzero = 0
         for n_nz in range(1, self.max_iter + 1):
             ms = float(mean_scores[n_nz - 1])
             ss = float(std_scores[n_nz - 1])
             self.cv_scores_.append((n_nz, ms, ss))
             if self.verbose:
-                marker = " ★" if ms > best_score else ""
+                marker = " ★" if n_nz == best_nz else ""
                 print(
                     f"  CV nz={n_nz:<4d}/{self.max_iter}"
                     f"  score={ms:.4f} ±{ss:.4f}{marker}"
                 )
-            if ms > best_score:
-                best_score = ms
-                best_n_nonzero = n_nz
 
         self.best_cv_score_ = best_score
+        self.n_nonzero_coefs_ = best_nz
 
         # Refit on full data at the optimal sparsity level
         omp = StreamingOMP(
