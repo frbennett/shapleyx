@@ -971,7 +971,7 @@ class StreamingOMPCV:
         # Refit on full data at the optimal sparsity level
         omp = StreamingOMP(
             self.lazy_basis,
-            n_nonzero_coefs=best_n_nonzero,
+            n_nonzero_coefs=best_nz,
             fit_intercept=self.fit_intercept,
         )
         omp.fit(y)
@@ -979,7 +979,7 @@ class StreamingOMPCV:
         self.coef_ = omp.coef_
         self.intercept_ = omp.intercept_
         self.active_ = omp.active_
-        self.n_nonzero_coefs_ = best_n_nonzero
+        self.n_nonzero_coefs_ = best_nz
 
         return self
 
