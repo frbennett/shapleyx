@@ -16,17 +16,22 @@ pip install shapleyx
 This installs the core package with all required dependencies
 (numpy, scipy, pandas, matplotlib, scikit-learn).
 
-### With streaming acceleration (recommended)
+### With Numba acceleration (recommended)
 
 ```bash
 pip install shapleyx[streaming]
 ```
 
-Adds **Numba** for JIT-compiled regression.  Streaming Orthogonal
-Matching Pursuit (OMP) runs **4–10× faster** via parallel
-correlation scans.  The first run compiles Numba kernels (~30–60s);
-subsequent runs use cached compiled code on disk.  Without Numba
-the streaming path still works via a pure-NumPy fallback.
+Adds **Numba** for JIT-compiled computation throughout the package.
+The first run compiles Numba kernels (~30--60s); subsequent runs use
+cached compiled code on disk.  Without Numba everything still works via
+pure-NumPy fallbacks.  Numba accelerates three independent subsystems:
+
+| Subsystem | Modules | Typical speedup |
+|-----------|---------|----------------|
+| **Streaming OMP** | `utilities/streaming.py` | 4--10× on correlation scans, parallelised via `prange` |
+| **Surrogate prediction** | `utilities/predictor.py` | 5--6× on single-sample MC Shapley evaluations |
+| **MC Shapley bootstrap** | `utilities/mc_shapley.py` | 3--10× on exhaustive $B$-iteration bootstrap loops |
 
 ### With development tools
 
@@ -62,7 +67,7 @@ ShapleyX requires the following Python packages (installed automatically):
 
 | Required | Optional |
 |---|---|
-| `numpy` | `numba` (included in `pip install shapleyx[streaming]`) |
+| `numpy` | `numba` — accelerates streaming OMP, surrogate prediction,<br/>and MC Shapley bootstrap (`pip install shapleyx[streaming]`) |
 | `scipy` | `tqdm` (progress bars during MC sampling) |
 | `pandas` | |
 | `matplotlib` | |

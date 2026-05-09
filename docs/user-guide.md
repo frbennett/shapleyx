@@ -483,15 +483,25 @@ This is more expensive than the coefficient-based Shapley effects
 
 ### Numba acceleration
 
-Install Numba to accelerate the OMP correlation scans by 3–10×:
+Install Numba to JIT-compile the hot paths throughout the package:
 
 ```bash
-pip install numba
+pip install numba                    # standalone, or
+pip install shapleyx[streaming]     # with the package extra
 ```
 
 The first run will be slightly slower (JIT compilation), but subsequent
-runs use cached compiled code.  This is automatic — no code changes
-needed.
+runs use cached compiled code.  Without Numba everything still works via
+pure-NumPy fallbacks.  No code changes needed — the package detects
+Numba at import time and routes to compiled kernels automatically.
+
+Numba accelerates three independent subsystems:
+
+| Subsystem | When it helps | Typical speedup |
+|-----------|--------------|----------------|
+| **Streaming OMP** | Correlation scans in `omp_stream` / `omp_cv_stream` | 4–10×, parallelised via `prange` |
+| **Surrogate prediction** | Single-sample `predict()` calls during MC Shapley | 5–6× |
+| **MC Shapley bootstrap** | Exhaustive bootstrap ($B$ iterations of resample → compute) | 3–10× |
 
 ### Streaming OMP for large problems
 
