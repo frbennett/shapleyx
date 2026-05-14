@@ -213,5 +213,5 @@ computationally trivial once the surrogate is trained.
 - [ARD Theory](ard_theory.md) — sparse Bayesian learning details
 - Li, Wang & Rabitz (2002) — the original RS-HDMR paper
 - Owen & Prieur (2017) — Shapley effects for dependent inputs
-- [Wing Weight Case Study](../case_study_reports/wing_weight_case_study.pdf) —
-  a worked example with surrogate validation
+- [Case Study Reports](../explanation/case_studies.md) — PDF reports
+  for all worked examples including surrogate validation

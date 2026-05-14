@@ -225,7 +225,7 @@ prediction, and progress bars.
 
 ## Case Studies
 
-| Notebook | Distribution | Key Features |
+| Report | Distribution | Key Features |
 |---|---|---|
 | [Cantilever Beam](../tutorials/cantilever_beam/) | `GaussianCopulaMixed` | 6 inputs, LogNormal + Normal marginals, correlated dimensional parameters, analytical and surrogate target Shapley effects validated against Demange-Chryst (2022) [[PDF report](../case_study_reports/cantilever_case_study.pdf)] |
 | [Borehole Function](../tutorials/borehole/) | `GaussianCopulaFull` | 8 inputs, Normal + LogNormal + Uniform marginals, optional geological correlations, Sobol + Shapley from single run |
@@ -233,6 +233,7 @@ prediction, and progress bars.
 | [Iooss & Prieur Correlation Sweep](../tutorials/iooss_prieur_ishigami_correlation/) | `GaussianCopulaUniform` (built-in) | 3 inputs, Shapley + $S_i$ + $T_i$ vs correlation $\rho$, exhaustive and permutation methods |
 | [Wing Weight Function](../tutorials/wing_weight/) | `GaussianCopulaUniform` (built-in) | 10 inputs, all Uniform spanning 5 orders of magnitude, independent and correlated analyses, validated against OpenTURNS reference [[PDF report](../case_study_reports/wing_weight_case_study.pdf)] |
 | [Fire Spread Model](../tutorials/fire_spread/) | `GaussianCopulaFire` | 10 inputs, mixed LogNormal + Normal + scaled LogNormal with truncation, target Shapley effects without IS, demonstrates MC limits for rare events ($p_f \approx 10^{-4}$) [[PDF report](../case_study_reports/fire_spread_case_study.pdf)] |
+| [SAC-SMA Model](../tutorials/sac_sma_shapleyx_example.ipynb) | — | High-dimensional conceptual rainfall-runoff model for flood forecasting, operational hydrologic parameters, RS-HDMR with ARD [[PDF report](../case_study_reports/sac_sma_case_study.pdf)] |
 
 ---
 
