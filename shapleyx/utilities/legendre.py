@@ -167,7 +167,13 @@ class legendre_expand():
         #   x0_3: var_idx=0, deg=3 → 0*8 + (3-1) = 2
         #   x1_2: var_idx=1, deg=2 → 1*8 + (2-1) = 9
 
-        max_factors = len(self.polys)  # maximum number of '*' separators
+        # max_factors: maximum number of '*' separated terms any feature can have.
+        # For PCE (len(polys)==1): up to min(max_order, d) factors.
+        # For RS-HDMR: up to len(polys) factors (one per interaction order).
+        if len(self.polys) == 1:
+            max_factors = min(self.polys[0], dims)
+        else:
+            max_factors = len(self.polys)
         prim_indices = np.full(
             (num_features, max_factors), -1, dtype=np.int32
         )

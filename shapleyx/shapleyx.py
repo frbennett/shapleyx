@@ -26,6 +26,7 @@ from shapleyx.utilities import (
 )
 from shapleyx.utilities.mc_shapley import (
     GaussianCopulaUniform,
+    GaussianCopulaArbitrary,
     MultivariateNormal,
     MCShapley,
     _wrap_predict_fn,
