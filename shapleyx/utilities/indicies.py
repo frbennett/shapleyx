@@ -178,9 +178,9 @@ def calculate_owen_interactions(p_set, sob_df, interaction_size=2):
         )
         
         filtered = sob_df[mask]
-        n_values = filtered['derived_labels'].apply(lambda x: len(set(x.split('_'))) - len(interact) + 1)
+        n_values = filtered['derived_labels'].apply(lambda x: len(set(x.split('_'))) - len(interact) + 1).astype(int)
         
-        sum_val = (filtered['index'] / n_values).sum()
+        sum_val = (filtered['index'].astype(float) / n_values).sum()
         
         results.append({
             'interaction': interact,
@@ -188,7 +188,7 @@ def calculate_owen_interactions(p_set, sob_df, interaction_size=2):
         })
         
         if errors :
-            error = np.sqrt((filtered['error'] / n_values).pow(2).sum())
+            error = np.sqrt((filtered['error'].astype(float) / n_values).pow(2).sum())
             results[len(results)-1]['lower_ci'] = sum_val - error
             results[len(results)-1]['upper_ci'] = sum_val + error
     
