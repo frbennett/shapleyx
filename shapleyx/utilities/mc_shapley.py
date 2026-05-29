@@ -119,6 +119,7 @@ class MultivariateNormal:
         self.d = len(mean)
         assert self.cov.shape == (self.d, self.d), \
             f"cov must be ({self.d}, {self.d}), got {self.cov.shape}"
+        self._L = np.linalg.cholesky(self.cov)
 
     def sample_joint(self, n):
         """Draw n joint samples from the full distribution.
@@ -130,6 +131,18 @@ class MultivariateNormal:
             Array of shape (n, d).
         """
         return np.random.multivariate_normal(self.mean, self.cov, n)
+
+    def sample_joint_deterministic(self, U):
+        """Map [0,1]^d points to joint samples (RQMC-compatible).
+
+        Args:
+            U: Array of shape (N, d) in [0, 1].
+
+        Returns:
+            Array of shape (N, d) in physical space.
+        """
+        Z = norm.ppf(U)                       # (N, d) standard normal
+        return self.mean + Z @ self._L.T      # (N, d) correlated normal
 
     def _cond_params(self, u_indices):
         """Pre-compute conditional distribution parameters for a subset.
@@ -211,6 +224,38 @@ class MultivariateNormal:
         X_full[:, v] = X_v
         return X_full
 
+    def sample_conditional_batch_deterministic(self, u_indices, fixed_X, U_cond):
+        """Conditional samples with deterministic innovations (RQMC-compatible).
+
+        Args:
+            u_indices: Indices of variables to condition on.
+            fixed_X: 2D array of shape (N, |u|) — fixed values for each draw.
+            U_cond: Array of shape (N, |v|) in [0,1] — deterministic
+                numbers for the conditional innovations.
+
+        Returns:
+            2D array of shape (N, d).
+        """
+        u = np.asarray(u_indices)
+        N = fixed_X.shape[0]
+        fixed_X = np.asarray(fixed_X)
+
+        if len(u) == 0:
+            return self.sample_joint_deterministic(U_cond)
+
+        v, mu_v, A, _cond_cov, L = self._cond_params(u)
+
+        mu_u = self.mean[u]
+        cond_means = mu_v + (fixed_X - mu_u) @ A
+
+        Z_std = norm.ppf(U_cond)                # (N, |v|) — deterministic
+        X_v = cond_means + Z_std @ L.T
+
+        X_full = np.zeros((N, self.d))
+        X_full[:, u] = fixed_X
+        X_full[:, v] = X_v
+        return X_full
+
 
 class GaussianCopulaUniform:
     """Correlated uniform inputs via a Gaussian copula.
@@ -230,6 +275,7 @@ class GaussianCopulaUniform:
         self.corr = np.array(corr)
         assert self.corr.shape == (self.d, self.d), \
             f"corr must be ({self.d}, {self.d}), got {self.corr.shape}"
+        self._L = np.linalg.cholesky(self.corr)
 
     def sample_joint(self, n):
         """Draw n joint samples.
@@ -245,6 +291,20 @@ class GaussianCopulaUniform:
         )
         U = norm.cdf(Z)
         return self.lows + (self.highs - self.lows) * U
+
+    def sample_joint_deterministic(self, U):
+        """Map [0,1]^d points to joint samples (RQMC-compatible).
+
+        Args:
+            U: Array of shape (N, d) in [0, 1].
+
+        Returns:
+            Array of shape (N, d) with uniform marginals.
+        """
+        Z = norm.ppf(U)                       # (N, d) standard normal
+        Z_corr = Z @ self._L.T                # (N, d) correlated normal
+        U_corr = norm.cdf(Z_corr)             # (N, d) in [0, 1]
+        return self.lows + (self.highs - self.lows) * U_corr
 
     def _cond_params(self, u_indices):
         """Pre-compute conditional copula parameters for a subset.
@@ -324,6 +384,42 @@ class GaussianCopulaUniform:
         U_full = norm.cdf(Z_full)
         return self.lows + (self.highs - self.lows) * U_full
 
+    def sample_conditional_batch_deterministic(self, u_indices, fixed_X, U_cond):
+        """Conditional samples with deterministic innovations (RQMC-compatible).
+
+        Args:
+            u_indices: Indices of variables to condition on.
+            fixed_X: 2D array of shape (N, |u|) — fixed values for each draw.
+            U_cond: Array of shape (N, |v|) in [0,1] — deterministic
+                numbers for the conditional innovations.
+
+        Returns:
+            2D array of shape (N, d).
+        """
+        u = np.asarray(u_indices)
+        N = fixed_X.shape[0]
+        fixed_X = np.asarray(fixed_X)
+
+        if len(u) == 0:
+            return self.sample_joint_deterministic(U_cond)
+
+        span_u = self.highs[u] - self.lows[u]
+        fixed_u = (fixed_X - self.lows[u]) / span_u
+        fixed_u = np.clip(fixed_u, 1e-12, 1 - 1e-12)
+        Z_u = norm.ppf(fixed_u)                      # (N, |u|)
+
+        v, A, _cond_cov, L = self._cond_params(u)
+
+        cond_means = Z_u @ A                          # (N, |v|)
+        Z_std = norm.ppf(U_cond)                     # (N, |v|) — deterministic
+        Z_v = cond_means + Z_std @ L.T                # (N, |v|)
+
+        Z_full = np.zeros((N, self.d))
+        Z_full[:, u] = Z_u
+        Z_full[:, v] = Z_v
+        U_full = norm.cdf(Z_full)
+        return self.lows + (self.highs - self.lows) * U_full
+
 
 class GaussianCopulaArbitrary:
     """Correlated inputs with arbitrary marginals via a Gaussian copula.
@@ -380,6 +476,7 @@ class GaussianCopulaArbitrary:
             raise ValueError(
                 f"corr must be ({self.d}, {self.d}), got {self.corr.shape}"
             )
+        self._L = np.linalg.cholesky(self.corr)
 
         # ── Resolve marginals ──
         self._var_names = []
@@ -476,6 +573,20 @@ class GaussianCopulaArbitrary:
         U = norm.cdf(Z)                       # (n, d) in [0, 1]
         return self._to_physical(U)           # (n, d) in physical space
 
+    def sample_joint_deterministic(self, U):
+        """Map [0,1]^d points to joint samples (RQMC-compatible).
+
+        Args:
+            U: Array of shape (N, d) in [0, 1].
+
+        Returns:
+            Array of shape (N, d) in physical space.
+        """
+        Z = norm.ppf(U)                       # (N, d) standard normal
+        Z_corr = Z @ self._L.T                # (N, d) correlated normal
+        U_corr = norm.cdf(Z_corr)             # (N, d) in [0, 1]
+        return self._to_physical(U_corr)       # (N, d) in physical space
+
     # ── Conditional parameters ─────────────────────────────────
 
     def _cond_params(self, u_indices):
@@ -547,6 +658,43 @@ class GaussianCopulaArbitrary:
         cond_means = Z_u @ A                    # (N, |v|)
 
         Z_std = np.random.randn(N, len(v))
+        Z_v = cond_means + Z_std @ L.T          # (N, |v|)
+
+        Z_full = np.zeros((N, self.d))
+        Z_full[:, u] = Z_u
+        Z_full[:, v] = Z_v
+
+        U_full = norm.cdf(Z_full)               # (N, d) in [0, 1]
+        return self._to_physical(U_full)        # (N, d) in physical space
+
+    def sample_conditional_batch_deterministic(self, u_indices, fixed_X, U_cond):
+        """Conditional samples with deterministic innovations (RQMC-compatible).
+
+        Args:
+            u_indices: Indices of variables to condition on.
+            fixed_X: 2D array of shape (N, |u|) — fixed values
+                in physical space for each draw.
+            U_cond: Array of shape (N, |v|) in [0,1] — deterministic
+                numbers for the conditional innovations.
+
+        Returns:
+            2D array of shape (N, d) in physical space.
+        """
+        u = np.asarray(u_indices)
+        N = fixed_X.shape[0]
+        fixed_X = np.asarray(fixed_X, dtype=float)
+
+        if len(u) == 0:
+            return self.sample_joint_deterministic(U_cond)
+
+        fixed_U = self._to_uniform(fixed_X, indices=u)
+        fixed_U = np.clip(fixed_U, 1e-15, 1 - 1e-15)
+        Z_u = norm.ppf(fixed_U)                 # (N, |u|)
+
+        v, A, _cond_cov, L = self._cond_params(u)
+        cond_means = Z_u @ A                    # (N, |v|)
+
+        Z_std = norm.ppf(U_cond)               # (N, |v|) — deterministic
         Z_v = cond_means + Z_std @ L.T          # (N, |v|)
 
         Z_full = np.zeros((N, self.d))
@@ -896,6 +1044,89 @@ def collect_shapley_data(f, joint, N=10000, predict_batch=None,
                 Y2 = np.array([f(X_cond[i]) for i in range(N)])
             pbar.update(N)
             data[u] = ('pair', Y1, Y2)
+
+    pbar.close()
+    return data
+
+
+def collect_shapley_data_qmc(f, joint, N=4096, predict_batch=None,
+                              progress=False, k_max=None,
+                              scramble=True, seed=None):
+    """Compute outputs for all non-empty subsets via RQMC (single Sobol sequence).
+
+    Uses a single 2d-dimensional scrambled Sobol sequence.  The first *d*
+    columns provide the joint samples (shared across all subsets); the
+    remaining *d* columns supply conditional innovations.  This avoids
+    the cross-sequence correlation that arises from independent Sobol
+    samplers and guarantees that joint-sample coverage is identical for
+    every subset.
+
+    .. note::
+
+       Sobol sequences require N to be a power of 2 for optimal
+       uniformity; non-power-of-2 N triggers a warning from scipy
+       but the estimator remains valid with scrambled points.
+
+    Args:
+        f: Model function f(x) → scalar.
+        joint: Distribution with ``sample_joint_deterministic`` and
+            ``sample_conditional_batch_deterministic``.
+        N: Samples per subset (should be a power of 2).
+        predict_batch: Optional batch predictor f(X) → 1D array.
+        k_max: Optional maximum coalition size.
+        progress: Show tqdm progress bar.
+        scramble: Use Owen-scrambled Sobol (default True).
+        seed: Integer seed for scrambling.
+
+    Returns:
+        dict mapping frozenset(u) → tuple, same format as
+        ``collect_shapley_data``.
+    """
+    from scipy.stats.qmc import Sobol
+
+    d = joint.d
+    subsets = coalitions_up_to_k(d, k_max)
+    n_subsets = len(subsets)
+    n_partial = sum(1 for u in subsets if len(u) < d)
+
+    total_evals = N + 2 * N * n_partial
+    pbar = _Progress(total_evals, enabled=progress)
+
+    # --- Single 2d-dimensional Sobol sequence ---
+    sampler = Sobol(2 * d, scramble=scramble, seed=seed)
+    U_all = sampler.random(N)           # (N, 2d)
+
+    # Joint samples from first d columns (shared across all subsets)
+    U_joint = U_all[:, :d]              # (N, d)
+    X_joint = joint.sample_joint_deterministic(U_joint)
+    if predict_batch is not None:
+        Y_joint = np.asarray(predict_batch(X_joint), dtype=float)
+    else:
+        Y_joint = np.array([f(X_joint[i]) for i in range(N)])
+
+    # Extra columns for conditional innovations: d .. 2d-1
+    U_extra = U_all[:, d:]              # (N, d)
+
+    data = {}
+    for u in subsets:
+        u_list = list(u)
+        if len(u) == d:
+            data[u] = ('full', Y_joint)
+            pbar.update(N)
+        else:
+            v_size = d - len(u_list)
+
+            # --- Side A: joint (already computed, shared) ---
+            # --- Side B: conditional ---
+            U_cond = U_extra[:, :v_size]        # (N, |v|)
+            X_cond = joint.sample_conditional_batch_deterministic(
+                u_list, X_joint[:, u_list], U_cond)
+            if predict_batch is not None:
+                Y2 = np.asarray(predict_batch(X_cond), dtype=float)
+            else:
+                Y2 = np.array([f(X_cond[i]) for i in range(N)])
+            pbar.update(2 * N)   # N for joint (shared) + N for cond
+            data[u] = ('pair', Y_joint, Y2)
 
     pbar.close()
     return data
@@ -1805,6 +2036,17 @@ def shapley_effects(f, joint, N=10000, method='exhaustive', n_perm=1000,
             )
             return effects, sh, total_var, lower, upper
         return effects, sh, total_var
+    elif method == 'qmc_exhaustive':
+        data = collect_shapley_data_qmc(f, joint, N, predict_batch=predict_batch,
+                                         progress=progress, k_max=k_max,
+                                         seed=random_state)
+        effects, sh, total_var = shapley_from_data(data, joint.d, k_max=k_max)
+        if B > 0:
+            _, lower, upper = bootstrap_shapley(
+                data, joint.d, B, alpha, random_state, k_max=k_max,
+            )
+            return effects, sh, total_var, lower, upper
+        return effects, sh, total_var
     elif method == 'permutation':
         return shapley_effects_permutation(
             f, joint, N=N, n_perm=n_perm,
@@ -1813,7 +2055,9 @@ def shapley_effects(f, joint, N=10000, method='exhaustive', n_perm=1000,
             progress=progress
         )
     else:
-        raise ValueError("method must be 'exhaustive' or 'permutation'")
+        raise ValueError(
+            "method must be 'exhaustive', 'qmc_exhaustive', "
+            "or 'permutation'")
 
 
 # ------------------------------------------------------------
@@ -1907,6 +2151,33 @@ class MCShapley:
                 S_upper = np.full(self.d, np.nan)
                 T_lower = np.full(self.d, np.nan)
                 T_upper = np.full(self.d, np.nan)
+        elif method == 'qmc_exhaustive':
+            data = collect_shapley_data_qmc(
+                self.f, self.joint, N,
+                predict_batch=self.predict_batch,
+                progress=progress,
+                k_max=k_max,
+                seed=random_state,
+            )
+            effects, sh, total_var = shapley_from_data(
+                data, self.d, k_max=k_max,
+            )
+
+            S, T = sobol_from_data(data, self.d)
+
+            if B > 0:
+                point, lower, upper = bootstrap_shapley(
+                    data, self.d, B, alpha, random_state,
+                    k_max=k_max,
+                )
+                _, S_lower, S_upper, _, T_lower, T_upper = bootstrap_sobol(
+                    data, self.d, B, alpha, random_state,
+                )
+            else:
+                S_lower = np.full(self.d, np.nan)
+                S_upper = np.full(self.d, np.nan)
+                T_lower = np.full(self.d, np.nan)
+                T_upper = np.full(self.d, np.nan)
         elif method == 'permutation':
             result = shapley_effects_permutation(
                 self.f, self.joint, N=N, n_perm=n_perm,
@@ -1929,7 +2200,9 @@ class MCShapley:
                 lower = lower
                 upper = upper
         else:
-            raise ValueError("method must be 'exhaustive' or 'permutation'")
+            raise ValueError(
+                "method must be 'exhaustive', 'qmc_exhaustive', "
+                "or 'permutation'")
 
         # --- Build DataFrame ---
         df = pd.DataFrame({
