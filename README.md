@@ -35,6 +35,7 @@ pip install https://github.com/frbennett/shapleyx/archive/main.zip
   - Sobol sensitivity indices to arbitrary order
   - Shapley effects (independent inputs, via coefficient decomposition)
   - **Monte Carlo Shapley effects** for correlated inputs (Owen & Prieur 2017)
+  - **Randomised quasi-Monte Carlo (RQMC)** acceleration via scrambled Sobol sequences — 2–90× faster convergence than IID MC
   - Owen-Shapley interaction indices
   - Total sensitivity indices
 
@@ -45,12 +46,14 @@ pip install https://github.com/frbennett/shapleyx/archive/main.zip
 
 - **Distribution classes for correlated inputs**:
   - `GaussianCopulaUniform` — uniform marginals with latent normal dependence
+  - `GaussianCopulaArbitrary` — arbitrary marginals (scipy distributions, PPFs, or empirical)
   - `MultivariateNormal` — jointly normal with analytical conditional sampling
   - `TruncatedMultivariateNormal` — per-dimension truncation bounds with Gibbs sampling
 
 - **Computation methods**:
   - Exhaustive subset enumeration (exact, for $d \le 8$)
   - Random permutation method (scalable, for larger $d$)
+  - `qmc_exhaustive` — RQMC-accelerated exhaustive (2–90× variance reduction)
 
 - **Infrastructure**:
   - Legendre polynomial expansion on $[0,1]^d$
