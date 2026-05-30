@@ -1,0 +1,7 @@
+# ShapleyX + workshop dependencies
+numpy
+scipy
+pandas
+matplotlib
+scikit-learn
+numba

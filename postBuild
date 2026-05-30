@@ -1,0 +1,3 @@
+#!/bin/bash
+# Binder postBuild — install shapleyx in editable mode
+pip install -e .
