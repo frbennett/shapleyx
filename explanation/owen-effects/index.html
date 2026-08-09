@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/explanation/owen-effects/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Owen (Grouped) Effects - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Owen (Grouped) Effects";
+        var mkdocs_page_input_path = "explanation/owen-effects.md";
+        var mkdocs_page_url = "/shapleyx/explanation/owen-effects/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../user-guide/">User Guide</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam/">Cantilever Beam</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam_copulas/">Cantilever Beam with Modern Copula Samplers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/wing_weight/">Wing Weight</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/fire_spread/">Fire Spread</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sobolG_function/">Sobol G50</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_shapleyx_example/">Global Sensitivity Analysis of the SAC-SMA Rainfall-Runoff Model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_owen_effects/">Owen (Grouped) Shapley Effects for the SAC-SMA Model</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/streaming-omp/">Streaming OMP</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../value-function/">Value Function v(S)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../rs_hdmr/">RS-HDMR Construction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../distributions/">Distribution Classes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../arbitrary-marginals/">Arbitrary Marginals</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Owen (Grouped) Effects</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#motivation">Motivation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#why-not-just-sum-individual-shapley-effects">Why Not Just Sum Individual Shapley Effects?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#mathematical-definition">Mathematical Definition</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#outer-group-effect">Outer (Group) Effect</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#inner-individual-effect">Inner (Individual) Effect</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#decomposition-property">Decomposition Property</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#implementation-in-shapleyx">Implementation in ShapleyX</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#api">API</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#key-properties">Key Properties</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#computational-cost">Computational Cost</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#references">References</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../case_studies/">Case Studies</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../streaming-omp/">Streaming Basis Expansion</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../moment-free/">Moment-Free Measures</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../performance/">Performance</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Explanation</li>
+      <li class="breadcrumb-item active">Owen (Grouped) Effects</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/explanation/owen-effects.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="owen-grouped-shapley-effects">Owen (Grouped) Shapley Effects</h1>
+<h2 id="motivation">Motivation</h2>
+<p>Standard Shapley effects decompose output variance across <strong>individual input variables</strong>.
+But in practice, parameters often form natural <strong>subsystems</strong> — e.g., in a hydrology model:</p>
+<ul>
+<li>Soil zone parameters (UZTWM, UZFWM, LZTWM, LZFPM, LZFSM)</li>
+<li>Routing parameters (PFREE, REXP)</li>
+<li>Impervious-surface parameters (ADIMP, PCTIM)</li>
+<li>Groundwater parameters (LZPK, LZSK, UZK)</li>
+</ul>
+<p>Owen effects (Owen 2014) extend Shapley effects to a <strong>two-level hierarchy</strong>:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Question</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Outer (Group)</strong></td>
+<td>Which <em>subsystem</em> matters most?</td>
+<td>"Soil zone vs. routing vs. impervious"</td>
+</tr>
+<tr>
+<td><strong>Inner (Individual)</strong></td>
+<td>Within a subsystem, which <em>parameter</em> dominates?</td>
+<td>"LZFPM vs. UZTWM within soil zone"</td>
+</tr>
+</tbody>
+</table>
+<h2 id="why-not-just-sum-individual-shapley-effects">Why Not Just Sum Individual Shapley Effects?</h2>
+<p>The Shapley value is additive in the <em>game</em> (Shᵢ(v+w) = Shᵢ(v) + Shᵢ(w)),
+but <strong>not</strong> additive in the <em>players</em>. Grouping changes the game itself.</p>
+<p>Consider three variables with groups A={1,2}, B={3}. The group Shapley treats
+A as an atomic block — it never considers orderings where 1 and 2 are separated
+by variable 3. The individual Shapley considers all 6 permutations, including
+(1, 3, 2) where variables 1 and 2 are separated by 3.</p>
+<div class="arithmatex">\[\Phi_A \neq \phi_1 + \phi_2\]</div>
+<p>The difference is especially large when groups have <strong>strong internal correlation</strong>
+(e.g., UZTWM↔LZTWM at ρ=−0.84).</p>
+<h2 id="mathematical-definition">Mathematical Definition</h2>
+<p>Given a partition <span class="arithmatex">\(P = \{G_1, \dots, G_K\}\)</span> of the <span class="arithmatex">\(d\)</span> variables, and the
+value function <span class="arithmatex">\(v(S) = \text{Var}[\mathbb{E}[f(X) \mid X_S]]\)</span>:</p>
+<h3 id="outer-group-effect">Outer (Group) Effect</h3>
+<p>The outer Shapley effect for group <span class="arithmatex">\(G_k\)</span> is the standard Shapley value in
+a <span class="arithmatex">\(K\)</span>-player game over groups:</p>
+<div class="arithmatex">\[\Phi_{G_k}^{\text{outer}} = \frac{1}{K!} \sum_{\pi \in \Pi_K} \Big[v(\text{predecessors}_\pi(G_k) \cup G_k) - v(\text{predecessors}_\pi(G_k))\Big]\]</div>
+<p>where <span class="arithmatex">\(\text{predecessors}_\pi(G_k)\)</span> is the union of groups appearing before
+<span class="arithmatex">\(G_k\)</span> in permutation <span class="arithmatex">\(\pi\)</span>.</p>
+<h3 id="inner-individual-effect">Inner (Individual) Effect</h3>
+<p>The inner Owen effect for variable <span class="arithmatex">\(i\)</span> in group <span class="arithmatex">\(G_k\)</span> is:</p>
+<div class="arithmatex">\[\Phi_i^{\text{inner}} = \frac{1}{|G_k|!\, (K-1)!} \sum_{R \subseteq P \setminus \{G_k\}} \sum_{T \subseteq G_k \setminus \{i\}} |T|!\,(|G_k|-|T|-1)!\,|R|!\,(K-|R|-1)! \cdot \Big[v(Q \cup T \cup \{i\}) - v(Q \cup T)\Big]\]</div>
+<p>where <span class="arithmatex">\(Q = \bigcup_{G \in R} G\)</span> is the union of the groups in <span class="arithmatex">\(R\)</span>.</p>
+<p>This double summation iterates over:
+1. All subsets <span class="arithmatex">\(R\)</span> of <em>other</em> groups (between-group predecessors)
+2. All subsets <span class="arithmatex">\(T\)</span> of the <em>same</em> group, excluding <span class="arithmatex">\(i\)</span> (within-group predecessors)</p>
+<h3 id="decomposition-property">Decomposition Property</h3>
+<div class="arithmatex">\[\sum_{k=1}^{K} \Phi_{G_k}^{\text{outer}} = \sum_{i=1}^{d} \Phi_i^{\text{inner}} = \text{Var}[f]\]</div>
+<p>Both levels independently sum to the total output variance.</p>
+<h2 id="implementation-in-shapleyx">Implementation in ShapleyX</h2>
+<h3 id="api">API</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">owen_from_data</span><span class="p">,</span> <span class="n">owen_effects</span>
+
+<span class="c1"># After collecting pick-freeze data (same as standard Shapley):</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">collect_shapley_data</span><span class="p">(</span><span class="n">model_func</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">k_max</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">groups</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;soil&#39;</span><span class="p">:</span>  <span class="p">[</span><span class="s1">&#39;UZTWM&#39;</span><span class="p">,</span> <span class="s1">&#39;UZFWM&#39;</span><span class="p">,</span> <span class="s1">&#39;LZTWM&#39;</span><span class="p">,</span> <span class="s1">&#39;LZFPM&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;routing&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;PFREE&#39;</span><span class="p">,</span> <span class="s1">&#39;REXP&#39;</span><span class="p">],</span>
+<span class="p">}</span>
+
+<span class="n">ge</span><span class="p">,</span> <span class="n">ie</span><span class="p">,</span> <span class="n">tv</span> <span class="o">=</span> <span class="n">owen_from_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">groups</span><span class="p">,</span> <span class="n">var_names</span><span class="p">)</span>
+
+<span class="c1"># ge = {&#39;soil&#39;: 0.45, &#39;routing&#39;: 0.55}</span>
+<span class="c1"># ie = {&#39;UZTWM&#39;: 0.12, &#39;UZFWM&#39;: 0.08, &#39;LZTWM&#39;: 0.15, &#39;LZFPM&#39;: 0.10,</span>
+<span class="c1">#       &#39;PFREE&#39;: 0.30, &#39;REXP&#39;: 0.25}</span>
+<span class="c1"># tv = 1.00</span>
+</code></pre></div>
+<h3 id="key-properties">Key Properties</h3>
+<ol>
+<li>
+<p><strong>Reuses existing data</strong> — <code>owen_from_data()</code> operates on the same <code>data</code>
+   dict produced by <code>collect_shapley_data()</code>. No additional model evaluations.</p>
+</li>
+<li>
+<p><strong>Reduces to standard Shapley</strong> — when all groups are size 1, the Owen
+   decomposition recovers the standard Shapley effects identically.</p>
+</li>
+<li>
+<p><strong>Supports coalition truncation</strong> — <code>k_max</code> limits the subset enumeration
+   for computational efficiency, exactly as in standard Shapley.</p>
+</li>
+<li>
+<p><strong>Works with correlated inputs</strong> — the <code>v(S)</code> values come from the
+   pick-freeze estimator, which handles arbitrary joint distributions
+   via <code>GaussianCopulaUniform</code> or <code>GaussianCopulaArbitrary</code>.</p>
+</li>
+</ol>
+<h3 id="computational-cost">Computational Cost</h3>
+<p>The Owen computation is <span class="arithmatex">\(O(K \cdot 2^K + \sum_k |G_k| \cdot 2^{|G_k|} \cdot 2^{K-1})\)</span>
+— more expensive than standard Shapley's <span class="arithmatex">\(O(d \cdot 2^d)\)</span>, but since no new
+model evaluations are needed, it's still negligible compared to data collection.</p>
+<h2 id="references">References</h2>
+<ul>
+<li>Owen, A. B. (2014). Sobol' indices and Shapley value. <em>SIAM/ASA Journal on
+  Uncertainty Quantification</em>, 2(1), 245-251.</li>
+<li>Owen, A. B., &amp; Prieur, C. (2017). On Shapley value for measuring importance
+  of dependent inputs. <em>SIAM/ASA Journal on Uncertainty Quantification</em>,
+  5(1), 986-1004.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../arbitrary-marginals/" class="btn btn-neutral float-left" title="Arbitrary Marginals"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../case_studies/" class="btn btn-neutral float-right" title="Case Studies">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../arbitrary-marginals/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../case_studies/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

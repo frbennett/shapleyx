@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/explanation/arbitrary-marginals/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Arbitrary Marginals - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Arbitrary Marginals";
+        var mkdocs_page_input_path = "explanation/arbitrary-marginals.md";
+        var mkdocs_page_url = "/shapleyx/explanation/arbitrary-marginals/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../user-guide/">User Guide</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam/">Cantilever Beam</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam_copulas/">Cantilever Beam with Modern Copula Samplers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/wing_weight/">Wing Weight</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/fire_spread/">Fire Spread</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sobolG_function/">Sobol G50</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_shapleyx_example/">Global Sensitivity Analysis of the SAC-SMA Rainfall-Runoff Model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_owen_effects/">Owen (Grouped) Shapley Effects for the SAC-SMA Model</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/streaming-omp/">Streaming OMP</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../value-function/">Value Function v(S)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../rs_hdmr/">RS-HDMR Construction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../distributions/">Distribution Classes</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Arbitrary Marginals</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#motivation">Motivation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#usage">Usage</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#supported-marginal-specifications">Supported Marginal Specifications</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-it-works">How It Works</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#integration-with-mc-shapley">Integration with MC Shapley</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#declarative-specs-gaussiancopulamixed-and-tcopulamixed">Declarative Specs: GaussianCopulaMixed and TCopulaMixed</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#custom-marginals-from-mcmc-posterior">Custom Marginals from MCMC Posterior</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../owen-effects/">Owen (Grouped) Effects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../case_studies/">Case Studies</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../streaming-omp/">Streaming Basis Expansion</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../moment-free/">Moment-Free Measures</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../performance/">Performance</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Explanation</li>
+      <li class="breadcrumb-item active">Arbitrary Marginals</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/explanation/arbitrary-marginals.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="arbitrary-marginal-distributions">Arbitrary Marginal Distributions</h1>
+<h2 id="motivation">Motivation</h2>
+<p><code>GaussianCopulaUniform</code> assumes every input follows a <strong>uniform</strong> distribution
+bounded by <code>[lows[i], highs[i]]</code>. In many real-world applications, calibrated
+parameters cluster around preferred values — e.g., UZTWM might have a
+Beta(2, 5) shape within [30, 125], or REXP might follow a LogNormal distribution.</p>
+<p><code>GaussianCopulaArbitrary</code> lets you specify <strong>any marginal distribution</strong> per
+variable while preserving the correlation structure through the Gaussian copula.</p>
+<h2 id="usage">Usage</h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianCopulaArbitrary</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.stats</span><span class="w"> </span><span class="kn">import</span> <span class="n">beta</span><span class="p">,</span> <span class="n">lognorm</span>
+
+<span class="n">joint</span> <span class="o">=</span> <span class="n">GaussianCopulaArbitrary</span><span class="p">(</span>
+    <span class="n">marginals</span><span class="o">=</span><span class="p">{</span>
+        <span class="s1">&#39;UZTWM&#39;</span><span class="p">:</span>  <span class="n">beta</span><span class="p">(</span><span class="n">a</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">5</span><span class="p">),</span>              <span class="c1"># scipy distribution</span>
+        <span class="s1">&#39;UZFWM&#39;</span><span class="p">:</span>  <span class="s1">&#39;uniform&#39;</span><span class="p">,</span>                     <span class="c1"># string shortcut</span>
+        <span class="s1">&#39;REXP&#39;</span><span class="p">:</span>   <span class="n">lognorm</span><span class="p">(</span><span class="n">s</span><span class="o">=</span><span class="mf">0.5</span><span class="p">),</span>                <span class="c1"># unbounded → handled by CDF</span>
+        <span class="s1">&#39;PFREE&#39;</span><span class="p">:</span>  <span class="kc">None</span><span class="p">,</span>                          <span class="c1"># → uniform (backward compat)</span>
+        <span class="s1">&#39;custom&#39;</span><span class="p">:</span> <span class="k">lambda</span> <span class="n">u</span><span class="p">:</span> <span class="mi">10</span> <span class="o">+</span> <span class="mi">10</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span>         <span class="c1"># callable PPF</span>
+        <span class="s1">&#39;empirical&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">my_cdf</span><span class="p">,</span> <span class="n">my_ppf</span><span class="p">),</span>           <span class="c1"># explicit (cdf, ppf) tuple</span>
+    <span class="p">},</span>
+    <span class="n">corr</span><span class="o">=</span><span class="n">corr_matrix</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="c1"># Returns samples in PHYSICAL space (matching GaussianCopulaUniform convention)</span>
+<span class="n">X</span> <span class="o">=</span> <span class="n">joint</span><span class="o">.</span><span class="n">sample_joint</span><span class="p">(</span><span class="mi">1000</span><span class="p">)</span>  <span class="c1"># shape (1000, d)</span>
+</code></pre></div>
+<h2 id="supported-marginal-specifications">Supported Marginal Specifications</h2>
+<table>
+<thead>
+<tr>
+<th>Specification</th>
+<th>Example</th>
+<th>Use case</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>'uniform'</code></td>
+<td><code>'uniform'</code></td>
+<td>Default — Uniform(0, 1)</td>
+</tr>
+<tr>
+<td><code>None</code></td>
+<td><code>None</code></td>
+<td>Same as <code>'uniform'</code> (backward compat)</td>
+</tr>
+<tr>
+<td><code>scipy.stats</code> distribution</td>
+<td><code>beta(2, 5)</code></td>
+<td>Parametric distributions</td>
+</tr>
+<tr>
+<td><code>callable(u) → float</code></td>
+<td><code>lambda u: 10 + 10*u</code></td>
+<td>Custom PPF, no CDF needed for sampling</td>
+</tr>
+<tr>
+<td><code>(cdf, ppf)</code> tuple</td>
+<td><code>(my_cdf, my_ppf)</code></td>
+<td>Full specification — required for conditional sampling</td>
+</tr>
+</tbody>
+</table>
+<h2 id="how-it-works">How It Works</h2>
+<ol>
+<li><strong>Latent space:</strong> <span class="arithmatex">\(Z \sim \mathcal{N}(0, R)\)</span> — same as <code>GaussianCopulaUniform</code></li>
+<li><strong>Uniform scores:</strong> <span class="arithmatex">\(U_j = \Phi(Z_j)\)</span> — uniform [0, 1]</li>
+<li><strong>Physical space:</strong> <span class="arithmatex">\(X_j = F_j^{-1}(U_j)\)</span> — applied per marginal</li>
+</ol>
+<p>The surrogate model always receives physical-space samples (matching the
+<code>GaussianCopulaUniform</code> convention). The physical → [0, 1] → physical
+round-trip is handled transparently in <code>sample_conditional_batch()</code>.</p>
+<h2 id="integration-with-mc-shapley">Integration with MC Shapley</h2>
+<p>Works directly — same interface as <code>GaussianCopulaUniform</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">shapley_effects</span>
+
+<span class="n">effects</span><span class="p">,</span> <span class="n">sh</span><span class="p">,</span> <span class="n">tv</span> <span class="o">=</span> <span class="n">shapley_effects</span><span class="p">(</span>
+    <span class="n">my_model</span><span class="p">,</span> <span class="n">joint</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">10000</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;exhaustive&#39;</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Or via the RS-HDMR pipeline:</p>
+<div class="highlight"><pre><span></span><code><span class="n">analyzer</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">joint</span><span class="o">=</span><span class="n">joint</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="declarative-specs-gaussiancopulamixed-and-tcopulamixed">Declarative Specs: <code>GaussianCopulaMixed</code> and <code>TCopulaMixed</code></h2>
+<p>For the common case — a handful of named parametric families — the
+<code>GaussianCopulaMixed</code> / <code>TCopulaMixed</code> classes provide a <strong>declarative
+marginal spec</strong> (family name + parameters) plus a <strong>Student-t copula
+option</strong> with exact conditional sampling:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx.utilities.mc_shapley</span><span class="w"> </span><span class="kn">import</span> <span class="n">GaussianCopulaMixed</span><span class="p">,</span> <span class="n">TCopulaMixed</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">marginals</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;FX&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;lognormal&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;mean&#39;</span><span class="p">:</span> <span class="mf">556.8</span><span class="p">,</span> <span class="s1">&#39;cv&#39;</span><span class="p">:</span> <span class="mf">0.08</span><span class="p">}),</span>   <span class="c1"># paper-Table-1 style</span>
+    <span class="s1">&#39;FY&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;lognormal&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;mu&#39;</span><span class="p">:</span> <span class="mf">6.31</span><span class="p">,</span> <span class="s1">&#39;sigma&#39;</span><span class="p">:</span> <span class="mf">0.0799</span><span class="p">}),</span> <span class="c1"># underlying-normal style</span>
+    <span class="s1">&#39;E&#39;</span><span class="p">:</span>  <span class="p">(</span><span class="s1">&#39;normal&#39;</span><span class="p">,</span> <span class="mf">200e9</span><span class="p">,</span> <span class="mf">1.2e10</span><span class="p">),</span>                    <span class="c1"># (mean, std)</span>
+    <span class="s1">&#39;lX&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;uniform&#39;</span><span class="p">,</span> <span class="mf">0.025</span><span class="p">,</span> <span class="mf">0.100</span><span class="p">),</span>                    <span class="c1"># (lo, hi)</span>
+    <span class="s1">&#39;lY&#39;</span><span class="p">:</span> <span class="p">(</span><span class="s1">&#39;truncnorm&#39;</span><span class="p">,</span> <span class="mf">0.04</span><span class="p">,</span> <span class="mf">0.16</span><span class="p">,</span> <span class="mf">0.0987</span><span class="p">,</span> <span class="mf">0.00987</span><span class="p">),</span>   <span class="c1"># (lo, hi, mean, std)</span>
+    <span class="s1">&#39;L&#39;</span><span class="p">:</span>  <span class="p">(</span><span class="s1">&#39;beta&#39;</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">7.0</span><span class="p">),</span>                 <span class="c1"># (a, b, lo, hi)</span>
+    <span class="s1">&#39;Q&#39;</span><span class="p">:</span>  <span class="n">weibull_min</span><span class="p">(</span><span class="n">c</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>                             <span class="c1"># scipy passthrough</span>
+    <span class="s1">&#39;R&#39;</span><span class="p">:</span>  <span class="p">(</span><span class="n">my_cdf</span><span class="p">,</span> <span class="n">my_ppf</span><span class="p">),</span>                             <span class="c1"># tuple passthrough</span>
+<span class="p">}</span>
+
+<span class="n">joint_g</span> <span class="o">=</span> <span class="n">GaussianCopulaMixed</span><span class="p">(</span><span class="n">marginals</span><span class="p">,</span> <span class="n">corr</span><span class="p">)</span>          <span class="c1"># Gaussian copula</span>
+<span class="n">joint_t</span> <span class="o">=</span> <span class="n">TCopulaMixed</span><span class="p">(</span><span class="n">marginals</span><span class="p">,</span> <span class="n">corr</span><span class="p">,</span> <span class="n">nu</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>         <span class="c1"># Student-t copula</span>
+</code></pre></div>
+<p><strong>Registered families:</strong> <code>normal</code>, <code>lognormal</code>, <code>uniform</code>, <code>truncnorm</code>,
+<code>beta</code>, <code>gamma</code>, <code>exponential</code>, <code>weibull</code>, <code>gumbel</code>, <code>frechet</code>, <code>pareto</code> —
+plus the full <code>GaussianCopulaArbitrary</code> passthrough contract (scipy
+distributions, <code>(cdf, ppf)</code> tuples, callable PPFs, <code>None</code>/<code>'uniform'</code>).</p>
+<p><strong>Lognormal parameterisation</strong> is deliberately restricted to <em>named</em> forms
+to prevent the classic parameterisation bug — exactly one of
+<code>{'mean', 'cv'}</code> (paper style) or <code>{'mu', 'sigma'}</code> (underlying normal).
+A bare positional tuple like <code>('lognormal', 556.8, 0.08)</code> raises.</p>
+<p><strong><code>TCopulaMixed</code></strong> applies the t-copula to the <em>correlated block</em> only
+(uncorrelated variables stay independent — a plain block-diagonal
+<span class="arithmatex">\(t_\nu(0,R)\)</span> does not factorise).  Conditional sampling is exact via the
+multivariate-t conditioning result (no MCMC).  RQMC/deterministic sampling
+is not implemented for the t kernel yet — use <code>method='exhaustive'</code>.</p>
+<p><code>GaussianCopulaMixed</code> draws are RNG-stream-identical to the notebook
+implementation used in the Demange-Chryst et al. (2022) cantilever
+reproduction, so published numbers reproduce exactly.</p>
+<h2 id="custom-marginals-from-mcmc-posterior">Custom Marginals from MCMC Posterior</h2>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">empirical_ppf</span><span class="p">(</span><span class="n">samples</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Build a PPF from posterior samples via linear interpolation.&quot;&quot;&quot;</span>
+    <span class="n">sorted_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">samples</span><span class="p">)</span>
+    <span class="n">quantiles</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_samples</span><span class="p">))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">ppf</span><span class="p">(</span><span class="n">u</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">u</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">,</span> <span class="n">sorted_samples</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">cdf</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">sorted_samples</span><span class="p">,</span> <span class="n">quantiles</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">cdf</span><span class="p">,</span> <span class="n">ppf</span>
+
+<span class="c1"># Build copula directly from MCMC chains</span>
+<span class="n">posterior_UZTWM</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="s1">&#39;posterior_samples/UZTWM.npy&#39;</span><span class="p">)</span>
+<span class="n">cdf_uztwm</span><span class="p">,</span> <span class="n">ppf_uztwm</span> <span class="o">=</span> <span class="n">empirical_ppf</span><span class="p">(</span><span class="n">posterior_UZTWM</span><span class="p">)</span>
+
+<span class="n">joint</span> <span class="o">=</span> <span class="n">GaussianCopulaArbitrary</span><span class="p">(</span>
+    <span class="n">marginals</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;UZTWM&#39;</span><span class="p">:</span> <span class="p">(</span><span class="n">cdf_uztwm</span><span class="p">,</span> <span class="n">ppf_uztwm</span><span class="p">),</span> <span class="o">...</span><span class="p">},</span>
+    <span class="n">corr</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">corrcoef</span><span class="p">(</span><span class="n">posterior_samples</span><span class="o">.</span><span class="n">T</span><span class="p">),</span>  <span class="c1"># also from data</span>
+<span class="p">)</span>
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../distributions/" class="btn btn-neutral float-left" title="Distribution Classes"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../owen-effects/" class="btn btn-neutral float-right" title="Owen (Grouped) Effects">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../distributions/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../owen-effects/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

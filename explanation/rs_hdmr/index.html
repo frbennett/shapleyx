@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/explanation/rs_hdmr/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>RS-HDMR Construction - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "RS-HDMR Construction";
+        var mkdocs_page_input_path = "explanation/rs_hdmr.md";
+        var mkdocs_page_url = "/shapleyx/explanation/rs_hdmr/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../user-guide/">User Guide</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam/">Cantilever Beam</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam_copulas/">Cantilever Beam with Modern Copula Samplers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/wing_weight/">Wing Weight</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/fire_spread/">Fire Spread</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sobolG_function/">Sobol G50</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_shapleyx_example/">Global Sensitivity Analysis of the SAC-SMA Rainfall-Runoff Model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_owen_effects/">Owen (Grouped) Shapley Effects for the SAC-SMA Model</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/streaming-omp/">Streaming OMP</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../value-function/">Value Function v(S)</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">RS-HDMR Construction</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#the-rs-hdmr-pipeline">The RS-HDMR Pipeline</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#stage-1-scaling-to-the-unit-hypercube">Stage 1: Scaling to the Unit Hypercube</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#stage-2-basis-function-construction">Stage 2: Basis Function Construction</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#stage-3-sparse-regression">Stage 3: Sparse Regression</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#stage-4-fit-quality">Stage 4: Fit Quality</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#from-coefficients-to-sobol-indices">From Coefficients to Sobol Indices</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#deriving-variable-labels">Deriving Variable Labels</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#first-order-closed-sobol-indices">First-Order (Closed) Sobol Indices</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#total-sobol-indices">Total Sobol Indices</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#from-coefficients-to-shapley-effects">From Coefficients to Shapley Effects</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#the-shapley-allocation-rule">The Shapley Allocation Rule</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#normalisation">Normalisation</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#why-this-works">Why This Works</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#complete-example">Complete Example</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#summary-of-the-mapping">Summary of the Mapping</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#further-reading">Further Reading</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../distributions/">Distribution Classes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../arbitrary-marginals/">Arbitrary Marginals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../owen-effects/">Owen (Grouped) Effects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../case_studies/">Case Studies</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../streaming-omp/">Streaming Basis Expansion</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../moment-free/">Moment-Free Measures</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../performance/">Performance</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Explanation</li>
+      <li class="breadcrumb-item active">RS-HDMR Construction</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/explanation/rs_hdmr.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="rs-hdmr-construction-and-the-coefficient-to-index-mapping">RS-HDMR Construction and the Coefficient-to-Index Mapping</h1>
+<p>This page explains how ShapleyX constructs a Random Sampling – High Dimensional Model
+Representation (RS-HDMR) surrogate and how the fitted Legendre coefficients directly
+yield Sobol indices and Shapley effects without additional Monte Carlo sampling.</p>
+<hr />
+<h2 id="the-rs-hdmr-pipeline">The RS-HDMR Pipeline</h2>
+<p>ShapleyX follows a four-stage pipeline from raw data to sensitivity indices:</p>
+<div class="highlight"><pre><span></span><code>Raw data  →  [0,1]ᵈ scaling  →  Legendre basis  →  ARD regression  →  Indices
+</code></pre></div>
+<h3 id="stage-1-scaling-to-the-unit-hypercube">Stage 1: Scaling to the Unit Hypercube</h3>
+<p>All input variables are min-max scaled to <span class="arithmatex">\([0,1]^d\)</span>. This is required because the
+shifted Legendre polynomials <span class="arithmatex">\(\phi_n(x) = \sqrt{2n+1} \cdot P_n^*(x)\)</span> (where <span class="arithmatex">\(P_n^*\)</span>
+is the standard shifted Legendre polynomial) are orthonormal on <span class="arithmatex">\([0,1]\)</span>:</p>
+<div class="arithmatex">\[\int_0^1 \phi_m(x)\,\phi_n(x)\,dx = \delta_{mn}\]</div>
+<p>Without this scaling, the orthonormality property — and therefore the clean
+coefficient-to-variance relationship — would not hold.</p>
+<h3 id="stage-2-basis-function-construction">Stage 2: Basis Function Construction</h3>
+<p>The <code>polys</code> parameter controls which basis functions are generated. There are two modes:</p>
+<p><strong>RS-HDMR mode</strong> (<code>len(polys) &gt; 1</code>): Each list entry sets the maximum Legendre degree
+for one interaction order. For <code>polys=[8, 6, 4]</code>:</p>
+<table>
+<thead>
+<tr>
+<th>HDMR Order</th>
+<th>Max Degree per Variable</th>
+<th>Example Terms</th>
+<th>Terms per Subset</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1st</td>
+<td>8</td>
+<td><span class="arithmatex">\(x_i^1, x_i^2, \ldots, x_i^8\)</span></td>
+<td>8</td>
+</tr>
+<tr>
+<td>2nd</td>
+<td>6</td>
+<td><span class="arithmatex">\(x_i^a x_j^b\)</span> with <span class="arithmatex">\(a,b \in \{1,\ldots,6\}\)</span></td>
+<td><span class="arithmatex">\(6^2 = 36\)</span></td>
+</tr>
+<tr>
+<td>3rd</td>
+<td>4</td>
+<td><span class="arithmatex">\(x_i^a x_j^b x_k^c\)</span> with <span class="arithmatex">\(a,b,c \in \{1,\ldots,4\}\)</span></td>
+<td><span class="arithmatex">\(4^3 = 64\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The degree constraints are <strong>per-variable</strong> (not total-degree). For second-order terms
+with <code>polys=[8, 6, 4]</code>, the maximum combined degree is <span class="arithmatex">\(6 + 6 = 12\)</span>, not <span class="arithmatex">\(6\)</span>.</p>
+<p><strong>Full PCE mode</strong> (<code>len(polys) == 1</code>): A polynomial chaos expansion with a
+total-degree constraint. <code>polys=[10]</code> generates all multi-indices where the sum of
+degrees across all inputs is <span class="arithmatex">\(\le 10\)</span>.</p>
+<div class="admonition note">
+<p class="admonition-title">Why per-order degree decay?</p>
+<p>Main effects are often complex and nonlinear (justifying high-degree polynomials),
+while higher-order interactions tend to be simpler. RS-HDMR's per-order degree
+decay spends representational power where it's most valuable.</p>
+</div>
+<p>The basis terms are named by concatenating variable names with their degrees.
+For a bivariate interaction between <span class="arithmatex">\(X_1\)</span> (degree 3) and <span class="arithmatex">\(X_4\)</span> (degree 2), the
+feature name is <code>X1_3*X4_2</code>. For a univariate term <span class="arithmatex">\(X_2\)</span> (degree 5), it's <code>X2_5</code>.</p>
+<h3 id="stage-3-sparse-regression">Stage 3: Sparse Regression</h3>
+<p>The design matrix <span class="arithmatex">\(X_{T,L}\)</span> (samples <span class="arithmatex">\(\times\)</span> basis functions) is fitted to the
+model output <span class="arithmatex">\(Y\)</span> using either:</p>
+<ul>
+<li><strong>ARD</strong> (<code>method='ard'</code>): Automatic Relevance Determination via Sparse Bayesian
+  Learning. Uses evidence maximisation to prune irrelevant terms.</li>
+<li><strong>OMP</strong> (<code>method='omp'</code>): Orthogonal Matching Pursuit. A greedier alternative
+  that can be faster on very large basis sets.</li>
+</ul>
+<p>The result is a sparse coefficient vector <span class="arithmatex">\(\beta\)</span>, where most entries are exactly
+zero. The surrogate prediction is:</p>
+<div class="arithmatex">\[\hat{Y} = X_{T,L}\,\beta\]</div>
+<h3 id="stage-4-fit-quality">Stage 4: Fit Quality</h3>
+<p>The explained variance score (<span class="arithmatex">\(R^2\)</span>) is reported. For a good surrogate fit, this
+should be close to 1.0. If it isn't, consider increasing the <code>polys</code> values or the
+number of training samples.</p>
+<hr />
+<h2 id="from-coefficients-to-sobol-indices">From Coefficients to Sobol Indices</h2>
+<p>Because the shifted Legendre basis is orthonormal on <span class="arithmatex">\([0,1]^d\)</span>, the variance
+contributed by each basis term is simply the square of its coefficient. This is
+the central insight that makes the mapping from coefficients to indices trivial.</p>
+<h3 id="deriving-variable-labels">Deriving Variable Labels</h3>
+<p>Each basis term's feature name is parsed to determine which variables participate:</p>
+<ul>
+<li><code>X1_3*X4_2</code> → variables <span class="arithmatex">\(X_1\)</span> and <span class="arithmatex">\(X_4\)</span> → derived label <code>X1_X4</code></li>
+<li><code>X2_5</code> → variable <span class="arithmatex">\(X_2\)</span> only → derived label <code>X2</code></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Column naming</p>
+<p>Labels are <strong>not</strong> alphabetically sorted. They follow the order in which
+variables appear in the initial <code>combinations()</code> call from <code>itertools</code>,
+which is lexicographic by input position.</p>
+</div>
+<h3 id="first-order-closed-sobol-indices">First-Order (Closed) Sobol Indices</h3>
+<p>For each derived label (variable subset), sum the squared coefficients of all
+basis terms that map to that label. Then normalise:</p>
+<div class="arithmatex">\[S_u = \frac{\sum_{\text{terms} \in u} \beta_{\text{term}}^2}{\sum_{\text{all terms}} \beta_{\text{term}}^2} \times R^2\]</div>
+<p>where <span class="arithmatex">\(R^2\)</span> is the explained variance score. The multiplication by <span class="arithmatex">\(R^2\)</span> ensures
+that indices represent fractions of <strong>total</strong> output variance — any unexplained
+variance is not attributed to any input.</p>
+<ul>
+<li><span class="arithmatex">\(S_{\{i\}}\)</span> is the first-order Sobol index for variable <span class="arithmatex">\(i\)</span> alone</li>
+<li><span class="arithmatex">\(S_{\{i,j\}}\)</span> captures the pure <span class="arithmatex">\(i\)</span>-<span class="arithmatex">\(j\)</span> interaction plus any higher-order
+  effects that happen to be labeled with that subset</li>
+</ul>
+<h3 id="total-sobol-indices">Total Sobol Indices</h3>
+<p>For each variable <span class="arithmatex">\(i\)</span>, the total index sums the closed indices of <strong>all</strong> subsets
+that contain <span class="arithmatex">\(i\)</span>:</p>
+<div class="arithmatex">\[S_i^T = \sum_{u \ni i} S_u\]</div>
+<p>Under independent inputs, this equals the classical total Sobol index: the fraction
+of variance that would remain unexplained if all inputs <em>except</em> <span class="arithmatex">\(i\)</span> were known.</p>
+<hr />
+<h2 id="from-coefficients-to-shapley-effects">From Coefficients to Shapley Effects</h2>
+<p>Shapley effects address a limitation of classical Sobol indices: they are not
+interpretable under correlated inputs. ShapleyX computes surrogate-based Shapley
+effects directly from the fitted coefficients, without further Monte Carlo sampling.</p>
+<h3 id="the-shapley-allocation-rule">The Shapley Allocation Rule</h3>
+<p>A basis term involving <span class="arithmatex">\(k\)</span> variables contributes variance equal to its squared
+coefficient. The Shapley allocation divides this variance <strong>equally</strong> among the
+<span class="arithmatex">\(k\)</span> participating variables:</p>
+<div class="arithmatex">\[\phi_i = \sum_{\text{terms containing } i} \frac{\beta_{\text{term}}^2}{k_{\text{term}}}\]</div>
+<p>where <span class="arithmatex">\(k_{\text{term}}\)</span> is the number of variables in that term.</p>
+<h3 id="normalisation">Normalisation</h3>
+<p>The raw effects are normalised to sum to 1:</p>
+<div class="arithmatex">\[\tilde{\phi}_i = \frac{\phi_i}{\sum_{j=1}^d \phi_j}\]</div>
+<p>This ensures <span class="arithmatex">\(\sum_i \tilde{\phi}_i = 1\)</span>, satisfying the Shapley efficiency axiom.</p>
+<h3 id="why-this-works">Why This Works</h3>
+<p>Under independent inputs, the orthonormal Legendre basis yields an exact
+variance decomposition. Each basis term's variance contribution is unambiguously
+<span class="arithmatex">\(\beta_{\text{term}}^2\)</span>, and the equal division among participants is the unique
+allocation satisfying the Shapley axioms (efficiency, symmetry, dummy, additivity).</p>
+<p>Under correlated inputs, the surrogate coefficients absorb the correlation structure
+during fitting (they are estimated from jointly sampled training data). The Shapley
+allocation then distributes the shared variance fairly — a variable that co-varies
+with others receives a larger share because it appears in more interaction terms
+with non-zero coefficients.</p>
+<hr />
+<h2 id="complete-example">Complete Example</h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx</span><span class="w"> </span><span class="kn">import</span> <span class="n">rshdmr</span>
+
+<span class="c1"># Train surrogate and compute all indices</span>
+<span class="n">analyzer</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span>
+    <span class="n">data_file</span><span class="o">=</span><span class="s1">&#39;my_model_samples.csv&#39;</span><span class="p">,</span>
+    <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ard&#39;</span><span class="p">,</span>
+    <span class="n">resampling</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">number_of_resamples</span><span class="o">=</span><span class="mi">500</span>
+<span class="p">)</span>
+
+<span class="n">sobol</span><span class="p">,</span> <span class="n">shapley</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+
+<span class="c1"># Inspect results</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sobol</span><span class="o">.</span><span class="n">head</span><span class="p">())</span>       <span class="c1"># First-order (closed) Sobol indices</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">shapley</span><span class="p">)</span>            <span class="c1"># Shapley effects with 95% CIs</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">total</span><span class="p">)</span>              <span class="c1"># Total Sobol indices</span>
+</code></pre></div>
+<p>If you want only the surrogate (no Shapley MC sampling), the fitted coefficients
+are available as <code>analyzer.coef_</code> and the derived labels in
+<code>analyzer.non_zero_coefficients</code>.</p>
+<hr />
+<h2 id="summary-of-the-mapping">Summary of the Mapping</h2>
+<table>
+<thead>
+<tr>
+<th>Coefficient Property</th>
+<th>Sensitivity Index</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\beta_{\text{term}}^2\)</span></td>
+<td>Variance contributed by that term</td>
+</tr>
+<tr>
+<td>Group by derived label, sum <span class="arithmatex">\(\beta^2\)</span></td>
+<td>Closed Sobol index <span class="arithmatex">\(S_u\)</span></td>
+</tr>
+<tr>
+<td>Sum all <span class="arithmatex">\(S_u\)</span> containing variable <span class="arithmatex">\(i\)</span></td>
+<td>Total Sobol index <span class="arithmatex">\(S_i^T\)</span></td>
+</tr>
+<tr>
+<td>For each term, divide <span class="arithmatex">\(\beta^2\)</span> by <span class="arithmatex">\(k\)</span>, allocate to each variable</td>
+<td>Shapley effect <span class="arithmatex">\(\phi_i\)</span></td>
+</tr>
+</tbody>
+</table>
+<p>The entire mapping from surrogate coefficients to sensitivity indices requires
+only group-by and sum operations on the fitted coefficient vector — no additional
+model evaluations. This is what makes surrogate-based sensitivity analysis
+computationally trivial once the surrogate is trained.</p>
+<hr />
+<h2 id="further-reading">Further Reading</h2>
+<ul>
+<li><a href="../theory/">Theory of Shapley Effects</a> — the Shapley axioms and proofs</li>
+<li><a href="../ard_theory/">ARD Theory</a> — sparse Bayesian learning details</li>
+<li>Li, Wang &amp; Rabitz (2002) — the original RS-HDMR paper</li>
+<li>Owen &amp; Prieur (2017) — Shapley effects for dependent inputs</li>
+<li><a href="../case_studies/">Case Study Reports</a> — PDF reports
+  for all worked examples including surrogate validation</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../value-function/" class="btn btn-neutral float-left" title="Value Function v(S)"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../distributions/" class="btn btn-neutral float-right" title="Distribution Classes">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../value-function/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../distributions/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

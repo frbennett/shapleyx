@@ -1,0 +1,1049 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/user-guide/" />
+      <link rel="shortcut icon" href="../img/favicon.ico" />
+    <title>User Guide - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css" />
+    <link rel="stylesheet" href="../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "User Guide";
+        var mkdocs_page_input_path = "user-guide.md";
+        var mkdocs_page_url = "/shapleyx/user-guide/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href=".." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="..">Home</a>
+                </li>
+              </ul>
+              <ul class="current">
+                <li class="toctree-l1 current"><a class="reference internal current" href="#">User Guide</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#1-what-is-shapleyx-and-why-would-i-use-it">1. What is ShapleyX and why would I use it?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-before-you-start-what-your-data-needs-to-look-like">2. Before you start — what your data needs to look like</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#format">Format</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#how-many-samples">How many samples?</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-installation">3. Installation</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#4-your-first-analysis-the-five-minute-workflow">4. Your first analysis — the five-minute workflow</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#41-prepare-some-data">4.1 Prepare some data</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#42-run-the-analysis">4.2 Run the analysis</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#43-what-you-see">4.3 What you see</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#44-your-results">4.4 Your results</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#sidebar-what-does-polys10-5-mean">Sidebar: What does polys=[10, 5] mean?</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#sidebar-whats-a-good-r2">Sidebar: What's a "good" R²?</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#5-choosing-your-regression-method">5. Choosing your regression method</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#quick-decision-flowchart">Quick decision flowchart</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ard-vs-omp-in-plain-language">ARD vs OMP in plain language</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#what-does-cross-validation-do">What does cross-validation do?</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#ard-controls-new-in-v060">ARD controls (new in v0.6.0)</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#6-understanding-polynomial-orders-the-polys-parameter">6. Understanding polynomial orders — the polys parameter</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#7-interpreting-your-results">7. Interpreting your results</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#sobol-indices">Sobol indices</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#shapley-effects">Shapley effects</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#the-predicted-vs-actual-plot">The predicted-vs-actual plot</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#total-sensitivity">Total sensitivity</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#8-sensitivity-measures-beyond-variance">8. Sensitivity measures beyond variance</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#9-handling-correlated-inputs">9. Handling correlated inputs</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#10-performance-making-it-faster">10. Performance — making it faster</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#numba-acceleration">Numba acceleration</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#streaming-omp-for-large-problems">Streaming OMP for large problems</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#parallel-cv">Parallel CV</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#quick-exploratory-runs">Quick exploratory runs</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#11-troubleshooting">11. Troubleshooting</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#my-r2-is-low">My R² is low</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#its-using-too-much-memory">It's using too much memory</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#the-analysis-runs-forever">The analysis runs forever</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#i-get-a-numba-related-error">I get a Numba-related error</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#my-sensitivity-results-dont-make-physical-sense">My sensitivity results don't make physical sense</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#12-where-to-go-next">12. Where to go next</a>
+    </li>
+    </ul>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/cantilever_beam/">Cantilever Beam</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/cantilever_beam_copulas/">Cantilever Beam with Modern Copula Samplers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/wing_weight/">Wing Weight</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/fire_spread/">Fire Spread</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/sobolG_function/">Sobol G50</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/sac_sma_shapleyx_example/">Global Sensitivity Analysis of the SAC-SMA Rainfall-Runoff Model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../tutorials/sac_sma_owen_effects/">Owen (Grouped) Shapley Effects for the SAC-SMA Model</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../how-to-guides/mc-shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../reference/api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reference/ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reference/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../reference/streaming-omp/">Streaming OMP</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../explanation/theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../explanation/value-function/">Value Function v(S)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../explanation/rs_hdmr/">RS-HDMR Construction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../explanation/distributions/">Distribution Classes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../explanation/arbitrary-marginals/">Arbitrary Marginals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../explanation/owen-effects/">Owen (Grouped) Effects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../explanation/case_studies/">Case Studies</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../explanation/ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../explanation/streaming-omp/">Streaming Basis Expansion</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../explanation/moment-free/">Moment-Free Measures</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../explanation/performance/">Performance</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href=".." class="icon icon-home" aria-label="Docs"></a></li>
+      <li class="breadcrumb-item active">User Guide</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/user-guide.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="shapleyx-user-guide-from-data-to-decisions">ShapleyX User Guide — From Data to Decisions</h1>
+<p>This guide assumes you have a model or a dataset, you want to know which
+inputs matter most, and you're comfortable running a few lines of Python.
+No sensitivity analysis background is needed.</p>
+<hr />
+<h2 id="1-what-is-shapleyx-and-why-would-i-use-it">1. What is ShapleyX and why would I use it?</h2>
+<p>You have a model (or a dataset) with several input variables and one
+output.  Maybe it's a flood simulator with rainfall, soil type, and
+topography as inputs.  Maybe it's a manufacturing process with
+temperature, pressure, and feed rate.  The question is always the same:</p>
+<blockquote>
+<p><strong>Which inputs drive the output the most?</strong></p>
+</blockquote>
+<p>ShapleyX answers this question.  It takes your data, builds a fast
+mathematical approximation of your model (a <em>surrogate</em>), then decomposes
+the output variability into contributions from each input.  The result is
+a <strong>ranked importance table</strong> with error bars.</p>
+<p>What you get out:</p>
+<table>
+<thead>
+<tr>
+<th>Input</th>
+<th>Importance</th>
+<th>95% CI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Rainfall</td>
+<td>0.45</td>
+<td>[0.41, 0.49]</td>
+</tr>
+<tr>
+<td>Soil type</td>
+<td>0.32</td>
+<td>[0.29, 0.35]</td>
+</tr>
+<tr>
+<td>Topography</td>
+<td>0.18</td>
+<td>[0.15, 0.21]</td>
+</tr>
+<tr>
+<td>Temperature</td>
+<td>0.05</td>
+<td>[0.03, 0.07]</td>
+</tr>
+</tbody>
+</table>
+<p>How it works under the hood (in three moves):</p>
+<ol>
+<li>
+<p><strong>Build a surrogate</strong> — approximate your model with a polynomial
+   expansion (Legendre polynomials on <span class="arithmatex">\([0,1]^d\)</span>).  This turns your
+   expensive simulator into a cheap formula.</p>
+</li>
+<li>
+<p><strong>Fit it sparsely</strong> — use Automatic Relevance Determination (ARD) or
+   Orthogonal Matching Pursuit (OMP) to select only the polynomial terms
+   that actually matter.  Tens or hundreds of terms survive from
+   thousands of candidates.</p>
+</li>
+<li>
+<p><strong>Extract sensitivity</strong> — read off Sobol indices (variance
+   decomposition) and Shapley effects (game-theory fair division) from
+   the surrogate coefficients.</p>
+</li>
+</ol>
+<hr />
+<h2 id="2-before-you-start-what-your-data-needs-to-look-like">2. Before you start — what your data needs to look like</h2>
+<h3 id="format">Format</h3>
+<p>A CSV file (or pandas DataFrame) with one column per input, plus a
+column called <code>Y</code> for the output:</p>
+<div class="highlight"><pre><span></span><code>X1,X2,X3,Y
+0.51,0.23,0.89,1.87
+0.12,0.67,0.34,2.34
+...
+</code></pre></div>
+<p>No missing values.  Inputs don't need to be in <span class="arithmatex">\([0,1]\)</span> — ShapleyX
+normalises them automatically.</p>
+<h3 id="how-many-samples">How many samples?</h3>
+<p>A rough rule of thumb (for <code>polys=[10,5]</code>, ARD):</p>
+<table>
+<thead>
+<tr>
+<th>Number of inputs</th>
+<th>Recommended samples</th>
+<th>Typical runtime</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>3–5</td>
+<td>200–500</td>
+<td>&lt; 30 seconds</td>
+</tr>
+<tr>
+<td>6–10</td>
+<td>500–2000</td>
+<td>1–5 minutes</td>
+</tr>
+<tr>
+<td>11–20</td>
+<td>2000–5000</td>
+<td>5–30 minutes</td>
+</tr>
+<tr>
+<td>20+</td>
+<td>5000+</td>
+<td>30 minutes+</td>
+</tr>
+</tbody>
+</table>
+<p>These are guidelines — simpler functions need fewer; noisier data needs
+more.  The R² diagnostic (Section 7) tells you if you had enough.</p>
+<hr />
+<h2 id="3-installation">3. Installation</h2>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>shapleyx
+</code></pre></div>
+<p>For large problems (20+ inputs), install with the optional Numba
+acceleration:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>shapleyx<span class="o">[</span>streaming<span class="o">]</span>
+</code></pre></div>
+<p>Verify it works:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">shapleyx</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Ready.&quot;</span><span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="4-your-first-analysis-the-five-minute-workflow">4. Your first analysis — the five-minute workflow</h2>
+<p>Let's walk through a complete analysis on a synthetic test function
+(the cantilever beam displacement).  Copy this into a script or
+notebook.</p>
+<h3 id="41-prepare-some-data">4.1 Prepare some data</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="mi">500</span>
+
+<span class="c1"># Cantilever beam: displacement = 4*L³/(E*w*t³)</span>
+<span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>      <span class="c1"># beam length (m)</span>
+<span class="n">E</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">60e9</span><span class="p">,</span> <span class="mf">80e9</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>    <span class="c1"># Young&#39;s modulus (Pa)</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.05</span><span class="p">,</span> <span class="mf">0.15</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>    <span class="c1"># beam width (m)</span>
+<span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mf">0.005</span><span class="p">,</span> <span class="mf">0.015</span><span class="p">,</span> <span class="n">n</span><span class="p">)</span>  <span class="c1"># beam thickness (m)</span>
+
+<span class="n">Y</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">L</span><span class="o">**</span><span class="mi">3</span> <span class="o">/</span> <span class="p">(</span><span class="n">E</span> <span class="o">*</span> <span class="n">w</span> <span class="o">*</span> <span class="n">t</span><span class="o">**</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;L&#39;</span><span class="p">:</span> <span class="n">L</span><span class="p">,</span> <span class="s1">&#39;E&#39;</span><span class="p">:</span> <span class="n">E</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">:</span> <span class="n">w</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">:</span> <span class="n">t</span><span class="p">,</span> <span class="s1">&#39;Y&#39;</span><span class="p">:</span> <span class="n">Y</span><span class="p">})</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2"> samples, Y range: [</span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">min</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">, </span><span class="si">{</span><span class="n">Y</span><span class="o">.</span><span class="n">max</span><span class="p">()</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="42-run-the-analysis">4.2 Run the analysis</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx</span><span class="w"> </span><span class="kn">import</span> <span class="n">rshdmr</span>
+
+<span class="n">model</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span>                     <span class="c1"># your data</span>
+    <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>          <span class="c1"># polynomial orders</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ard_cv&#39;</span><span class="p">,</span>        <span class="c1"># ARD with cross-validation</span>
+    <span class="n">cv_method</span><span class="o">=</span><span class="s1">&#39;bayesian&#39;</span><span class="p">,</span>   <span class="c1"># Bayesian CV scoring</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>             <span class="c1"># max ARD iterations</span>
+    <span class="n">resampling</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>        <span class="c1"># bootstrap confidence intervals</span>
+    <span class="n">number_of_resamples</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>           <span class="c1"># show progress</span>
+<span class="p">)</span>
+
+<span class="n">sobol</span><span class="p">,</span> <span class="n">shapley</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+</code></pre></div>
+<h3 id="43-what-you-see">4.3 What you see</h3>
+<p>The pipeline runs through several stages and prints progress at each:</p>
+<div class="highlight"><pre><span></span><code>====================  Transforming data to unit hypercube  ====================
+  Feature: L, Min Value: 1.0012, Max Value: 1.9987
+  ...
+
+====================  Building basis functions  ====================
+  Basis functions of 1 order : 40
+  Basis functions of 2 order : 150
+  Total basis functions in basis set : 190
+
+====================  Running regression analysis  ====================
+  running ARD
+  Fit Execution Time : 2.341
+  Basis functions selected: 28 / 190 (14.74%)
+
+====================  RS-HDMR model performance statistics  ====================
+  explained variance score: 0.999
+  r²: 0.9998
+</code></pre></div>
+<p>Then a predicted-vs-actual scatter plot appears.  Finally:</p>
+<div class="highlight"><pre><span></span><code>====================  Completed all analysis  ====================
+</code></pre></div>
+<h3 id="44-your-results">4.4 Your results</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Sobol indices (first-order + interactions)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sobol</span><span class="p">[[</span><span class="s1">&#39;derived_labels&#39;</span><span class="p">,</span> <span class="s1">&#39;index&#39;</span><span class="p">,</span> <span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">]])</span>
+
+<span class="c1"># Shapley effects (scaled to sum to 1)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">shapley</span><span class="p">[[</span><span class="s1">&#39;label&#39;</span><span class="p">,</span> <span class="s1">&#39;scaled effect&#39;</span><span class="p">,</span> <span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">]])</span>
+</code></pre></div>
+<p>For the cantilever beam you'd see something like:</p>
+<div class="highlight"><pre><span></span><code>Shapley effects:
+  Label  scaled effect  lower  upper
+0     L          0.063  0.058  0.068
+1     E          0.105  0.099  0.111
+2     w          0.104  0.098  0.110
+3     t          0.728  0.712  0.742
+</code></pre></div>
+<p><strong>Thickness (<span class="arithmatex">\(t\)</span>) dominates, at 73% of the output variance.</strong>  This
+makes physical sense — beam displacement is proportional to <span class="arithmatex">\(1/t^3\)</span>, so
+small changes in thickness produce large changes in displacement.</p>
+<hr />
+<h3 id="sidebar-what-does-polys10-5-mean">Sidebar: What does <code>polys=[10, 5]</code> mean?</h3>
+<p>The surrogate model is built from polynomial terms:
+- <strong>First-order (main effects):</strong> <span class="arithmatex">\(L, L^2, \dots, L^{10}\)</span> for each input.
+  These capture <em>nonlinearity</em> in how each input alone affects the output.
+- <strong>Second-order (interactions):</strong> <span class="arithmatex">\(L \cdot E, L^2 \cdot E^5\)</span>, etc.,
+  up to degree 5 per variable.  These capture how inputs <em>work together</em>.
+- Higher-order interactions (<span class="arithmatex">\(&gt;2\)</span>) are usually negligible, so we don't
+  model them unless you expand <code>polys</code> to three or more entries.</p>
+<p>In general:</p>
+<table>
+<thead>
+<tr>
+<th><code>polys</code></th>
+<th>Meaning</th>
+<th>Typical use</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>[10, 5]</code></td>
+<td>10th-degree main effects, 5th-degree pairwise</td>
+<td>Default for <span class="arithmatex">\(d\)</span> ≤ 10</td>
+</tr>
+<tr>
+<td><code>[8, 6, 2]</code></td>
+<td>8th-degree main, 6th-degree pairwise, 2nd-degree triple</td>
+<td><span class="arithmatex">\(d\)</span> = 10–25, more interactions</td>
+</tr>
+<tr>
+<td><code>[10]</code></td>
+<td>10th-degree total expansion (not HDMR)</td>
+<td>Full polynomial chaos, <span class="arithmatex">\(d\)</span> ≤ 6</td>
+</tr>
+<tr>
+<td><code>[6, 4, 2, 2]</code></td>
+<td>Up to 4th-order interactions</td>
+<td><span class="arithmatex">\(d\)</span> ≤ 8, rich interaction structure</td>
+</tr>
+</tbody>
+</table>
+<p>Higher degrees = more flexible surrogate, but more computation.</p>
+<h3 id="sidebar-whats-a-good-r2">Sidebar: What's a "good" R²?</h3>
+<p>The <code>explained variance score</code> (often called R²) tells you how well the
+surrogate fits your data.  1.0 is perfect; 0.0 means it's no better than
+guessing the mean.</p>
+<table>
+<thead>
+<tr>
+<th>R²</th>
+<th>Verdict</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>&gt; 0.99</td>
+<td>Excellent — your sensitivity results are reliable</td>
+</tr>
+<tr>
+<td>0.95–0.99</td>
+<td>Good — results are trustworthy</td>
+</tr>
+<tr>
+<td>0.85–0.95</td>
+<td>Adequate — directional conclusions are valid</td>
+</tr>
+<tr>
+<td>0.70–0.85</td>
+<td>Marginal — try more samples or different <code>polys</code></td>
+</tr>
+<tr>
+<td>&lt; 0.70</td>
+<td>Poor — the surrogate isn't capturing your function; results may mislead</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="5-choosing-your-regression-method">5. Choosing your regression method</h2>
+<p>ShapleyX offers several regression methods.  Here's how to choose:</p>
+<table>
+<thead>
+<tr>
+<th>Method string</th>
+<th>Algorithm</th>
+<th>Best for</th>
+<th>Use CV?</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>'ard'</code></td>
+<td>ARD (Bayesian sparse learning)</td>
+<td>Feature selection quality</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>'ard_cv'</code></td>
+<td>ARD + retrospective CV</td>
+<td>Production analysis</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>'omp'</code></td>
+<td>Orthogonal Matching Pursuit</td>
+<td>Speed, quick exploration</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>'omp_cv'</code></td>
+<td>OMP + sklearn CV</td>
+<td>Speed with CV</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td><code>'omp_stream'</code></td>
+<td>Streaming OMP (memory-efficient)</td>
+<td>Large problems (<span class="arithmatex">\(d \ge 12\)</span>)</td>
+<td>No</td>
+</tr>
+<tr>
+<td><code>'omp_cv_stream'</code></td>
+<td>Streaming OMP-CV</td>
+<td>Large problems with CV</td>
+<td>Yes</td>
+</tr>
+</tbody>
+</table>
+<h3 id="quick-decision-flowchart">Quick decision flowchart</h3>
+<div class="highlight"><pre><span></span><code>Is d ≥ 12 or do you have &gt; 50K candidate basis functions?
+  ├── Yes → Do you need cross-validation?
+  │         ├── Yes → method=&#39;omp_cv_stream&#39;
+  │         └── No  → method=&#39;omp_stream&#39;
+  └── No  → Do you need the best possible feature selection?
+            ├── Yes → method=&#39;ard_cv&#39;
+            └── No  → method=&#39;omp_cv&#39;
+</code></pre></div>
+<h3 id="ard-vs-omp-in-plain-language">ARD vs OMP in plain language</h3>
+<p><strong>ARD</strong> (Automatic Relevance Determination) is a Bayesian algorithm that
+carefully weighs each candidate basis function and decides whether to
+keep it, update it, or discard it.  It's thorough — ARD often finds a
+slightly better sparse model than OMP — but slower.</p>
+<p><strong>OMP</strong> (Orthogonal Matching Pursuit) is greedier.  At each step it picks
+the single basis function most correlated with what's left to explain,
+then solves a least-squares problem.  It's fast and usually nearly as
+good as ARD.</p>
+<p><strong>Streaming OMP</strong> is OMP that never builds the full design matrix in
+memory — it computes basis columns on-the-fly from compact primitives.
+For large problems (20 inputs, 80K candidate basis functions) this uses
+~3 MB instead of ~6 GB.</p>
+<h3 id="what-does-cross-validation-do">What does cross-validation do?</h3>
+<p>Cross-validation (CV) tests each candidate model against data it hasn't
+seen.  Instead of picking the model ARD converged to (which may be
+overfitted), CV selects the model that generalises best.</p>
+<p>The <code>n_iter</code> parameter controls the maximum number of basis functions to
+consider.  ARD typically converges within 100–300 iterations.  OMP needs
+more — 50–200 is usually sufficient.</p>
+<h3 id="ard-controls-new-in-v060">ARD controls (new in v0.6.0)</h3>
+<p>When using <code>method='ard'</code> or <code>method='ard_cv'</code>, five additional parameters
+give you fine-grained control over the ARD regression:</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Default</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ard_algorithm</code></td>
+<td><code>'sequential'</code></td>
+<td><code>'sequential'</code> (Tipping &amp; Faul 2003): picks one feature at a time, produces a full sparsity path for CV. <code>'em'</code> (sklearn-compatible): batch updates with Gamma hyper-priors, sparser results, 5–10 iterations.</td>
+</tr>
+<tr>
+<td><code>threshold_lambda</code></td>
+<td>10,000</td>
+<td>Post-fit pruning threshold. ARD sometimes retains marginal features with large but finite precisions. Setting this to, e.g., 5,000 zeroes them aggressively. Use <code>np.inf</code> to disable.</td>
+</tr>
+<tr>
+<td><code>ard_tol</code></td>
+<td>1e-3</td>
+<td>Convergence tolerance. Lower values (e.g., 1e-4) let ARD run longer for more thorough feature exploration at the cost of runtime.</td>
+</tr>
+<tr>
+<td><code>cv_folds</code></td>
+<td>10</td>
+<td>Number of CV folds when using <code>ard_cv</code>. Fewer folds (e.g., 5) are faster; more folds (e.g., 20) give smoother CV curves at a cost.</td>
+</tr>
+<tr>
+<td><code>return_std</code></td>
+<td><code>False</code></td>
+<td>Collects per-fold CV scores at each iteration. Post-fit you can compute SEM = std / √K to quantify model selection confidence.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Example with all ARD controls:</strong></p>
+<div class="highlight"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">,</span> <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ard_cv&#39;</span><span class="p">,</span>
+    <span class="n">cv_method</span><span class="o">=</span><span class="s1">&#39;bayesian&#39;</span><span class="p">,</span>
+    <span class="n">ard_algorithm</span><span class="o">=</span><span class="s1">&#39;em&#39;</span><span class="p">,</span>         <span class="c1"># sklearn-compatible EM variant</span>
+    <span class="n">threshold_lambda</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span>      <span class="c1"># aggressive pruning</span>
+    <span class="n">cv_folds</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>                 <span class="c1"># faster CV</span>
+    <span class="n">return_std</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>            <span class="c1"># get CV confidence intervals</span>
+    <span class="n">n_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<hr />
+<h2 id="6-understanding-polynomial-orders-the-polys-parameter">6. Understanding polynomial orders — the <code>polys</code> parameter</h2>
+<p>The <code>polys</code> parameter controls what your surrogate can express.  Here's
+how the basis set grows:</p>
+<table>
+<thead>
+<tr>
+<th>d</th>
+<th><code>polys</code></th>
+<th>Basis functions</th>
+<th>Memory (dense)</th>
+<th>Typical time (ARD)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>4</td>
+<td>[10, 5]</td>
+<td>190</td>
+<td>&lt;1 MB</td>
+<td>&lt; 5s</td>
+</tr>
+<tr>
+<td>6</td>
+<td>[10, 5]</td>
+<td>345</td>
+<td>&lt;1 MB</td>
+<td>&lt; 10s</td>
+</tr>
+<tr>
+<td>8</td>
+<td>[10, 5]</td>
+<td>1,000</td>
+<td>~8 MB</td>
+<td>~30s</td>
+</tr>
+<tr>
+<td>10</td>
+<td>[8, 6, 4]</td>
+<td>9,380</td>
+<td>~80 MB</td>
+<td>~5 min</td>
+</tr>
+<tr>
+<td>15</td>
+<td>[8, 6, 2]</td>
+<td>15,600</td>
+<td>~120 MB</td>
+<td>~10 min</td>
+</tr>
+<tr>
+<td>20</td>
+<td>[8, 6, 2]</td>
+<td>16,120</td>
+<td>~260 MB</td>
+<td>~25 min</td>
+</tr>
+<tr>
+<td>20</td>
+<td>[8, 6, 4]</td>
+<td>79,960</td>
+<td><strong>6.4 GB</strong></td>
+<td><strong>use streaming</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Rules of thumb:</strong></p>
+<ul>
+<li><strong>Start with <code>[10, 5]</code></strong> for problems with <span class="arithmatex">\(d \le 10\)</span>.  Upgrade to
+  <code>[8, 6, 2]</code> if you suspect 3-way interactions.</li>
+<li><strong>If memory blows up</strong>, switch to <code>method='omp_stream'</code> or
+  <code>method='omp_cv_stream'</code>.  Streaming uses orders of magnitude less
+  memory.</li>
+<li><strong>If the R² is low</strong>, try increasing the first number (higher-degree
+  main effects) or adding a third entry for higher-order interactions.</li>
+<li><strong>If the analysis is too slow</strong>, reduce <code>n_iter</code> or switch from ARD
+  to OMP.</li>
+</ul>
+<hr />
+<h2 id="7-interpreting-your-results">7. Interpreting your results</h2>
+<h3 id="sobol-indices">Sobol indices</h3>
+<p>The Sobol table tells you how much of the output variance each input
+(or input combination) explains:</p>
+<div class="highlight"><pre><span></span><code>  derived_labels     index    lower    upper
+0             X1    0.312   0.308   0.316
+1          X1_X3    0.240   0.234   0.246
+2             X2    0.447   0.441   0.452
+</code></pre></div>
+<ul>
+<li><strong><code>derived_labels</code></strong>: which input(s).  <code>X1_X3</code> means the interaction
+  between X1 and X3.</li>
+<li><strong><code>index</code></strong>: the fraction of output variance explained.  0.312 = 31.2%.
+  These sum to the R² (not to 1.0).</li>
+<li><strong><code>lower</code> / <code>upper</code></strong>: 95% bootstrap confidence interval.  If the
+  interval includes zero, that input's effect is not statistically
+  distinguishable from noise.</li>
+</ul>
+<h3 id="shapley-effects">Shapley effects</h3>
+<p>Shapley effects are a fair division of the <em>explained</em> variance.  They
+always sum to 1 and are always positive (unlike Sobol indices, which can
+sometimes be negative for small effects when estimated from noisy data).</p>
+<p><strong>When Sobol and Shapley disagree:</strong> Shapley effects distribute
+interaction contributions equally among the participating inputs.  Sobol
+first-order indices only count the direct effect.  If X1 and X2 interact
+strongly, Sobol S₁ might be small while Shapley φ₁ is large — because
+X1's importance comes from its interaction with X2, not from acting alone.</p>
+<h3 id="the-predicted-vs-actual-plot">The predicted-vs-actual plot</h3>
+<p><code>model.run_all()</code> automatically generates a scatter plot of predicted
+vs actual output values.  A good fit shows points tightly clustered
+along the diagonal red line.  Signs of trouble:</p>
+<ul>
+<li><strong>Fan shape</strong> (spread increases with output magnitude): your model has
+  heteroscedastic errors.  Consider log-transforming the output.</li>
+<li><strong>Systematic curvature</strong> (points bow away from the line): the
+  polynomial expansion isn't flexible enough.  Increase <code>polys</code>.</li>
+<li><strong>Clusters of outliers</strong>: check your data for measurement errors.</li>
+</ul>
+<h3 id="total-sensitivity">Total sensitivity</h3>
+<p><code>model.total</code> gives the total sensitivity index <span class="arithmatex">\(S^T\)</span> for each input —
+the sum of its direct effect <em>plus</em> all interactions it participates in.
+If <span class="arithmatex">\(S^T_i \gg S_i\)</span>, that input's importance comes primarily through
+interactions.</p>
+<hr />
+<h2 id="8-sensitivity-measures-beyond-variance">8. Sensitivity measures beyond variance</h2>
+<p>Variance-based measures (Sobol, Shapley) assume that variance is the
+right summary of output uncertainty.  Sometimes it isn't:</p>
+<ul>
+<li><strong>Heavy-tailed outputs:</strong> a few extreme values dominate the variance.</li>
+<li><strong>Median shifts:</strong> an input changes the median but not the variance.</li>
+<li><strong>Multimodal outputs:</strong> the output has two or more distinct regimes.</li>
+</ul>
+<p>ShapleyX provides three <strong>moment-free</strong> alternatives.  All operate on the
+already-fitted surrogate:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># PAWN — density-based, fast screening</span>
+<span class="n">pawn</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_pawn</span><span class="p">(</span><span class="n">S</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>           <span class="c1"># no surrogate needed</span>
+
+<span class="c1"># PAWN via the surrogate (more accurate, more expensive)</span>
+<span class="n">pawnx</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_pawnx</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+
+<span class="c1"># Delta — moment-independent ranking</span>
+<span class="n">delta</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_deltax</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+
+<span class="c1"># H-index — sensitive to tail behaviour</span>
+<span class="n">h_idx</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_hx</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Measure</th>
+<th>What it detects</th>
+<th>Best for</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Sobol / Shapley</td>
+<td>Variance explained</td>
+<td>Default, general purpose</td>
+</tr>
+<tr>
+<td>PAWN</td>
+<td>Distribution shifts (CDF distance)</td>
+<td>Screening, provides p-values</td>
+</tr>
+<tr>
+<td>Delta</td>
+<td>Area between PDFs</td>
+<td>Rankings (sums to 1)</td>
+</tr>
+<tr>
+<td>H-index</td>
+<td>KL divergence</td>
+<td>Tail sensitivity / extreme events</td>
+</tr>
+</tbody>
+</table>
+<p>If your Sobol/Shapley results seem to miss an input you suspect matters,
+run PAWN or Delta — they may reveal effects that variance-based measures
+overlook.</p>
+<hr />
+<h2 id="9-handling-correlated-inputs">9. Handling correlated inputs</h2>
+<p>Sobol indices assume inputs are <strong>independent</strong>.  If your inputs are
+correlated (e.g., rainfall and soil moisture move together), standard
+Sobol indices can be misleading.</p>
+<p>For correlated inputs, use the <strong>Monte Carlo Shapley</strong> method:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="c1"># Define correlation matrix</span>
+<span class="n">corr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span>
+    <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>    <span class="c1"># X1–X2 correlation = 0.5</span>
+    <span class="p">[</span><span class="mf">0.5</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span>    <span class="c1"># others independent</span>
+    <span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">],</span>
+<span class="p">])</span>
+
+<span class="c1"># MC Shapley via the surrogate</span>
+<span class="n">mc</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">get_mc_shapley</span><span class="p">(</span><span class="n">corr</span><span class="o">=</span><span class="n">corr</span><span class="p">,</span> <span class="n">N</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">B</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">mc</span><span class="p">[[</span><span class="s1">&#39;variable&#39;</span><span class="p">,</span> <span class="s1">&#39;effect&#39;</span><span class="p">,</span> <span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">]])</span>
+</code></pre></div>
+<p>The MC Shapley method works by:
+1. Sampling input configurations respecting the correlation structure
+2. Evaluating the surrogate for each configuration
+3. Computing Shapley effects by averaging over random permutations</p>
+<p>This is more expensive than the coefficient-based Shapley effects
+(a few minutes vs seconds) but correctly accounts for correlation.</p>
+<hr />
+<h2 id="10-performance-making-it-faster">10. Performance — making it faster</h2>
+<h3 id="numba-acceleration">Numba acceleration</h3>
+<p>Install Numba to JIT-compile the hot paths throughout the package:</p>
+<div class="highlight"><pre><span></span><code>pip<span class="w"> </span>install<span class="w"> </span>numba<span class="w">                    </span><span class="c1"># standalone, or</span>
+pip<span class="w"> </span>install<span class="w"> </span>shapleyx<span class="o">[</span>streaming<span class="o">]</span><span class="w">     </span><span class="c1"># with the package extra</span>
+</code></pre></div>
+<p>The first run will be slightly slower (JIT compilation), but subsequent
+runs use cached compiled code.  Without Numba everything still works via
+pure-NumPy fallbacks.  No code changes needed — the package detects
+Numba at import time and routes to compiled kernels automatically.</p>
+<p>Numba accelerates three independent subsystems:</p>
+<table>
+<thead>
+<tr>
+<th>Subsystem</th>
+<th>When it helps</th>
+<th>Typical speedup</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Streaming OMP</strong></td>
+<td>Correlation scans in <code>omp_stream</code> / <code>omp_cv_stream</code></td>
+<td>4–10×, parallelised via <code>prange</code></td>
+</tr>
+<tr>
+<td><strong>Surrogate prediction</strong></td>
+<td>Single-sample <code>predict()</code> calls during MC Shapley</td>
+<td>5–6×</td>
+</tr>
+<tr>
+<td><strong>MC Shapley bootstrap</strong></td>
+<td>Exhaustive bootstrap (<span class="arithmatex">\(B\)</span> iterations of resample → compute)</td>
+<td>3–10×</td>
+</tr>
+</tbody>
+</table>
+<h3 id="streaming-omp-for-large-problems">Streaming OMP for large problems</h3>
+<p>When the basis set exceeds ~50K features, switch to streaming:</p>
+<div class="highlight"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+               <span class="n">method</span><span class="o">=</span><span class="s1">&#39;omp_cv_stream&#39;</span><span class="p">,</span>   <span class="c1"># streaming, not dense</span>
+               <span class="n">n_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+               <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>                 <span class="c1"># parallel CV folds</span>
+</code></pre></div>
+<p>Streaming uses 50–100× less memory (3 MB vs 260 MB for the example
+above) and is often faster because the compact data fits in CPU cache.</p>
+<h3 id="parallel-cv">Parallel CV</h3>
+<p>For CV methods, <code>n_jobs</code> runs fold evaluation in parallel:</p>
+<div class="highlight"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span>
+               <span class="n">method</span><span class="o">=</span><span class="s1">&#39;omp_cv_stream&#39;</span><span class="p">,</span>
+               <span class="n">n_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+               <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>   <span class="c1"># use 4 CPU cores for fold evaluation</span>
+</code></pre></div>
+<p>4 workers typically gives ~1.4× speedup.  More workers beyond ~6 provide
+diminishing returns due to memory bandwidth limits.</p>
+<h3 id="quick-exploratory-runs">Quick exploratory runs</h3>
+<p>During exploration, skip resampling for speed:</p>
+<div class="highlight"><pre><span></span><code><span class="n">model</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span>
+               <span class="n">method</span><span class="o">=</span><span class="s1">&#39;omp_cv&#39;</span><span class="p">,</span>
+               <span class="n">n_iter</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>                <span class="c1"># fewer iterations</span>
+               <span class="n">resampling</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>         <span class="c1"># skip bootstrap</span>
+</code></pre></div>
+<p>Add <code>resampling=True</code> only for your final production run.</p>
+<hr />
+<h2 id="11-troubleshooting">11. Troubleshooting</h2>
+<h3 id="my-r2-is-low">My R² is low</h3>
+<ol>
+<li><strong>Need more samples?</strong> Try doubling the sample size and see if R²
+   improves.  If it does, you were data-limited.</li>
+<li><strong>Need more flexibility?</strong> Increase <code>polys</code> — e.g. <code>[10,5]</code> →
+   <code>[12,6,2]</code> to allow higher-degree main effects and 3-way interactions.</li>
+<li><strong>Wrong method?</strong> ARD handles noise better than OMP.  Try
+   <code>method='ard_cv'</code>.</li>
+<li><strong>Concept check:</strong> Is your function actually representable as a
+   polynomial?  Functions with sharp discontinuities or non-smooth
+   behaviour may need more samples or a different surrogate approach.</li>
+</ol>
+<h3 id="its-using-too-much-memory">It's using too much memory</h3>
+<ol>
+<li>Switch to streaming: <code>method='omp_stream'</code> or <code>'omp_cv_stream'</code>.</li>
+<li>Reduce <code>polys</code>: <code>[8,6,2]</code> is cheaper than <code>[10,6,4]</code>.</li>
+<li>If you're using ARD, the Gram matrix (<span class="arithmatex">\(X^TX\)</span>) is the culprit.
+   The current ARD implementation requires building it.  Switch to
+   streaming OMP for memory-constrained situations.</li>
+</ol>
+<h3 id="the-analysis-runs-forever">The analysis runs forever</h3>
+<ol>
+<li><strong>Too many ARD iterations?</strong> Lower <code>n_iter</code> to 100 or 50 for
+   exploratory work.</li>
+<li><strong>Too high <code>polys</code>?</strong> Halving the degree roughly quarters the number
+   of candidate basis functions.</li>
+<li><strong>ARD is slower than OMP.</strong> Try <code>method='omp_cv'</code> instead.</li>
+<li><strong>CV is expensive.</strong> If you don't need CV for model selection,
+   use <code>method='ard'</code> or <code>method='omp'</code> without CV.</li>
+</ol>
+<h3 id="i-get-a-numba-related-error">I get a Numba-related error</h3>
+<p>Numba is optional.  Everything works without it — the streaming OMP
+path falls back to pure NumPy.  The analysis will be slower (perhaps
+3–5×) but results are identical.</p>
+<p>If you see <code>OSError: Cannot create a file when that file already exists</code>
+on Windows with <code>n_jobs &gt; 1</code>, this is a known Numba cache race condition
+(fixed in v0.6.0).  Upgrade with <code>pip install --upgrade shapleyx</code>.</p>
+<h3 id="my-sensitivity-results-dont-make-physical-sense">My sensitivity results don't make physical sense</h3>
+<ol>
+<li>Check the R² — if it's below ~0.85, the surrogate itself is suspect.</li>
+<li>For correlated inputs, standard Sobol/Shapley (coefficient-based) can
+   mislead.  Use MC Shapley (Section 9).</li>
+<li>Moment-free measures (Section 8) may tell a different story —
+   especially if the output distribution is non-Gaussian.</li>
+</ol>
+<hr />
+<h2 id="12-where-to-go-next">12. Where to go next</h2>
+<p><strong>Worked examples</strong> (Jupyter notebooks, shipped with the package):
+- <code>Examples/ishigami.ipynb</code> — the Ishigami benchmark, 3 inputs
+- <code>Examples/wing_weight.ipynb</code> — wing weight function, 10 inputs
+- <code>Examples/borehole.ipynb</code> — borehole function, 8 inputs
+- <code>Examples/fire_spread.ipynb</code> — fire spread model, 5 inputs
+- <code>Examples/sobolG_function.ipynb</code> — Sobol G-function, 50 inputs
+- <code>Examples/sobolG_function_streaming.ipynb</code> — same, with streaming OMP</p>
+<p><strong>API reference and theory:</strong>
+- <a href="../reference/api/">API Reference</a> — complete parameter documentation
+- <a href="../explanation/ard_theory/">ARD Theory</a> — mathematical background
+- <a href="../explanation/streaming-omp/">Streaming OMP</a> — how the memory-efficient
+  regression works
+- <a href="../explanation/moment-free/">Moment-Free Measures</a> — PAWN, Delta,
+  H-index theory
+- <a href="../how-to-guides/mc-shapley/">MC Shapley Guide</a> — correlated inputs
+  in depth</p>
+<p><strong>Research paper:</strong>
+- Bennett, F. (2026). <em>Bayesian Cross-Validation for Automatic Relevance
+  Determination in Sparse RS-HDMR Surrogate Construction.</em>
+  <a href="https://github.com/frbennett/shapleyx/blob/main/paper/ard_cv_paper.pdf"><code>paper/ard_cv_paper.pdf</code></a></p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href=".." class="btn btn-neutral float-left" title="Home"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../getting-started/installation/" class="btn btn-neutral float-right" title="Installation">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href=".." style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../getting-started/installation/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "..";</script>
+    <script src="../js/theme_extra.js"></script>
+    <script src="../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/reference/streaming-omp/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Streaming OMP - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Streaming OMP";
+        var mkdocs_page_input_path = "reference/streaming-omp.md";
+        var mkdocs_page_url = "/shapleyx/reference/streaming-omp/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../user-guide/">User Guide</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam/">Cantilever Beam</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam_copulas/">Cantilever Beam with Modern Copula Samplers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/wing_weight/">Wing Weight</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/fire_spread/">Fire Spread</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sobolG_function/">Sobol G50</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_shapleyx_example/">Global Sensitivity Analysis of the SAC-SMA Rainfall-Runoff Model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_owen_effects/">Owen (Grouped) Shapley Effects for the SAC-SMA Model</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Streaming OMP</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#core-classes">Core Classes</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#featurerecipes">FeatureRecipes</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#lazybasismatrix">LazyBasisMatrix</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#streamingomp">StreamingOMP</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#streamingompcv">StreamingOMPCV</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#memory-scaling">Memory Scaling</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#benchmarks">Benchmarks</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-to-use">How to Use</a>
+    </li>
+    </ul>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/value-function/">Value Function v(S)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/rs_hdmr/">RS-HDMR Construction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/distributions/">Distribution Classes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/arbitrary-marginals/">Arbitrary Marginals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/owen-effects/">Owen (Grouped) Effects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/case_studies/">Case Studies</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/streaming-omp/">Streaming Basis Expansion</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/moment-free/">Moment-Free Measures</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../explanation/performance/">Performance</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Reference</li>
+      <li class="breadcrumb-item active">Streaming OMP</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/reference/streaming-omp.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="streaming-omp-reference">Streaming OMP Reference</h1>
+<p>The <code>shapleyx.utilities.streaming</code> module provides a <strong>memory-efficient
+regression pipeline</strong> for RS-HDMR basis expansions that are too large to
+materialise in RAM.  Instead of building the full <span class="arithmatex">\((n \times p)\)</span> design
+matrix, the pipeline stores only the <em>primitive</em> Legendre terms
+(<span class="arithmatex">\(n \times d\cdot\max(\text{polys})\)</span>) plus compact integer <em>recipes</em>
+describing how to combine them into each basis function.  Columns are
+computed on demand via Numba-compiled kernels.</p>
+<p><strong>New <code>method</code> strings that activate the streaming path:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Method string</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>'omp_stream'</code></td>
+<td>Streaming Orthogonal Matching Pursuit — computes basis columns on the fly, never builds the dense matrix.</td>
+</tr>
+<tr>
+<td><code>'omp_cv_stream'</code></td>
+<td>Streaming OMP with K-fold cross-validation and retrospective sparsity selection. Supports <code>n_jobs</code> parallelism per fold.</td>
+</tr>
+</tbody>
+</table>
+<p>These are drop-in replacements for <code>'omp'</code> and <code>'omp_cv'</code> — the
+downstream API (<code>run_all()</code>, <code>predict()</code>, <code>get_pawnx()</code>, etc.) is
+identical.</p>
+<hr />
+<h2 id="core-classes">Core Classes</h2>
+<h3 id="featurerecipes"><code>FeatureRecipes</code></h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">FeatureRecipes</span><span class="p">:</span>
+    <span class="n">feature_names</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>     <span class="c1"># E.g. &quot;X0_3*X1_2&quot;</span>
+    <span class="n">n_features</span><span class="p">:</span> <span class="nb">int</span>              <span class="c1"># Number of candidate basis terms</span>
+    <span class="n">prim_indices</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>     <span class="c1"># (n_features, max_factors) int32</span>
+    <span class="n">n_factors</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>        <span class="c1"># (n_features,) int32</span>
+    <span class="n">max_factors</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div>
+<p>Compact integer representation of every candidate basis function.
+For a term like <span class="arithmatex">\(\phi_i(\mathbf{x}) = L_3(x_0) \cdot L_2(x_1)\)</span>,
+<code>prim_indices[i]</code> stores the flat indices into the primitives array
+so that the hot inner loop is <code>prod *= primitives[j, idx]</code>.</p>
+<hr />
+<h3 id="lazybasismatrix"><code>LazyBasisMatrix</code></h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">LazyBasisMatrix</span><span class="p">:</span>
+    <span class="n">primitives</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>       <span class="c1"># (n_samples, n_prim) float64</span>
+    <span class="n">recipes</span><span class="p">:</span> <span class="n">FeatureRecipes</span>
+    <span class="n">columns</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span>           <span class="c1"># column labels</span>
+    <span class="n">shape</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]</span>       <span class="c1"># (n_samples, n_features)</span>
+    <span class="n">n_features</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span>
+</code></pre></div>
+<p>A Legendre basis matrix that <strong>never materialises</strong> the full design
+matrix.  The <code>primitives</code> array contains pre-computed shifted Legendre
+values for every <code>(variable, degree)</code> pair:</p>
+<div class="arithmatex">\[\text{prim\_idx}(v, d) = v \cdot \max(\text{polys}) + (d - 1)\]</div>
+<p><strong>Key methods:</strong></p>
+<ul>
+<li><code>dot_with_residual(residual)</code> — Compute <span class="arithmatex">\(X^\top r\)</span> (the correlation of every feature with the residual vector).  This is the OMP hot path.  For 16K features and 2K samples, a single scan takes ~40 ms (Numba, parallelised via <code>prange</code>).</li>
+</ul>
+<p><code>active_submatrix(indices)</code> — Build the design submatrix for a small set of features (used by the OMP least-squares step).</p>
+<p><code>column(idx)</code> / <code>column_batch(indices)</code> — Compute individual columns on demand.</p>
+<hr />
+<h3 id="streamingomp"><code>StreamingOMP</code></h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">StreamingOMP</span><span class="p">:</span>
+    <span class="n">lazy_basis</span><span class="p">:</span> <span class="n">LazyBasisMatrix</span>
+    <span class="n">n_nonzero_coefs</span><span class="p">:</span> <span class="nb">int</span>          <span class="c1"># max features to select</span>
+    <span class="n">fit_intercept</span><span class="p">:</span> <span class="nb">bool</span>            <span class="c1"># default True (matches sklearn OMP)</span>
+    <span class="n">tol</span><span class="p">:</span> <span class="nb">float</span>                     <span class="c1"># early stopping tolerance</span>
+
+    <span class="n">coef_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>              <span class="c1"># (n_features,) sparse coefficients</span>
+    <span class="n">intercept_</span><span class="p">:</span> <span class="nb">float</span>              <span class="c1"># fitted intercept</span>
+    <span class="n">active_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>            <span class="c1"># indices of selected features</span>
+    <span class="n">n_nonzero_coefs_</span><span class="p">:</span> <span class="nb">int</span>          <span class="c1"># actual number selected</span>
+    <span class="n">n_iter_</span><span class="p">:</span> <span class="nb">int</span>                   <span class="c1"># iterations performed</span>
+</code></pre></div>
+<p>OMP that operates on a <code>LazyBasisMatrix</code>.  At each iteration:</p>
+<ol>
+<li>Scan all features via <code>dot_with_residual</code> to find the one most
+   correlated with the residual.</li>
+<li>Solve the least-squares problem on the (small) active submatrix.</li>
+<li>Update the residual.</li>
+</ol>
+<p>When <code>fit_intercept=True</code> (default), the algorithm centres <span class="arithmatex">\(y\)</span> for the
+correlation scan and solves the augmented problem
+<span class="arithmatex">\([\,\mathbf{1} \mid X_{\text{active}}\,]\,\mathbf{w} \approx \mathbf{y}\)</span>,
+matching sklearn's <code>OrthogonalMatchingPursuit</code>.</p>
+<p><strong>Methods:</strong> <code>fit(y)</code>, <code>predict(lazy_basis)</code></p>
+<hr />
+<h3 id="streamingompcv"><code>StreamingOMPCV</code></h3>
+<div class="highlight"><pre><span></span><code><span class="k">class</span><span class="w"> </span><span class="nc">StreamingOMPCV</span><span class="p">:</span>
+    <span class="n">lazy_basis</span><span class="p">:</span> <span class="n">LazyBasisMatrix</span>
+    <span class="n">cv</span><span class="p">:</span> <span class="nb">int</span>                        <span class="c1"># number of CV folds (default 10)</span>
+    <span class="n">max_iter</span><span class="p">:</span> <span class="nb">int</span>                  <span class="c1"># max non-zero coefs to consider</span>
+    <span class="n">fit_intercept</span><span class="p">:</span> <span class="nb">bool</span>
+    <span class="n">scoring</span><span class="p">:</span> <span class="nb">str</span>                   <span class="c1"># &#39;r2&#39; or &#39;mse&#39;</span>
+    <span class="n">random_state</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">n_jobs</span><span class="p">:</span> <span class="nb">int</span>                    <span class="c1"># parallel fold evaluation (default 1)</span>
+
+    <span class="n">coef_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">intercept_</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">active_</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span>
+    <span class="n">n_nonzero_coefs_</span><span class="p">:</span> <span class="nb">int</span>          <span class="c1"># optimal sparsity level</span>
+    <span class="n">best_cv_score_</span><span class="p">:</span> <span class="nb">float</span>
+    <span class="n">cv_scores_</span><span class="p">:</span> <span class="nb">list</span>               <span class="c1"># [(n_nz, mean_score, std_score), ...]</span>
+</code></pre></div>
+<p>Cross-validated OMP with retrospective sparsity selection.  Evaluates
+the full sparsity path (1 … <code>max_iter</code>) via K-fold CV and selects the
+level with the best mean score.</p>
+<p><strong>Parallel CV:</strong> When <code>n_jobs &gt; 1</code> and <code>joblib</code> is installed, folds are
+evaluated in parallel.  Each fold computes the full sparsity path
+independently; scores are then aggregated.  On Linux, the shared
+primitives array is accessed read-only across forked workers
+(zero-copy).  The warm-up JIT compilation is shared via Numba's
+disk cache.</p>
+<p><strong>Methods:</strong> <code>fit(y)</code>, <code>predict(lazy_basis)</code></p>
+<hr />
+<h2 id="memory-scaling">Memory Scaling</h2>
+<p>For <span class="arithmatex">\(d\)</span> inputs, <code>polys=[8,6,2]</code>, and <span class="arithmatex">\(n\)</span> samples:</p>
+<table>
+<thead>
+<tr>
+<th>Component</th>
+<th>Formula</th>
+<th>Size at <span class="arithmatex">\(d{=}20\)</span>, <span class="arithmatex">\(n{=}10\,000\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Primitives</td>
+<td><span class="arithmatex">\(d \cdot 8 \cdot n \cdot 8\)</span> B</td>
+<td><strong>12.8 MB</strong></td>
+</tr>
+<tr>
+<td>Feature recipes</td>
+<td><span class="arithmatex">\(\sum \binom{d}{k} \cdot p_k \cdot k \cdot 4\)</span> B</td>
+<td><strong>~1 MB</strong></td>
+</tr>
+<tr>
+<td>Full design matrix (dense)</td>
+<td><span class="arithmatex">\(\sum \binom{d}{k} \cdot p^k \cdot n \cdot 8\)</span> B</td>
+<td><strong>~1.5 GB</strong></td>
+</tr>
+<tr>
+<td>Active submatrix (sparse)</td>
+<td><span class="arithmatex">\(\approx 100 \cdot n \cdot 8\)</span> B</td>
+<td><strong>~8 MB</strong></td>
+</tr>
+</tbody>
+</table>
+<p>The streaming path uses <strong>~22 MB</strong> instead of <strong>~1.5 GB</strong> — a 70×
+reduction.  The gap widens with higher-dimensional expansions.</p>
+<hr />
+<h2 id="benchmarks">Benchmarks</h2>
+<p>Sobol G-function, <span class="arithmatex">\(d{=}20\)</span>, <code>polys=[8,6,2]</code>, <span class="arithmatex">\(n{=}2\,000\)</span>, 80 non-zero
+coefficients.  Numba 0.65.1, Intel i7 (8 cores):</p>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th>Time</th>
+<th>Memory</th>
+<th>R²</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dense OMP (<code>method='omp'</code>)</td>
+<td>49.5 s</td>
+<td>258 MB</td>
+<td>0.9803</td>
+</tr>
+<tr>
+<td>Streaming OMP (<code>method='omp_stream'</code>)</td>
+<td><strong>4.5 s</strong></td>
+<td>3 MB</td>
+<td>0.9802</td>
+</tr>
+<tr>
+<td>Streaming OMP-CV 10-fold, seq</td>
+<td>51.0 s</td>
+<td>3 MB</td>
+<td>0.8271 (CV)</td>
+</tr>
+<tr>
+<td>Streaming OMP-CV 10-fold, 4 jobs</td>
+<td><strong>35.3 s</strong></td>
+<td>3 MB</td>
+<td>0.8271 (CV)</td>
+</tr>
+</tbody>
+</table>
+<p>Streaming OMP is <strong>4.4× faster</strong> than dense OMP — the primitives fit in
+L3 cache while the dense matrix is RAM-bandwidth-bound.  CV
+parallelisation adds 1.4× on top (or more for larger <span class="arithmatex">\(n\)</span>).</p>
+<hr />
+<h2 id="how-to-use">How to Use</h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx</span><span class="w"> </span><span class="kn">import</span> <span class="n">rshdmr</span>
+
+<span class="c1"># Streaming OMP — drop-in for method=&#39;omp&#39;</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;omp_stream&#39;</span><span class="p">,</span> <span class="n">n_iter</span><span class="o">=</span><span class="mi">80</span><span class="p">)</span>
+<span class="n">sobol</span><span class="p">,</span> <span class="n">shapley</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+
+<span class="c1"># Streaming OMP with CV and 4-fold-parallel evaluation</span>
+<span class="n">model</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;omp_cv_stream&#39;</span><span class="p">,</span>
+               <span class="n">n_iter</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">sobol</span><span class="p">,</span> <span class="n">shapley</span><span class="p">,</span> <span class="n">total</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+</code></pre></div>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../mc_shapley/" class="btn btn-neutral float-left" title="MC Shapley"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../../explanation/theory/" class="btn btn-neutral float-right" title="Theory">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../mc_shapley/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../../explanation/theory/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/explanation/streaming-omp/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Streaming Basis Expansion - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Streaming Basis Expansion";
+        var mkdocs_page_input_path = "explanation/streaming-omp.md";
+        var mkdocs_page_url = "/shapleyx/explanation/streaming-omp/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../user-guide/">User Guide</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam/">Cantilever Beam</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam_copulas/">Cantilever Beam with Modern Copula Samplers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/wing_weight/">Wing Weight</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/fire_spread/">Fire Spread</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sobolG_function/">Sobol G50</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_shapleyx_example/">Global Sensitivity Analysis of the SAC-SMA Rainfall-Runoff Model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_owen_effects/">Owen (Grouped) Shapley Effects for the SAC-SMA Model</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/streaming-omp/">Streaming OMP</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../value-function/">Value Function v(S)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../rs_hdmr/">RS-HDMR Construction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../distributions/">Distribution Classes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../arbitrary-marginals/">Arbitrary Marginals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../owen-effects/">Owen (Grouped) Effects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../case_studies/">Case Studies</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Streaming Basis Expansion</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#the-memory-problem">The Memory Problem</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#what-the-streaming-path-does-differently">What the Streaming Path Does Differently</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#why-streaming-omp-can-be-faster">Why Streaming OMP Can Be Faster</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#when-to-use-which-method">When to Use Which Method</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#parallel-cv">Parallel CV</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#correctness-guarantee">Correctness Guarantee</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#implementation-architecture">Implementation Architecture</a>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../moment-free/">Moment-Free Measures</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../performance/">Performance</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Explanation</li>
+      <li class="breadcrumb-item active">Streaming Basis Expansion</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/explanation/streaming-omp.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="streaming-basis-expansion">Streaming Basis Expansion</h1>
+<h2 id="the-memory-problem">The Memory Problem</h2>
+<p>RS-HDMR builds candidate basis functions by taking products of
+shifted Legendre polynomials over all input-variable subsets up to
+the expansion order.  For <code>polys=[p_1, p_2, \dots, p_m]</code> with <span class="arithmatex">\(d\)</span>
+inputs:</p>
+<div class="arithmatex">\[N_{\text{features}} = \sum_{k=1}^{m} \binom{d}{k} \cdot p_k^{\,k}\]</div>
+<p>The full design matrix is <span class="arithmatex">\(n \times N_{\text{features}}\)</span>.  This grows
+quickly:</p>
+<table>
+<thead>
+<tr>
+<th style="text-align: right;"><span class="arithmatex">\(d\)</span></th>
+<th><code>polys</code></th>
+<th style="text-align: right;">Features</th>
+<th style="text-align: right;">Memory at <span class="arithmatex">\(n{=}10\,000\)</span></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: right;">10</td>
+<td>[8,6,4]</td>
+<td style="text-align: right;">9 380</td>
+<td style="text-align: right;">0.75 GB</td>
+</tr>
+<tr>
+<td style="text-align: right;">15</td>
+<td>[8,6,4]</td>
+<td style="text-align: right;">33 020</td>
+<td style="text-align: right;">2.6 GB</td>
+</tr>
+<tr>
+<td style="text-align: right;">20</td>
+<td>[8,6,4]</td>
+<td style="text-align: right;">79 960</td>
+<td style="text-align: right;"><strong>6.4 GB</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">20</td>
+<td>[10,8,6,4]</td>
+<td style="text-align: right;">1 498 920</td>
+<td style="text-align: right;"><strong>120 GB</strong></td>
+</tr>
+<tr>
+<td style="text-align: right;">25</td>
+<td>[8,6,4]</td>
+<td style="text-align: right;">158 200</td>
+<td style="text-align: right;">12.7 GB</td>
+</tr>
+</tbody>
+</table>
+<p>For ARD regression the problem is even worse — it precomputes
+<span class="arithmatex">\(X^\top X\)</span>, an <span class="arithmatex">\((N_{\text{features}} \times N_{\text{features}})\)</span>
+matrix (51 GB for the 20-dim 3rd-order case).</p>
+<h2 id="what-the-streaming-path-does-differently">What the Streaming Path Does Differently</h2>
+<p>The key insight is that <strong>most of the pipeline never touches the
+matrix values at all</strong>.  Sobol indices, Shapley effects, bootstrap
+resampling, surrogate prediction, and moment-free measures all
+operate on <em>column labels</em> and <em>coefficient magnitudes</em> — not the
+feature matrix.</p>
+<p>The <strong>only consumer</strong> of the full design matrix is the regression
+step.  For OMP, this access pattern is a sequential scan: at each
+iteration, compute <span class="arithmatex">\(X^\top r\)</span> (the correlation of every feature with
+the current residual).  One column at a time.</p>
+<p>The streaming path replaces the full matrix with two compact
+structures:</p>
+<ol>
+<li>
+<p><strong>Primitive Legendre terms</strong> — <span class="arithmatex">\((n, d \cdot \max(\text{polys}))\)</span>
+   array.  These are the "atoms" that all basis functions are built
+   from.  For <span class="arithmatex">\(d{=}20\)</span>, <code>polys=[8,6,4]</code>, this is 160 columns × 10K
+   rows = <strong>12.8 MB</strong> — small enough to live in L3 cache.</p>
+</li>
+<li>
+<p><strong>Feature recipes</strong> — compact integer descriptors.
+   For a feature like <span class="arithmatex">\(\phi_i(\mathbf{x}) = L_3(x_0) \cdot L_2(x_1)\)</span>,
+   the recipe stores <code>[prim_idx(x0,3), prim_idx(x1,2)]</code>.  At 3 integers
+   per feature, 80K features cost <strong>~1 MB</strong>.</p>
+</li>
+</ol>
+<p>At regression time, columns are computed on the fly from primitives:</p>
+<div class="arithmatex">\[\phi_i(\mathbf{x}_j) = \prod_{f=1}^{k_i} p_{\,j,\;\text{idx}(i,f)}\]</div>
+<p>where <span class="arithmatex">\(p\)</span> is the primitives array and <span class="arithmatex">\(\text{idx}(i,f)\)</span> is the
+flat index of the <span class="arithmatex">\(f\)</span>-th factor of feature <span class="arithmatex">\(i\)</span>.</p>
+<h2 id="why-streaming-omp-can-be-faster">Why Streaming OMP Can Be Faster</h2>
+<p>This is counter-intuitive — recomputing columns on the fly should be
+slower than reading them from memory, right?  It depends on cache:</p>
+<table>
+<thead>
+<tr>
+<th>Path</th>
+<th>Data size</th>
+<th>Location</th>
+<th>Bottleneck</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Dense OMP</td>
+<td>6.4 GB</td>
+<td>RAM (50 GB/s)</td>
+<td><strong>Memory bandwidth</strong></td>
+</tr>
+<tr>
+<td>Streaming OMP</td>
+<td>12.8 MB</td>
+<td>L3 cache (500 GB/s)</td>
+<td><strong>CPU compute</strong></td>
+</tr>
+</tbody>
+</table>
+<p>For the dense path, each correlation scan reads 6.4 GB from RAM —
+0.13 seconds of data transfer for only 0.08 GFLOP of compute.
+The CPU sits idle waiting for RAM.</p>
+<p>For the streaming path, the primitives stay in L3 cache where each
+scan performs 2.4 GFLOP at 3.4 GFLOPS (measured).  The CPU stays
+busy — a compute-bound workload.</p>
+<p><strong>Result:</strong> streaming OMP is 4–5× <em>faster</em> wall-clock than dense OMP
+for problems where the dense matrix exceeds L3 cache size, AND it uses
+70–2000× less memory.</p>
+<h2 id="when-to-use-which-method">When to Use Which Method</h2>
+<table>
+<thead>
+<tr>
+<th>Scenario</th>
+<th>Recommendation</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(d \le 10\)</span>, moderate <code>polys</code></td>
+<td><code>method='ard_cv'</code> — ARD gives best feature selection, memory is manageable</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(d \le 10\)</span>, quick exploration</td>
+<td><code>method='omp'</code> — fastest, no CV overhead</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(d \ge 12\)</span>, any <code>polys</code></td>
+<td><code>method='omp_stream'</code> — memory-efficient, faster than dense</td>
+</tr>
+<tr>
+<td>High-dimensional, need CV</td>
+<td><code>method='omp_cv_stream'</code> — streaming with CV, parallel folds</td>
+</tr>
+<tr>
+<td>A/B comparison: dense vs streaming</td>
+<td>Run both on the same small problem — they produce equivalent results</td>
+</tr>
+</tbody>
+</table>
+<h2 id="parallel-cv">Parallel CV</h2>
+<p>When using <code>method='omp_cv_stream'</code> with <code>n_jobs &gt; 1</code>, CV folds are
+evaluated in parallel via <code>joblib</code>.  Each fold computes the full OMP
+sparsity path <span class="arithmatex">\((1 \dots \text{max\_iter})\)</span> independently, and scores
+are aggregated across folds.</p>
+<p>The speedup depends on per-fold work.  Each fold runs
+<span class="arithmatex">\(\frac{k(k+1)}{2}\)</span> correlation scans for <span class="arithmatex">\(k = \text{max\_iter}\)</span>.
+At 137 ms/scan (typical), a 10-level CV path does ~7.5s of work per
+fold.  4 workers provide ~1.4× speedup; for larger problems (more
+samples, more iterations), the speedup approaches <code>n_jobs</code>.</p>
+<p><strong>Linux note:</strong> The primitive array is shared read-only across
+forked workers — zero copy overhead.</p>
+<h2 id="correctness-guarantee">Correctness Guarantee</h2>
+<p>Streaming OMP implements the same algorithm as sklearn's
+<code>OrthogonalMatchingPursuit</code>.  On any problem small enough to fit
+both ways, the two paths produce numerically equivalent results
+(R² within 0.02%, Sobol indices within 5% relative tolerance,
+Shapley effects within 5% relative tolerance).</p>
+<p>The tiny remaining differences come from:</p>
+<ul>
+<li>The streaming path does not centre the <em>columns</em> of <span class="arithmatex">\(X\)</span> (only
+  <span class="arithmatex">\(y\)</span>), while sklearn centres both.  Since the Legendre basis
+  columns have mean ≈ 0 and are orthogonal in expectation, this
+  difference is negligible for sensitivity analysis.</li>
+<li>Floating-point accumulation order differs between the
+  pre-multiplied dense columns and the on-the-fly products.</li>
+</ul>
+<h2 id="implementation-architecture">Implementation Architecture</h2>
+<div class="highlight"><pre><span></span><code>legendre_expand()
+    │
+    ├─ method in (&#39;omp&#39;,&#39;omp_cv&#39;,&#39;ard&#39;,…) 
+    │   └─ build_basis_set()     → full (n × p) DataFrame
+    │      run_regression()      → sklearn/ARD on dense matrix
+    │
+    └─ method in (&#39;omp_stream&#39;,&#39;omp_cv_stream&#39;)
+        └─ build_basis_set_streaming()  → LazyBasisMatrix (primitives + recipes)
+           run_regression(lazy_basis=…) → StreamingOMP/StreamingOMPCV
+
+Downstream (unchanged):
+    eval_indices()       → uses X_T_L.columns + coef_
+    get_pruned_data()    → builds active columns on demand (streaming)
+                          or slices from DataFrame (dense)
+    resampling           → uses pruned_data
+    predictor            → already builds design on-the-fly
+    PAWN / Delta / H     → calls self.predict()
+</code></pre></div>
+<p>Only three methods in <code>rshdmr</code> branch on <code>self._streaming</code>:
+<code>legendre_expand()</code>, <code>run_regression()</code>, and <code>get_pruned_data()</code>.
+Everything else — Sobol, Shapley, bootstrap, prediction, moment-free
+measures — is unchanged.</p>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../ard_theory/" class="btn btn-neutral float-left" title="ARD Theory"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../moment-free/" class="btn btn-neutral float-right" title="Moment-Free Measures">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../ard_theory/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../moment-free/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>

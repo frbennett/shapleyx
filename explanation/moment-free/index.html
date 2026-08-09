@@ -1,0 +1,792 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><link rel="canonical" href="https://frbennett.github.io/shapleyx/explanation/moment-free/" />
+      <link rel="shortcut icon" href="../../img/favicon.ico" />
+    <title>Moment-Free Measures - ShapleyX Documentation</title>
+    <link rel="stylesheet" href="../../css/theme.css" />
+    <link rel="stylesheet" href="../../css/theme_extra.css" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css" />
+        <link href="../../assets/_mkdocstrings.css" rel="stylesheet" />
+    
+      <script>
+        // Current page data
+        var mkdocs_page_name = "Moment-Free Measures";
+        var mkdocs_page_input_path = "explanation/moment-free.md";
+        var mkdocs_page_url = "/shapleyx/explanation/moment-free/";
+      </script>
+    
+    <!--[if lt IE 9]>
+      <script src="../../js/html5shiv.min.js"></script>
+    <![endif]-->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+      <script>hljs.highlightAll();</script> 
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side stickynav">
+    <div class="wy-side-scroll">
+      <div class="wy-side-nav-search">
+          <a href="../.." class="icon icon-home"> ShapleyX Documentation
+        </a><div role="search">
+  <form id ="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+      <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" title="Type search term here" />
+  </form>
+</div>
+      </div>
+
+      <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../..">Home</a>
+                </li>
+              </ul>
+              <ul>
+                <li class="toctree-l1"><a class="reference internal" href="../../user-guide/">User Guide</a>
+                </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Getting Started</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/installation/">Installation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/quickstart/">Quickstart</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../getting-started/deployment/">Deployment</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Tutorials</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/basic-usage/">Basic Usage</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/owen_product_function/">Example Workflow</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam/">Cantilever Beam</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/cantilever_beam_copulas/">Cantilever Beam with Modern Copula Samplers</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_sobol/">MC Shapley + Sobol</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_kmax/">Coalition Truncation</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/mc_shapley_truncated_normal/">Truncated Normal</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/iooss_prieur_ishigami_correlation/">Correlated Ishigami</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/wing_weight/">Wing Weight</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/fire_spread/">Fire Spread</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sobolG_function/">Sobol G50</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_shapleyx_example/">Global Sensitivity Analysis of the SAC-SMA Rainfall-Runoff Model</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../tutorials/sac_sma_owen_effects/">Owen (Grouped) Shapley Effects for the SAC-SMA Model</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">How-to Guides</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/common-tasks/">Common Tasks</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../how-to-guides/mc-shapley/">MC Shapley</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Reference</span></p>
+              <ul>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/api/">API</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/ard/">ARD</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/mc_shapley/">MC Shapley</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../../reference/streaming-omp/">Streaming OMP</a>
+                  </li>
+              </ul>
+              <p class="caption"><span class="caption-text">Explanation</span></p>
+              <ul class="current">
+                  <li class="toctree-l1"><a class="reference internal" href="../theory/">Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../value-function/">Value Function v(S)</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../rs_hdmr/">RS-HDMR Construction</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../distributions/">Distribution Classes</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../arbitrary-marginals/">Arbitrary Marginals</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../owen-effects/">Owen (Grouped) Effects</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../case_studies/">Case Studies</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../ard_theory/">ARD Theory</a>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../streaming-omp/">Streaming Basis Expansion</a>
+                  </li>
+                  <li class="toctree-l1 current"><a class="reference internal current" href="#">Moment-Free Measures</a>
+    <ul class="current">
+    <li class="toctree-l2"><a class="reference internal" href="#why-moment-free">Why Moment-Free?</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#how-they-work-conceptual">How They Work (Conceptual)</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#1-pawn-pianosi-wagener-2015-2018">1. PAWN (Pianosi &amp; Wagener, 2015, 2018)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#distance-measure">Distance Measure</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#algorithm">Algorithm</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#what-it-returns">What It Returns</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#key-properties">Key Properties</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#api">API</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#reference">Reference</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#2-delta-index-borgonovo-2007">2. Delta Index (Borgonovo, 2007)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#distance-measure_1">Distance Measure</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#algorithm_1">Algorithm</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#what-it-returns_1">What It Returns</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#key-properties_1">Key Properties</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#api_1">API</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#reference_1">Reference</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#3-h-index-kl-divergencebased">3. H-Index (KL Divergence–Based)</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#distance-measure_2">Distance Measure</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#algorithm_2">Algorithm</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#what-it-returns_2">What It Returns</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#key-properties_2">Key Properties</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#when-to-prefer-the-h-index">When to Prefer the H-Index</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#api_2">API</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#reference_2">Reference</a>
+    </li>
+        </ul>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#comparison-summary">Comparison Summary</a>
+    </li>
+    <li class="toctree-l2"><a class="reference internal" href="#practical-guidance">Practical Guidance</a>
+        <ul>
+    <li class="toctree-l3"><a class="reference internal" href="#choosing-a-method">Choosing a Method</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#sample-size-recommendations">Sample Size Recommendations</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#integration-with-the-workflow">Integration with the Workflow</a>
+    </li>
+    <li class="toctree-l3"><a class="reference internal" href="#limitations">Limitations</a>
+    </li>
+        </ul>
+    </li>
+    </ul>
+                  </li>
+                  <li class="toctree-l1"><a class="reference internal" href="../performance/">Performance</a>
+                  </li>
+              </ul>
+      </div>
+    </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      <nav class="wy-nav-top" role="navigation" aria-label="Mobile navigation menu">
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../..">ShapleyX Documentation</a>
+        
+      </nav>
+      <div class="wy-nav-content">
+        <div class="rst-content"><div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../.." class="icon icon-home" aria-label="Docs"></a></li>
+          <li class="breadcrumb-item">Explanation</li>
+      <li class="breadcrumb-item active">Moment-Free Measures</li>
+    <li class="wy-breadcrumbs-aside">
+          <a href="https://github.com/frbennett/shapleyx/edit/master/docs/explanation/moment-free.md" class="icon icon-github"> Edit on GitHub</a>
+    </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+            <div class="section" itemprop="articleBody">
+              
+                <h1 id="moment-free-sensitivity-measures">Moment-Free Sensitivity Measures</h1>
+<p>ShapleyX provides three <strong>moment-free</strong> (distribution-based) sensitivity
+measures alongside its variance-based Sobol and Shapley indices: <strong>PAWN</strong>,
+<strong>Delta</strong>, and the <strong>H-index</strong>.  While Sobol and Shapley indices ask "which
+inputs drive output <em>variance</em>?", moment-free measures ask "which inputs
+change the output <em>distribution</em>?" — a question that matters whenever the
+shape, spread, or tail behaviour of the output is as important as its
+magnitude.</p>
+<p>All three operate on the RS‑HDMR surrogate after it has been trained,
+making them fast to compute even for expensive models.</p>
+<hr />
+<h2 id="why-moment-free">Why Moment-Free?</h2>
+<p>Variance-based measures can miss important effects when inputs</p>
+<ul>
+<li>shift the output's location without affecting variance,</li>
+<li>change the spread (variance) but not the mean, or</li>
+<li>create or dissolve multi-modal, skewed, or heavy-tailed behaviour.</li>
+</ul>
+<p>In physical and environmental models these situations are common.  A
+pollutant input may trigger an algal bloom only past a threshold,
+changing the output distribution's shape without moving its variance
+much — Sobol ≈ 0 but Delta ≫ 0.  Moment-free measures capture
+these effects because they compare the full output distribution, not
+just its moments.</p>
+<table>
+<thead>
+<tr>
+<th>Concern</th>
+<th style="text-align: center;">Variance-based (Sobol, Shapley)</th>
+<th style="text-align: center;">Moment-free (PAWN, Delta, H)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mean shift, variance unchanged</td>
+<td style="text-align: center;">✗ Missed</td>
+<td style="text-align: center;">✓ Detected</td>
+</tr>
+<tr>
+<td>Variance change, mean unchanged</td>
+<td style="text-align: center;">✓ Detected</td>
+<td style="text-align: center;">✓ Detected</td>
+</tr>
+<tr>
+<td>Shape / tail change</td>
+<td style="text-align: center;">✗ Compressed</td>
+<td style="text-align: center;">✓ Detected</td>
+</tr>
+<tr>
+<td>Multi-modality</td>
+<td style="text-align: center;">✗ Compressed</td>
+<td style="text-align: center;">✓ Detected</td>
+</tr>
+<tr>
+<td>Threshold / tipping-point effects</td>
+<td style="text-align: center;">✗ Often missed</td>
+<td style="text-align: center;">✓ Often detected</td>
+</tr>
+<tr>
+<td>Interpretation</td>
+<td style="text-align: center;">% of output variance</td>
+<td style="text-align: center;">Distributional influence</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="how-they-work-conceptual">How They Work (Conceptual)</h2>
+<p>All three share the same core experimental design:</p>
+<ol>
+<li>
+<p><strong>Unconditioned reference</strong> — sample the surrogate model across the
+    full input space to estimate the full output distribution
+    <span class="arithmatex">\(p(y)\)</span>.</p>
+</li>
+<li>
+<p><strong>Conditioned distribution</strong> — for each input <span class="arithmatex">\(X_i\)</span>, fix it to one
+    value <span class="arithmatex">\(x_i\)</span> and sample all other inputs freely to estimate the
+    conditional output distribution <span class="arithmatex">\(p(y \mid X_i = x_i)\)</span>.</p>
+</li>
+<li>
+<p><strong>Compare</strong> — measure the distance between the conditioned
+    distribution and the unconditioned reference.  If fixing <span class="arithmatex">\(X_i\)</span>
+    produces a noticeably different output distribution, <span class="arithmatex">\(X_i\)</span> is
+    influential.</p>
+</li>
+<li>
+<p><strong>Aggregate</strong> — repeat for many values of <span class="arithmatex">\(x_i\)</span> and average
+    the distances to produce a single sensitivity index per input.</p>
+</li>
+</ol>
+<p>Where they differ is in <strong>which distance metric</strong> they use — and
+therefore <em>what kind</em> of distributional change they're most sensitive to.</p>
+<hr />
+<h2 id="1-pawn-pianosi-wagener-2015-2018">1. PAWN (Pianosi &amp; Wagener, 2015, 2018)</h2>
+<p><strong>Core question:</strong> <em>Does conditioning on <span class="arithmatex">\(X_i\)</span> produce a
+statistically distinguishable output CDF?</em></p>
+<h3 id="distance-measure">Distance Measure</h3>
+<p>PAWN uses the <strong>two-sample Kolmogorov–Smirnov (KS) statistic</strong>, the
+maximum vertical distance between two empirical cumulative distribution
+functions:</p>
+<div class="arithmatex">\[
+D_{ks} = \sup_y \left| F_{Y}(y) - F_{Y|X_i}(y) \right|
+\]</div>
+<p>where <span class="arithmatex">\(F_{Y}\)</span> is the unconditional CDF and <span class="arithmatex">\(F_{Y|X_i}\)</span> is the
+CDF conditioned on <span class="arithmatex">\(X_i\)</span> falling in a particular interval.</p>
+<h3 id="algorithm">Algorithm</h3>
+<ol>
+<li>Divide each input variable's range into <span class="arithmatex">\(S\)</span> equal-probability
+    intervals (default <span class="arithmatex">\(S = 10\)</span>).</li>
+<li>For each interval, subset the output samples that fall into that
+    slice and compute <span class="arithmatex">\(D_{ks}\)</span> against the full unconditioned output.</li>
+<li>Across the <span class="arithmatex">\(S\)</span> intervals, report the <strong>minimum, mean, median,
+    and maximum</strong> KS statistic.</li>
+</ol>
+<p>The median KS statistic is the primary PAWN index used for ranking.
+A higher value means the input has a larger effect on the output
+distribution across a wider range of conditioning values.</p>
+<h3 id="what-it-returns">What It Returns</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>minimum</code></td>
+<td>Smallest KS statistic across conditioning intervals</td>
+</tr>
+<tr>
+<td><code>mean</code></td>
+<td>Average KS statistic</td>
+</tr>
+<tr>
+<td><code>median</code></td>
+<td><strong>Primary PAWN index</strong> — consensus distributional effect</td>
+</tr>
+<tr>
+<td><code>maximum</code></td>
+<td>Strongest local effect (may be driven by an extreme interval)</td>
+</tr>
+<tr>
+<td><code>CV</code></td>
+<td>Coefficient of variation (std / mean) — consistency across intervals</td>
+</tr>
+<tr>
+<td><code>stdev</code></td>
+<td>Standard deviation of KS across intervals</td>
+</tr>
+<tr>
+<td><code>null hyp</code></td>
+<td>Accept/reject: is the conditioned distribution distinguishable at <span class="arithmatex">\(\alpha=0.05\)</span>?</td>
+</tr>
+</tbody>
+</table>
+<h3 id="key-properties">Key Properties</h3>
+<ul>
+<li><strong>Distribution-free</strong> — no assumptions about the shape of the output.</li>
+<li><strong>Inexpensive</strong> — KS test is fast; PAWN is the cheapest moment-free method.</li>
+<li><strong>Statistical significance</strong> — provides p-values so non-influential
+  inputs can be formally ruled out.</li>
+<li><strong>Insensitive to conditioning strategy</strong> — using quantile-based intervals
+  avoids sensitivity to binning choices.</li>
+<li><strong>Screening tool</strong> — best used first to identify which variables have
+  <em>any</em> distributional effect before applying more expensive measures.</li>
+</ul>
+<h3 id="api">API</h3>
+<div class="highlight"><pre><span></span><code><span class="c1"># Direct from data (no surrogate required)</span>
+<span class="n">pawn</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_pawn</span><span class="p">(</span><span class="n">S</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+
+<span class="c1"># Via the RS-HDMR surrogate (recommended — much faster)</span>
+<span class="n">pawn</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_pawnx</span><span class="p">(</span><span class="n">num_unconditioned</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">num_conditioned</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+                           <span class="n">num_ks_samples</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="reference">Reference</h3>
+<blockquote>
+<p>Pianosi, F. &amp; Wagener, T. (2015). A simple and efficient method for
+global sensitivity analysis based on cumulative distribution functions.
+<em>Environmental Modelling &amp; Software</em>, 67, 1–11.</p>
+</blockquote>
+<hr />
+<h2 id="2-delta-index-borgonovo-2007">2. Delta Index (Borgonovo, 2007)</h2>
+<p><strong>Core question:</strong> <em>What is the expected shift in the output's probability
+density when you pin <span class="arithmatex">\(X_i\)</span> to a fixed value?</em></p>
+<h3 id="distance-measure_1">Distance Measure</h3>
+<p>The Delta index uses the <strong>L₁ distance between probability density
+functions</strong> — the total area between the unconditioned and conditioned
+PDFs:</p>
+<div class="arithmatex">\[
+\delta_i = \mathbb{E}_{X_i} \left[
+   \frac{1}{2} \int \left| p(y) - p(y \mid X_i) \right| dy
+\right]
+\]</div>
+<p>The factor <span class="arithmatex">\(\frac{1}{2}\)</span> ensures <span class="arithmatex">\(\delta_i \in [0, 1]\)</span>.
+The expectation is taken over the distribution of <span class="arithmatex">\(X_i\)</span>, so this is
+the <em>average</em> PDF shift when <span class="arithmatex">\(X_i\)</span> is varied across its range.</p>
+<h3 id="algorithm_1">Algorithm</h3>
+<ol>
+<li>Estimate the <strong>unconditioned PDF</strong> of the surrogate output via
+    Gaussian KDE with Silverman bandwidth.</li>
+<li>For each input <span class="arithmatex">\(X_i\)</span>, repeat <span class="arithmatex">\(N\)</span> times:<ul>
+<li>Fix <span class="arithmatex">\(X_i = x_i\)</span> (randomly drawn from its range).</li>
+<li>Set all other inputs to the unconditioned reference sample but
+  overwrite column <span class="arithmatex">\(i\)</span> with <span class="arithmatex">\(x_i\)</span>.</li>
+<li>Predict via the surrogate to obtain the conditioned output sample.</li>
+<li>Estimate the <strong>conditioned PDF</strong> via Gaussian KDE.</li>
+<li>Compute the area between the two KDEs via <code>np.trapz</code>.</li>
+</ul>
+</li>
+<li>Average the areas across all <span class="arithmatex">\(N\)</span> conditioning values — that's
+    <span class="arithmatex">\(\delta_i\)</span>.</li>
+</ol>
+<p>The Delta index is then normalised so that <span class="arithmatex">\(\sum_i \delta_i = 1\)</span>,
+giving the <strong>normalised Delta</strong> (<code>delta_norm</code>).</p>
+<h3 id="what-it-returns_1">What It Returns</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>delta</code></td>
+<td>Expected shift in output PDF when <span class="arithmatex">\(X_i\)</span> is fixed</td>
+</tr>
+<tr>
+<td><code>delta_norm</code></td>
+<td>Normalised delta (sums to 1 across all variables)</td>
+</tr>
+<tr>
+<td><code>Var</code></td>
+<td>Input variable label</td>
+</tr>
+</tbody>
+</table>
+<h3 id="key-properties_1">Key Properties</h3>
+<ul>
+<li><strong>Sensitive to all distributional changes</strong> — mean shifts, variance
+  changes, shape changes, multi-modality.</li>
+<li><strong>Single interpretable number</strong> — raw <span class="arithmatex">\(\delta\)</span> is the expected
+  proportion of the output PDF that shifts when the input is known.</li>
+<li><strong>Always non-negative, normalisable</strong> — natural ranking.</li>
+<li><strong>Symmetric</strong> — the L₁ distance is symmetric, so the order of
+  <span class="arithmatex">\(p(y)\)</span> and <span class="arithmatex">\(p(y|X_i)\)</span> doesn't matter.</li>
+<li><strong>More expensive than PAWN</strong> — KDE construction per conditioning value
+  adds computational cost.</li>
+<li><strong>General-purpose</strong> — the best single-number moment-free importance
+  measure when you don't have a specific distributional concern in mind.</li>
+</ul>
+<h3 id="api_1">API</h3>
+<div class="highlight"><pre><span></span><code><span class="n">delta</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_deltax</span><span class="p">(</span><span class="n">num_unconditioned</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">delta_samples</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">delta</span><span class="p">[[</span><span class="s1">&#39;Var&#39;</span><span class="p">,</span> <span class="s1">&#39;delta&#39;</span><span class="p">,</span> <span class="s1">&#39;delta_norm&#39;</span><span class="p">]])</span>
+</code></pre></div>
+<h3 id="reference_1">Reference</h3>
+<blockquote>
+<p>Borgonovo, E. (2007). A new uncertainty importance measure.
+<em>Reliability Engineering &amp; System Safety</em>, 92(6), 771–784.</p>
+</blockquote>
+<hr />
+<h2 id="3-h-index-kl-divergencebased">3. H-Index (KL Divergence–Based)</h2>
+<p><strong>Core question:</strong> <em>How much information is lost if you replace the
+conditioned output distribution with the unconditioned one?</em></p>
+<h3 id="distance-measure_2">Distance Measure</h3>
+<p>The H-index uses <strong>Kullback–Leibler (KL) divergence</strong>, an
+information-theoretic measure of how one probability distribution
+diverges from a reference:</p>
+<div class="arithmatex">\[
+h_i = \mathbb{E}_{X_i} \left[
+   D_{KL}\left( p(y \mid X_i) \;\|\; p(y) \right)
+\right]
+\]</div>
+<p>where</p>
+<div class="arithmatex">\[
+D_{KL}(p \| q) = \int p(y) \log\frac{p(y)}{q(y)} \, dy
+\]</div>
+<h3 id="algorithm_2">Algorithm</h3>
+<p>The H-index follows the same structure as Delta:</p>
+<ol>
+<li>Estimate the unconditioned PDF <span class="arithmatex">\(p(y)\)</span> via Gaussian KDE.</li>
+<li>For each input <span class="arithmatex">\(X_i\)</span>, repeat <span class="arithmatex">\(N\)</span> times:<ul>
+<li>Fix <span class="arithmatex">\(X_i = x_i\)</span> and obtain the conditioned output sample.</li>
+<li>Estimate <span class="arithmatex">\(p(y \mid X_i)\)</span> via Gaussian KDE.</li>
+<li>Compute <span class="arithmatex">\(D_{KL}(p(y \mid X_i) \| p(y))\)</span> — KL divergence
+  from the <em>conditioned</em> distribution to the <em>unconditioned</em> one.</li>
+</ul>
+</li>
+<li>Average across conditioning values — that's <span class="arithmatex">\(h_i\)</span>.</li>
+</ol>
+<p>A small <span class="arithmatex">\(\epsilon\)</span> (default <span class="arithmatex">\(10^{-10}\)</span>) is added to KDE
+evaluations to prevent numerical issues from near-zero density regions.</p>
+<h3 id="what-it-returns_2">What It Returns</h3>
+<table>
+<thead>
+<tr>
+<th>Column</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>delta</code></td>
+<td>Mean KL divergence when <span class="arithmatex">\(X_i\)</span> is fixed</td>
+</tr>
+<tr>
+<td><code>delta_norm</code></td>
+<td>Normalised (sums to 1 across all variables)</td>
+</tr>
+<tr>
+<td><code>Var</code></td>
+<td>Input variable label</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Column naming</p>
+<p>The H-index uses <code>delta</code> as the column name for the raw KL value,
+reflecting its implementation heritage.  The scores are <strong>not</strong>
+comparable to Delta index values — they use fundamentally different
+distance metrics with different scales.</p>
+</div>
+<h3 id="key-properties_2">Key Properties</h3>
+<ul>
+<li><strong>Information-theoretic</strong> — KL divergence quantifies the information
+  lost when using the unconditioned distribution as an approximation
+  for the conditioned one.</li>
+<li><strong>Penalises narrow conditioned distributions</strong> — if conditioning
+  produces a tight, peaked distribution, KL divergence is large because
+  the unconditioned distribution assigns low probability to those
+  regions.</li>
+<li><strong>Asymmetric</strong> — <span class="arithmatex">\(D_{KL}(p \| q) \neq D_{KL}(q \| p)\)</span>.
+  The H-index measures divergence <em>from the conditioned</em> to the
+  <em>unconditioned</em>, so it's sensitive to cases where the input
+  concentrates the output into a narrow range.</li>
+<li><strong>Sensitive to tail behaviour</strong> — heavy or light tails in the
+  conditioned distribution produce large KL values.</li>
+<li><strong>No upper bound</strong> — unlike Delta (<span class="arithmatex">\(\in [0,1]\)</span>), KL divergence
+  is <span class="arithmatex">\(\in [0, \infty)\)</span>, so absolute values are not directly
+  interpretable as proportions.  Use <code>delta_norm</code> for ranking.</li>
+<li><strong>Computationally similar to Delta</strong> — KDE construction per
+  conditioning value dominates cost.</li>
+</ul>
+<h3 id="when-to-prefer-the-h-index">When to Prefer the H-Index</h3>
+<p>The H-index is the best moment-free choice when:</p>
+<ul>
+<li>The output has <strong>heavy tails</strong> (flood risk, extreme events, financial
+  loss distributions) and you care about capturing tail behaviour.</li>
+<li>Conditioning produces <strong>narrower, more informative</strong> output
+  distributions — KL divergence naturally rewards this.</li>
+<li>You want the <strong>most theoretically principled</strong> information measure
+  (KL divergence has deep connections to Bayesian inference and
+  information geometry).</li>
+</ul>
+<h3 id="api_2">API</h3>
+<div class="highlight"><pre><span></span><code><span class="n">h_idx</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_hx</span><span class="p">(</span><span class="n">num_unconditioned</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">delta_samples</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">h_idx</span><span class="p">[[</span><span class="s1">&#39;Var&#39;</span><span class="p">,</span> <span class="s1">&#39;delta&#39;</span><span class="p">,</span> <span class="s1">&#39;delta_norm&#39;</span><span class="p">]])</span>
+</code></pre></div>
+<h3 id="reference_2">Reference</h3>
+<blockquote>
+<p>The H-index is an implementation of KL-divergence-based sensitivity
+analysis.  See also: Liu, H., Chen, W., &amp; Sudjianto, A. (2006).
+Relative entropy based method for probabilistic sensitivity analysis
+in engineering design. <em>Journal of Mechanical Design</em>, 128(2), 326–336.</p>
+</blockquote>
+<hr />
+<h2 id="comparison-summary">Comparison Summary</h2>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>PAWN</th>
+<th>Delta</th>
+<th>H-index</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Distance measure</strong></td>
+<td>KS statistic (CDF)</td>
+<td>L₁ area between PDFs</td>
+<td>KL divergence (information)</td>
+</tr>
+<tr>
+<td><strong>Range of raw index</strong></td>
+<td><span class="arithmatex">\([0, 1]\)</span></td>
+<td><span class="arithmatex">\([0, 1]\)</span></td>
+<td><span class="arithmatex">\([0, \infty)\)</span></td>
+</tr>
+<tr>
+<td><strong>Statistical test?</strong></td>
+<td>✓ Yes (p-values)</td>
+<td>✗ No</td>
+<td>✗ No</td>
+</tr>
+<tr>
+<td><strong>Interpretation</strong></td>
+<td>"How distinguishable?"</td>
+<td>"How much density shifts?"</td>
+<td>"How much information lost?"</td>
+</tr>
+<tr>
+<td><strong>Sensitive to</strong></td>
+<td>Any CDF change</td>
+<td>Any PDF change</td>
+<td>Tails, narrow peaks, concentration</td>
+</tr>
+<tr>
+<td><strong>Computational cost</strong></td>
+<td>★☆☆ Lowest</td>
+<td>★★☆ Medium</td>
+<td>★★☆ Medium</td>
+</tr>
+<tr>
+<td><strong>Best use case</strong></td>
+<td>Screening</td>
+<td>General ranking</td>
+<td>Tail / peak sensitivity</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="practical-guidance">Practical Guidance</h2>
+<h3 id="choosing-a-method">Choosing a Method</h3>
+<ul>
+<li><strong>Start with PAWN</strong> — it's the fastest and provides statistical
+  significance tests.  If PAWN says an input has no distributional
+  effect, you can confidently ignore it.</li>
+<li><strong>Use Delta for ranking</strong> — its normalisation to sum-to-1 makes it the
+  most intuitive for presenting relative importance to stakeholders.</li>
+<li><strong>Use the H-index when tails matter</strong> — flood risk, extreme events,
+  failure probability, and any application where the extremes of the
+  distribution are the quantity of interest.</li>
+</ul>
+<h3 id="sample-size-recommendations">Sample Size Recommendations</h3>
+<table>
+<thead>
+<tr>
+<th>Method</th>
+<th style="text-align: center;"><code>num_unconditioned</code></th>
+<th style="text-align: center;"><code>num_conditioned</code> / <code>delta_samples</code></th>
+<th>Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>PAWN</td>
+<td style="text-align: center;">1000</td>
+<td style="text-align: center;">500</td>
+<td>KS test has good power with moderate samples</td>
+</tr>
+<tr>
+<td>Delta</td>
+<td style="text-align: center;">1000–5000</td>
+<td style="text-align: center;">200–1000</td>
+<td>More samples improve KDE accuracy</td>
+</tr>
+<tr>
+<td>H-index</td>
+<td style="text-align: center;">1000–5000</td>
+<td style="text-align: center;">200–1000</td>
+<td>KL divergence is more sensitive to small-sample KDE noise</td>
+</tr>
+</tbody>
+</table>
+<h3 id="integration-with-the-workflow">Integration with the Workflow</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">shapleyx</span><span class="w"> </span><span class="kn">import</span> <span class="n">rshdmr</span>
+
+<span class="c1"># Train the RS-HDMR model</span>
+<span class="n">analyzer</span> <span class="o">=</span> <span class="n">rshdmr</span><span class="p">(</span><span class="s2">&quot;data.csv&quot;</span><span class="p">,</span> <span class="n">polys</span><span class="o">=</span><span class="p">[</span><span class="mi">10</span><span class="p">],</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;ard_cv&#39;</span><span class="p">)</span>
+<span class="n">analyzer</span><span class="o">.</span><span class="n">run_all</span><span class="p">()</span>
+
+<span class="c1"># Variance-based indices</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">analyzer</span><span class="o">.</span><span class="n">sobol_indices</span><span class="p">)</span>
+
+<span class="c1"># Moment-free measures</span>
+<span class="n">pawn</span>  <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_pawnx</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+<span class="n">delta</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_deltax</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+<span class="n">h_idx</span> <span class="o">=</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">get_hx</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">500</span><span class="p">)</span>
+
+<span class="c1"># Combine all measures into one table</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="n">comparison</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span>
+    <span class="s1">&#39;Variable&#39;</span><span class="p">:</span> <span class="n">pawn</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+    <span class="s1">&#39;Sobol_S1&#39;</span><span class="p">:</span>   <span class="n">analyzer</span><span class="o">.</span><span class="n">sobol_indices</span><span class="p">[</span><span class="s1">&#39;S1&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;Shapley&#39;</span><span class="p">:</span>    <span class="n">analyzer</span><span class="o">.</span><span class="n">sobol_indices</span><span class="p">[</span><span class="s1">&#39;Shapley&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;PAWN&#39;</span><span class="p">:</span>       <span class="n">pawn</span><span class="p">[</span><span class="s1">&#39;median&#39;</span><span class="p">],</span>
+    <span class="s1">&#39;Delta&#39;</span><span class="p">:</span>      <span class="n">delta</span><span class="p">[</span><span class="s1">&#39;delta_norm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+    <span class="s1">&#39;H-index&#39;</span><span class="p">:</span>    <span class="n">h_idx</span><span class="p">[</span><span class="s1">&#39;delta_norm&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+<span class="p">})</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">comparison</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">))</span>
+</code></pre></div>
+<h3 id="limitations">Limitations</h3>
+<ul>
+<li><strong>All three methods</strong> operate on the RS‑HDMR surrogate, so their
+  accuracy depends on the quality of the surrogate fit.  Check the
+  <span class="arithmatex">\(R^2\)</span> or explained variance (<code>evs</code>) before interpreting
+  moment-free results.</li>
+<li><strong>KDE-based methods</strong> (Delta, H-index) can be unreliable with very
+  small samples or strongly multi-modal outputs.  Increase
+  <code>num_unconditioned</code> if the output distribution is complex.</li>
+<li><strong>Moment-free indices do not decompose output variance</strong> — they cannot
+  be used to close a variance budget or identify interaction effects.
+  They are complementary to, not replacements for, Sobol and Shapley
+  indices.</li>
+<li><strong>No interaction detection</strong> — the current implementation compares
+  only single-variable conditioning against the unconditioned reference.
+  For interaction effects, use Owen-Shapley interactions from the
+  variance-based framework.</li>
+</ul>
+              
+            </div>
+          </div><footer>
+    <div class="rst-footer-buttons" role="navigation" aria-label="Footer Navigation">
+        <a href="../streaming-omp/" class="btn btn-neutral float-left" title="Streaming Basis Expansion"><span class="icon icon-circle-arrow-left"></span> Previous</a>
+        <a href="../performance/" class="btn btn-neutral float-right" title="Performance">Next <span class="icon icon-circle-arrow-right"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <!-- Copyright etc -->
+  </div>
+
+  Built with <a href="https://www.mkdocs.org/">MkDocs</a> using a <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>.
+</footer>
+          
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+
+  <div class="rst-versions" role="note" aria-label="Versions">
+  <span class="rst-current-version" data-toggle="rst-current-version">
+    
+        <span>
+          <a href="https://github.com/frbennett/shapleyx" class="fa fa-github" style="color: #fcfcfc"> GitHub</a>
+        </span>
+    
+    
+      <span><a href="../streaming-omp/" style="color: #fcfcfc">&laquo; Previous</a></span>
+    
+    
+      <span><a href="../performance/" style="color: #fcfcfc">Next &raquo;</a></span>
+    
+  </span>
+</div>
+    <script src="../../js/jquery-3.6.0.min.js"></script>
+    <script>var base_url = "../..";</script>
+    <script src="../../js/theme_extra.js"></script>
+    <script src="../../js/theme.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+      <script src="../../search/main.js"></script>
+    <script>
+        jQuery(function () {
+            SphinxRtdTheme.Navigation.enable(true);
+        });
+    </script>
+
+</body>
+</html>
