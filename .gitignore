@@ -8,5 +8,8 @@ site/
 # Ignore mkdocs-jupyter cache
 .cache/
 
+# CodeGraph MCP cache
+.codegraph/
+
 # Ignore egg-info
 *.egg-info/

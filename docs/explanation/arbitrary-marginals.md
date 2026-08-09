@@ -70,6 +70,52 @@ Or via the RS-HDMR pipeline:
 analyzer.get_mc_shapley(joint=joint, N=5000)
 ```
 
+## Declarative Specs: `GaussianCopulaMixed` and `TCopulaMixed`
+
+For the common case — a handful of named parametric families — the
+`GaussianCopulaMixed` / `TCopulaMixed` classes provide a **declarative
+marginal spec** (family name + parameters) plus a **Student-t copula
+option** with exact conditional sampling:
+
+```python
+from shapleyx.utilities.mc_shapley import GaussianCopulaMixed, TCopulaMixed
+import numpy as np
+
+marginals = {
+    'FX': ('lognormal', {'mean': 556.8, 'cv': 0.08}),   # paper-Table-1 style
+    'FY': ('lognormal', {'mu': 6.31, 'sigma': 0.0799}), # underlying-normal style
+    'E':  ('normal', 200e9, 1.2e10),                    # (mean, std)
+    'lX': ('uniform', 0.025, 0.100),                    # (lo, hi)
+    'lY': ('truncnorm', 0.04, 0.16, 0.0987, 0.00987),   # (lo, hi, mean, std)
+    'L':  ('beta', 2.0, 5.0, 2.0, 7.0),                 # (a, b, lo, hi)
+    'Q':  weibull_min(c=2),                             # scipy passthrough
+    'R':  (my_cdf, my_ppf),                             # tuple passthrough
+}
+
+joint_g = GaussianCopulaMixed(marginals, corr)          # Gaussian copula
+joint_t = TCopulaMixed(marginals, corr, nu=5.0)         # Student-t copula
+```
+
+**Registered families:** `normal`, `lognormal`, `uniform`, `truncnorm`,
+`beta`, `gamma`, `exponential`, `weibull`, `gumbel`, `frechet`, `pareto` —
+plus the full `GaussianCopulaArbitrary` passthrough contract (scipy
+distributions, `(cdf, ppf)` tuples, callable PPFs, `None`/`'uniform'`).
+
+**Lognormal parameterisation** is deliberately restricted to *named* forms
+to prevent the classic parameterisation bug — exactly one of
+`{'mean', 'cv'}` (paper style) or `{'mu', 'sigma'}` (underlying normal).
+A bare positional tuple like `('lognormal', 556.8, 0.08)` raises.
+
+**`TCopulaMixed`** applies the t-copula to the *correlated block* only
+(uncorrelated variables stay independent — a plain block-diagonal
+$t_\nu(0,R)$ does not factorise).  Conditional sampling is exact via the
+multivariate-t conditioning result (no MCMC).  RQMC/deterministic sampling
+is not implemented for the t kernel yet — use `method='exhaustive'`.
+
+`GaussianCopulaMixed` draws are RNG-stream-identical to the notebook
+implementation used in the Demange-Chryst et al. (2022) cantilever
+reproduction, so published numbers reproduce exactly.
+
 ## Custom Marginals from MCMC Posterior
 
 ```python

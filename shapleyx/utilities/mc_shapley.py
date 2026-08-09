@@ -21,7 +21,20 @@ Reference:
 """
 
 import numpy as np
-from scipy.stats import norm, truncnorm
+from scipy.stats import (
+    norm,
+    truncnorm,
+    lognorm,
+    uniform,
+    beta,
+    gamma as gamma_dist,
+    expon,
+    weibull_min,
+    gumbel_r,
+    invweibull,
+    pareto,
+    t as student_t,
+)
 import itertools
 import math
 import pandas as pd
@@ -703,6 +716,583 @@ class GaussianCopulaArbitrary:
 
         U_full = norm.cdf(Z_full)               # (N, d) in [0, 1]
         return self._to_physical(U_full)        # (N, d) in physical space
+
+
+# ---------------------------------------------------------------------
+# Mixed-marginal copula classes (declarative marginal spec registry)
+#
+#   GaussianCopulaMixed(marginals, corr)        — Gaussian copula
+#   TCopulaMixed(marginals, corr, nu)           — Student-t copula
+#
+# Both share `_MixedCopulaBase` (marginal registry, physical transforms,
+# correlated-block bookkeeping) and differ only in the latent kernel.
+# The marginal spec is declarative:
+#
+#   marginals = {
+#       'FX': ('lognormal', {'mean': 556.8, 'cv': 0.08}),   # paper Table 1 style
+#       'FY': ('lognormal', {'mu': 6.31, 'sigma': 0.08}),   # underlying-normal style
+#       'E':  ('normal', 200e9, 1.2e10),                    # (mean, std)
+#       'lX': ('uniform', 0.025, 0.100),                    # (lo, hi)
+#       'lY': ('truncnorm', 0.04, 0.16, 0.0987, 0.00987),   # (lo, hi, mean, std)
+#       'L':  ('beta', 2.0, 5.0, 2.0, 7.0),                 # (a, b, lo, hi)
+#       'Q':  scipy.stats.weibull_min(c=2),                 # passthrough
+#       'R':  (my_cdf, my_ppf),                             # passthrough
+#   }
+#
+# Family registry: normal, lognormal, uniform, truncnorm, beta, gamma,
+# exponential, weibull, gumbel, frechet, pareto  (+ scipy-dist / tuple /
+# callable / None passthrough, as in GaussianCopulaArbitrary).
+# ---------------------------------------------------------------------
+
+_MARGINAL_REGISTRY = {}
+
+
+def _register_marginal(family, builder):
+    """Register a marginal family.
+
+    ``builder(params, name) -> scipy.stats distribution`` where ``params``
+    is a positional tuple (all families) or a dict (lognormal only).
+    """
+    _MARGINAL_REGISTRY[family] = builder
+
+
+def _build_normal(params, name):
+    if len(params) != 2:
+        raise TypeError(f"Marginal '{name}': 'normal' needs (mean, std), got {params!r}.")
+    return norm(loc=params[0], scale=params[1])
+
+
+def _build_lognormal(params, name):
+    if not isinstance(params, dict):
+        raise TypeError(
+            f"Marginal '{name}': 'lognormal' requires a dict with EXACTLY ONE of "
+            f"(mean, cv) or (mu, sigma) — a bare positional tuple is ambiguous. "
+            f"Use ('lognormal', {{'mean': ..., 'cv': ...}}) or "
+            f"('lognormal', {{'mu': ..., 'sigma': ...}}). Got {params!r}."
+        )
+    has_mc = 'mean' in params and 'cv' in params
+    has_ms = 'mu' in params and 'sigma' in params
+    if has_mc == has_ms:
+        raise TypeError(
+            f"Marginal '{name}': 'lognormal' requires EXACTLY ONE of "
+            f"(mean, cv) or (mu, sigma). Got keys {sorted(params)}."
+        )
+    if has_mc:
+        mean, cv = params['mean'], params['cv']
+        s = np.sqrt(np.log(1 + cv**2))
+        mu = np.log(mean) - 0.5 * s**2
+    else:
+        mu, s = params['mu'], params['sigma']
+    return lognorm(s=s, scale=np.exp(mu))
+
+
+def _build_uniform(params, name):
+    if len(params) != 2:
+        raise TypeError(f"Marginal '{name}': 'uniform' needs (lo, hi), got {params!r}.")
+    lo, hi = params
+    return uniform(loc=lo, scale=hi - lo)
+
+
+def _build_truncnorm(params, name):
+    if len(params) != 4:
+        raise TypeError(
+            f"Marginal '{name}': 'truncnorm' needs (lo, hi, mean, std), got {params!r}."
+        )
+    lo, hi, mean, std = params
+    if std <= 0:
+        raise ValueError(f"Marginal '{name}': std must be positive, got {std}.")
+    return truncnorm(a=(lo - mean) / std, b=(hi - mean) / std, loc=mean, scale=std)
+
+
+def _build_beta(params, name):
+    if len(params) != 4:
+        raise TypeError(f"Marginal '{name}': 'beta' needs (a, b, lo, hi), got {params!r}.")
+    a, b, lo, hi = params
+    return beta(a=a, b=b, loc=lo, scale=hi - lo)
+
+
+def _build_gamma(params, name):
+    if len(params) != 2:
+        raise TypeError(
+            f"Marginal '{name}': 'gamma' needs (shape, scale), got {params!r}."
+        )
+    return gamma_dist(params[0], scale=params[1])
+
+
+def _build_exponential(params, name):
+    if len(params) != 1:
+        raise TypeError(
+            f"Marginal '{name}': 'exponential' needs (scale,), got {params!r}."
+        )
+    return expon(scale=params[0])
+
+
+def _build_weibull(params, name):
+    if len(params) != 2:
+        raise TypeError(f"Marginal '{name}': 'weibull' needs (c, scale), got {params!r}.")
+    return weibull_min(c=params[0], scale=params[1])
+
+
+def _build_gumbel(params, name):
+    if len(params) != 2:
+        raise TypeError(f"Marginal '{name}': 'gumbel' needs (loc, scale), got {params!r}.")
+    return gumbel_r(loc=params[0], scale=params[1])
+
+
+def _build_frechet(params, name):
+    if len(params) != 2:
+        raise TypeError(
+            f"Marginal '{name}': 'frechet' needs (c, scale), got {params!r}."
+        )
+    # scipy's Fréchet is invweibull (frechet_r alias removed in scipy >= 1.15)
+    return invweibull(c=params[0], scale=params[1])
+
+
+def _build_pareto(params, name):
+    if len(params) != 2:
+        raise TypeError(f"Marginal '{name}': 'pareto' needs (b, scale), got {params!r}.")
+    return pareto(b=params[0], scale=params[1])
+
+
+_register_marginal('normal', _build_normal)
+_register_marginal('lognormal', _build_lognormal)
+_register_marginal('uniform', _build_uniform)
+_register_marginal('truncnorm', _build_truncnorm)
+_register_marginal('beta', _build_beta)
+_register_marginal('gamma', _build_gamma)
+_register_marginal('exponential', _build_exponential)
+_register_marginal('weibull', _build_weibull)
+_register_marginal('gumbel', _build_gumbel)
+_register_marginal('frechet', _build_frechet)
+_register_marginal('pareto', _build_pareto)
+
+
+class _MixedCopulaBase:
+    """Shared machinery for mixed-marginal copula classes.
+
+    Handles: the marginal spec registry (declarative family specs plus the
+    ``GaussianCopulaArbitrary`` passthrough contract), physical ↔ [0, 1]
+    transforms, correlated-block bookkeeping, and the public sampling
+    interface (``sample_joint`` / ``sample_conditional`` /
+    ``sample_conditional_batch`` + deterministic RQMC variants).  Samples
+    are returned in **physical space**.
+
+    Subclasses implement the latent kernel via the underscore methods
+    ``_sample_joint``, ``_sample_conditional_batch``,
+    ``_sample_joint_deterministic`` and
+    ``_sample_conditional_batch_deterministic`` (the deterministic hooks
+    default to ``NotImplementedError`` for kernels that do not support
+    RQMC innovations yet).
+    """
+
+    def __init__(self, marginals, corr):
+        self.corr = np.asarray(corr, dtype=float)
+        self.d = len(marginals)
+        if self.corr.shape != (self.d, self.d):
+            raise ValueError(
+                f"corr must be ({self.d}, {self.d}), got {self.corr.shape}"
+            )
+        self._L = np.linalg.cholesky(self.corr)
+
+        # ── Resolve marginals ──
+        self._var_names = []
+        self._ppf = {}          # {j: callable(u) -> physical}
+        self._cdf = {}          # {j: callable(x) -> [0,1]}
+        self._is_identity = {}  # {j: bool} — uniform fast path
+        for j, (name, spec) in enumerate(marginals.items()):
+            self._var_names.append(name)
+            ppf_fn, cdf_fn = self._resolve_marginal(spec, name)
+            self._ppf[j] = ppf_fn
+            self._cdf[j] = cdf_fn
+            self._is_identity[j] = spec is None or spec == 'uniform'
+
+        # ── Correlated block (any nonzero off-diagonal correlation) ──
+        off = np.abs(self.corr - np.eye(self.d)) > 1e-12
+        self._coupled = np.where(off.any(axis=1))[0]
+        self._independent = np.setdiff1d(np.arange(self.d), self._coupled)
+
+    # ── Marginal resolution ─────────────────────────────────────
+
+    @staticmethod
+    def _resolve_marginal(spec, name):
+        """Resolve a marginal spec to ``(ppf, cdf)`` callables.
+
+        Accepted forms (in priority order):
+
+        * ``None`` / ``'uniform'`` — identity pair (fast path).
+        * ``(family, params...)`` — declarative tuple; ``family`` must be
+          registered.  ``lognormal`` requires a dict (see below).
+        * ``{'family': ..., **params}`` — dict form (lognormal kwargs).
+        * ``(cdf, ppf)`` tuple of callables — full specification.
+        * callable — PPF only (CDF unavailable → conditional sampling
+          raises ``RuntimeError``, as in :class:`GaussianCopulaArbitrary`).
+        * ``scipy.stats`` distribution — duck-typed via ``.ppf()`` / ``.cdf()``.
+        """
+        if spec is None or spec == 'uniform':
+            return (lambda u: u, lambda x: x)
+
+        # dict spec: {'family': ..., **params} — lognormal kwargs only
+        if isinstance(spec, dict):
+            spec = dict(spec)
+            family = spec.pop('family', None)
+            if family is None or family not in _MARGINAL_REGISTRY:
+                raise TypeError(
+                    f"Marginal '{name}': dict spec needs a registered 'family' "
+                    f"key. Got {spec!r}."
+                )
+            if family != 'lognormal':
+                raise TypeError(
+                    f"Marginal '{name}': dict specs are only supported for "
+                    f"'lognormal' (named parameters). Use a positional tuple "
+                    f"for '{family}': {spec!r}."
+                )
+            dist = _MARGINAL_REGISTRY[family](spec, name)
+            return dist.ppf, dist.cdf
+
+        if isinstance(spec, tuple):
+            # (cdf, ppf) callable pair — passthrough (must be checked before
+            # the family branch so callable pairs are not misparsed)
+            if len(spec) == 2 and callable(spec[0]) and callable(spec[1]):
+                return spec
+            if spec and isinstance(spec[0], str) and spec[0] in _MARGINAL_REGISTRY:
+                family, rest = spec[0], spec[1:]
+                if family == 'lognormal':
+                    if len(rest) == 1 and isinstance(rest[0], dict):
+                        dist = _MARGINAL_REGISTRY[family](rest[0], name)
+                    else:
+                        raise TypeError(
+                            f"Marginal '{name}': lognormal requires a dict — "
+                            f"('lognormal', {{'mean': ..., 'cv': ...}}) or "
+                            f"('lognormal', {{'mu': ..., 'sigma': ...}}). "
+                            f"Got {spec!r}."
+                        )
+                elif len(rest) == 1 and isinstance(rest[0], dict):
+                    dist = _MARGINAL_REGISTRY[family](rest[0], name)
+                else:
+                    dist = _MARGINAL_REGISTRY[family](rest, name)
+                return dist.ppf, dist.cdf
+            raise TypeError(
+                f"Marginal '{name}': unrecognised tuple spec {spec!r}. "
+                f"Use ('family', params...), a (cdf, ppf) callable pair, "
+                f"or a scipy distribution."
+            )
+
+        if callable(spec):
+            # Callable-only: assume PPF.  CDF not available.
+            return (spec, None)
+
+        if hasattr(spec, 'ppf') and hasattr(spec, 'cdf'):
+            return (spec.ppf, spec.cdf)
+
+        raise TypeError(
+            f"Marginal '{name}' must be a registered family tuple, 'uniform', "
+            f"a scipy distribution, a callable ppf(u), a (cdf, ppf) tuple, "
+            f"or None. Got {type(spec)}."
+        )
+
+    # ── Physical ↔ [0,1] ────────────────────────────────────────
+
+    def _to_uniform(self, X, indices=None):
+        """Map physical-space samples → [0, 1] via marginal CDFs.
+
+        Args:
+            X: (N, k) array in physical space.
+            indices: Optional list of variable indices (length k).
+        """
+        k = X.shape[1]
+        cols = indices if indices is not None else range(k)
+        U = np.zeros_like(X)
+        for ci, j in enumerate(cols):
+            if self._is_identity[j]:
+                U[:, ci] = X[:, ci]
+            elif self._cdf[j] is not None:
+                U[:, ci] = np.clip(self._cdf[j](X[:, ci]), 1e-15, 1 - 1e-15)
+            else:
+                raise RuntimeError(
+                    f"Variable '{self._var_names[j]}' was specified with "
+                    f"a PPF only — no CDF available for physical→[0,1] "
+                    f"mapping. Use a (cdf, ppf) tuple instead."
+                )
+        return U
+
+    def _to_physical(self, U):
+        """Map [0, 1]-space samples → physical via marginal PPFs."""
+        X = np.zeros_like(U)
+        for j in range(self.d):
+            if self._is_identity[j]:
+                X[:, j] = U[:, j]
+            else:
+                X[:, j] = self._ppf[j](U[:, j])
+        return X
+
+    def _physical_from_U(self, U, indices):
+        """Map (N, k) uniform draws at variable indices → physical columns."""
+        X = np.empty((U.shape[0], len(indices)))
+        for ci, j in enumerate(indices):
+            if self._is_identity[j]:
+                X[:, ci] = U[:, ci]
+            else:
+                X[:, ci] = self._ppf[j](U[:, ci])
+        return X
+
+    # ── Public interface ────────────────────────────────────────
+
+    def sample_joint(self, n):
+        """Draw *n* joint samples in **physical space** (shape (n, d))."""
+        return self._sample_joint(n)
+
+    def sample_conditional(self, u_indices, fixed_x):
+        """Draw one conditional sample (physical space)."""
+        X = self.sample_conditional_batch(
+            u_indices, np.atleast_2d(np.asarray(fixed_x, dtype=float))
+        )
+        return X[0]
+
+    def sample_conditional_batch(self, u_indices, fixed_X):
+        """Draw *N* conditional samples given fixed_X[:, :] = values at u_indices."""
+        u = np.asarray(u_indices)
+        fixed_X = np.asarray(fixed_X, dtype=float)
+        if fixed_X.ndim == 1:
+            fixed_X = fixed_X[None, :]
+        return self._sample_conditional_batch(u, fixed_X)
+
+    def sample_joint_deterministic(self, U):
+        """Map [0,1]^d points to joint samples (RQMC-compatible)."""
+        return self._sample_joint_deterministic(np.asarray(U, dtype=float))
+
+    def sample_conditional_batch_deterministic(self, u_indices, fixed_X, U_cond):
+        """Conditional samples with deterministic innovations (RQMC-compatible)."""
+        u = np.asarray(u_indices)
+        fixed_X = np.asarray(fixed_X, dtype=float)
+        if fixed_X.ndim == 1:
+            fixed_X = fixed_X[None, :]
+        return self._sample_conditional_batch_deterministic(
+            u, fixed_X, np.asarray(U_cond, dtype=float)
+        )
+
+    # ── Kernel hooks ────────────────────────────────────────────
+
+    def _sample_joint(self, n):
+        raise NotImplementedError
+
+    def _sample_conditional_batch(self, u, fixed_X):
+        raise NotImplementedError
+
+    def _sample_joint_deterministic(self, U):
+        raise NotImplementedError(
+            "Deterministic (RQMC) joint sampling is not implemented for "
+            f"{type(self).__name__}. Use the IID path (method='exhaustive') "
+            "or the Gaussian copula classes."
+        )
+
+    def _sample_conditional_batch_deterministic(self, u, fixed_X, U_cond):
+        raise NotImplementedError(
+            "Deterministic (RQMC) conditional sampling is not implemented for "
+            f"{type(self).__name__}. Use the IID path (method='exhaustive') "
+            "or the Gaussian copula classes."
+        )
+
+
+class GaussianCopulaMixed(_MixedCopulaBase):
+    """Gaussian copula with mixed marginals — declarative marginal spec.
+
+    Same distribution as :class:`GaussianCopulaArbitrary`, with a
+    friendlier marginal spec (family-name registry) and latent sampling
+    delegated to :class:`MultivariateNormal` so that draws are
+    stream-identical to the notebook implementation used in the
+    Demange-Chryst et al. (2022) cantilever reproduction.
+
+    Examples:
+        >>> joint = GaussianCopulaMixed(
+        ...     marginals={
+        ...         'FX': ('lognormal', {'mean': 556.8, 'cv': 0.08}),
+        ...         'lX': ('normal', 0.062, 0.0062),
+        ...         'lY': ('uniform', 0.04, 0.16),
+        ...     },
+        ...     corr=np.eye(3),
+        ... )
+        >>> X = joint.sample_joint(100)  # physical space
+    """
+
+    def __init__(self, marginals, corr):
+        super().__init__(marginals, corr)
+        # Latent MVN over all d variables (identity block factorises, so this
+        # is equivalent to a coupled-block construction and keeps the RNG
+        # stream identical to the notebook's GaussianCopulaMixed).
+        self._mvn = MultivariateNormal(mean=np.zeros(self.d), cov=self.corr)
+
+    def _sample_joint(self, n):
+        Z = self._mvn.sample_joint(n)
+        return self._to_physical(norm.cdf(Z))
+
+    def _sample_conditional_batch(self, u, fixed_X):
+        N = fixed_X.shape[0]
+        if len(u) == 0:
+            return self._sample_joint(N)
+        fixed_U = self._to_uniform(fixed_X, indices=u)
+        fixed_U = np.clip(fixed_U, 1e-15, 1 - 1e-15)
+        Z_fixed = norm.ppf(fixed_U)                 # (N, |u|) normal scores
+        Z_cond = self._mvn.sample_conditional_batch(u, Z_fixed)
+        X_out = self._to_physical(norm.cdf(Z_cond))
+        X_out[:, u] = fixed_X                       # preserve conditioned values exactly
+        return X_out
+
+    def _sample_joint_deterministic(self, U):
+        Z = norm.ppf(U)
+        Z_corr = Z @ self._L.T
+        return self._to_physical(norm.cdf(Z_corr))
+
+    def _sample_conditional_batch_deterministic(self, u, fixed_X, U_cond):
+        N = fixed_X.shape[0]
+        if len(u) == 0:
+            return self._sample_joint_deterministic(U_cond)
+        fixed_U = self._to_uniform(fixed_X, indices=u)
+        fixed_U = np.clip(fixed_U, 1e-15, 1 - 1e-15)
+        Z_u = norm.ppf(fixed_U)
+        v, A, _cond_cov, L = self._cond_params(u)
+        cond_means = Z_u @ A
+        Z_std = norm.ppf(U_cond)                    # deterministic innovations
+        Z_v = cond_means + Z_std @ L.T
+        Z_full = np.zeros((N, self.d))
+        Z_full[:, u] = Z_u
+        Z_full[:, v] = Z_v
+        X_out = self._to_physical(norm.cdf(Z_full))
+        X_out[:, u] = fixed_X                       # preserve conditioned values exactly
+        return X_out
+
+    def _cond_params(self, u_indices):
+        """Conditional MVN parameters: returns (v, A, cond_cov, L)."""
+        u = np.asarray(u_indices)
+        v = np.setdiff1d(np.arange(self.d), u)
+        if len(u) == 0:
+            return v, None, None, None
+        Sigma_uu = self.corr[np.ix_(u, u)]
+        Sigma_uv = self.corr[np.ix_(u, v)]
+        Sigma_vu = self.corr[np.ix_(v, u)]
+        Sigma_vv = self.corr[np.ix_(v, v)]
+        inv_Sigma_uu = np.linalg.inv(Sigma_uu)
+        A = inv_Sigma_uu @ Sigma_uv
+        cond_cov = Sigma_vv - Sigma_vu @ A
+        L = np.linalg.cholesky(cond_cov + 1e-10 * np.eye(len(v)))
+        return v, A, cond_cov, L
+
+
+class TCopulaMixed(_MixedCopulaBase):
+    """Student-t copula (``nu`` d.o.f.) with mixed marginals.
+
+    The t-copula is applied to the **correlated block** only; uncorrelated
+    variables stay independent.  This composite construction is mandatory —
+    a plain ``t_nu(0, block-diagonal R)`` does NOT factorise: the shared
+    chi-square mixing variable W couples the blocks and would introduce
+    spurious cross-block tail dependence.
+
+    Conditional sampling is **exact** (no MCMC / numerical inversion) via
+    the multivariate-t conditioning result:
+
+        X_f | X_c = x_c  ~  t_{nu+k}( mu_c, ((nu+Q)/(nu+k)) Sigma_c ),
+        Q = x_c^T R_cc^{-1} x_c,  mu_c = R_fc R_cc^{-1} x_c,
+        Sigma_c = R_ff - R_fc R_cc^{-1} R_cf,  k = |c|,
+
+    sampled through the scale mixture  X = mu_c + Z sqrt((nu+Q)/W')  with
+    Z ~ N(0, Sigma_c), W' ~ chi2_{nu+k}, then U = F_nu(X) (the copula
+    marginal).  RQMC/deterministic sampling is not implemented yet — use
+    the IID path (``method='exhaustive'``).
+
+    Args:
+        marginals: Dict mapping variable names to marginal specs
+            (same declarative registry as :class:`GaussianCopulaMixed`).
+        corr: Latent correlation matrix, shape (d, d).
+        nu: t-copula degrees of freedom (> 2 for finite variance).
+
+    Examples:
+        >>> joint = TCopulaMixed(
+        ...     marginals={
+        ...         'FX': ('lognormal', {'mean': 556.8, 'cv': 0.08}),
+        ...         'lX': ('normal', 0.062, 0.0062),
+        ...         'lY': ('normal', 0.0987, 0.00987),
+        ...         'L':  ('normal', 4.29, 0.429),
+        ...     },
+        ...     corr=corr_matrix,
+        ...     nu=5.0,
+        ... )
+    """
+
+    def __init__(self, marginals, corr, nu):
+        super().__init__(marginals, corr)
+        if nu <= 2:
+            raise ValueError(f"nu must be > 2 (finite variance), got {nu}.")
+        self.nu = float(nu)
+        self._R = self.corr[np.ix_(self._coupled, self._coupled)]
+        self._Lc = np.linalg.cholesky(self._R)
+
+    def _sample_joint(self, n):
+        m = len(self._coupled)
+        U = np.empty((n, self.d))
+        if m > 0:
+            Z = np.random.randn(n, m)
+            W = gamma_dist.rvs(self.nu / 2, scale=2, size=n)
+            X = (Z @ self._Lc.T) * np.sqrt(self.nu / W)[:, None]
+            U[:, self._coupled] = student_t.cdf(X, df=self.nu)
+        if len(self._independent) > 0:
+            Z0 = np.random.randn(n, len(self._independent))
+            U[:, self._independent] = norm.cdf(Z0)
+        return self._to_physical(U)
+
+    def _sample_conditional_batch(self, u, fixed_X):
+        N = fixed_X.shape[0]
+        u = np.asarray(u)
+        if len(u) == 0:
+            return self._sample_joint(N)
+        X_out = np.empty((N, self.d))
+        X_out[:, u] = fixed_X
+        free = np.setdiff1d(np.arange(self.d), u)
+
+        # Independent block: free variables drawn from their marginals
+        indep_free = np.array([j for j in self._independent if j in free])
+        if len(indep_free) > 0:
+            U0 = norm.cdf(np.random.randn(N, len(indep_free)))
+            X_out[:, indep_free] = self._physical_from_U(U0, indep_free)
+
+        # t-copula block
+        u_c = np.array([j for j in self._coupled if j in u])
+        free_c = np.array([j for j in self._coupled if j in free])
+        if len(free_c) == 0:
+            return X_out
+        if len(u_c) == 0:
+            # No conditioning inside the block -> joint t draw
+            Z = np.random.randn(N, len(self._coupled))
+            W = gamma_dist.rvs(self.nu / 2, scale=2, size=N)
+            X = (Z @ self._Lc.T) * np.sqrt(self.nu / W)[:, None]
+            U_c = student_t.cdf(X, df=self.nu)
+            pos_free = [int(np.where(self._coupled == j)[0][0]) for j in free_c]
+            X_out[:, free_c] = self._physical_from_U(U_c[:, pos_free], free_c)
+            return X_out
+
+        # Fixed coupled values: physical -> [0,1] -> latent t-space
+        fixed_U = self._to_uniform(fixed_X, indices=u)          # (N, |u|)
+        col_of = {int(jj): ci for ci, jj in enumerate(u)}
+        U_fix_c = np.column_stack([fixed_U[:, col_of[j]] for j in u_c])
+        x_c = student_t.ppf(np.clip(U_fix_c, 1e-15, 1 - 1e-15), df=self.nu)
+
+        pos_f = [int(np.where(self._coupled == j)[0][0]) for j in free_c]
+        pos_c = [int(np.where(self._coupled == j)[0][0]) for j in u_c]
+        Rcc = self._R[np.ix_(pos_c, pos_c)]
+        Rinv_cc = np.linalg.inv(Rcc)
+        Rfc = self._R[np.ix_(pos_f, pos_c)]
+        Rff = self._R[np.ix_(pos_f, pos_f)]
+        Sigma_c = Rff - Rfc @ Rinv_cc @ Rfc.T
+        Lc = np.linalg.cholesky(Sigma_c + 1e-14 * np.eye(len(pos_f)))
+        mu_c = (Rfc @ Rinv_cc @ x_c.T).T                          # (N, |f|)
+        Q = np.einsum("ia,ab,ib->i", x_c, Rinv_cc, x_c)           # (N,)
+        nup = self.nu + len(u_c)
+
+        Z = np.random.randn(N, len(pos_f)) @ Lc.T
+        Wp = gamma_dist.rvs(nup / 2, scale=2, size=N)
+        X_free = mu_c + Z * np.sqrt((self.nu + Q) / Wp)[:, None]  # t_{nu+k}
+        U_free = student_t.cdf(X_free, df=self.nu)                # copula conditional
+
+        X_out[:, free_c] = self._physical_from_U(U_free, free_c)
+        return X_out
 
 
 class TruncatedMultivariateNormal:

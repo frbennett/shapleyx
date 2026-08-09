@@ -50,6 +50,7 @@ nav:
     - Basic Usage: tutorials/basic-usage.md
     - Example Workflow: tutorials/owen_product_function.ipynb
     - Cantilever Beam: tutorials/cantilever_beam.ipynb
+    - Copula Samplers: tutorials/cantilever_beam_copulas.ipynb
     - MC Shapley: tutorials/mc_shapley.ipynb
     - MC Shapley + Sobol: tutorials/mc_shapley_sobol.ipynb
     - Coalition Truncation: tutorials/mc_shapley_kmax.ipynb

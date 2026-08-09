@@ -7,7 +7,7 @@ long_description = readme_path.read_text(encoding='utf-8')
 
 setup(
     name='shapleyx',
-    version='0.7.0',
+    version='0.8.0',
     description='Global sensitivity analysis with RS-HDMR — Sobol, Shapley, PAWN, and more',
     long_description=long_description,
     long_description_content_type='text/markdown',

@@ -108,15 +108,66 @@ speed and convergence.  Use `-np.inf` / `np.inf` for unbounded dimensions.
 
 ---
 
+## Built-in Mixed-Marginal Copulas
+
+`GaussianCopulaMixed(marginals, corr)` and `TCopulaMixed(marginals, corr, nu)`
+are the package's mixed-marginal copula classes: arbitrary per-variable
+marginals under a Gaussian or Student-t copula, with a **declarative marginal
+spec registry**:
+
+```python
+from shapleyx.utilities.mc_shapley import GaussianCopulaMixed, TCopulaMixed
+
+marginals = {
+    'FX': ('lognormal', {'mean': 556.8, 'cv': 0.08}),   # paper-Table-1 style
+    'FY': ('lognormal', {'mu': 6.31, 'sigma': 0.0799}), # underlying-normal style
+    'E':  ('normal', 200e9, 1.2e10),                    # (mean, std)
+    'lX': ('uniform', 0.025, 0.100),                    # (lo, hi)
+    'lY': ('truncnorm', 0.04, 0.16, 0.0987, 0.00987),   # (lo, hi, mean, std)
+    'L':  ('beta', 2.0, 5.0, 2.0, 7.0),                 # (a, b, lo, hi)
+    'Q':  weibull_min(c=2),                             # scipy passthrough
+}
+
+joint_g = GaussianCopulaMixed(marginals, corr)          # Gaussian copula
+joint_t = TCopulaMixed(marginals, corr, nu=5.0)         # Student-t copula
+```
+
+**Registered families:** `normal`, `lognormal`, `uniform`, `truncnorm`,
+`beta`, `gamma`, `exponential`, `weibull`, `gumbel`, `frechet`, `pareto` —
+plus the full `GaussianCopulaArbitrary` passthrough contract (scipy
+distributions, `(cdf, ppf)` tuples, callable PPFs, `None`/`'uniform'`).
+
+**Lognormal parameterisation** is deliberately restricted to *named* forms —
+exactly one of `{'mean', 'cv'}` or `{'mu', 'sigma'}` — to prevent the classic
+parameterisation bug; a bare positional tuple raises.
+
+**`TCopulaMixed`** applies the t-copula to the *correlated block* only
+(uncorrelated variables stay independent — a plain block-diagonal
+$t_\nu(0,R)$ does not factorise).  Conditional sampling is **exact** via the
+multivariate-t conditioning result $X_f \mid X_c \sim t_{\nu+k}(\mu_c,
+\frac{\nu+Q}{\nu+k}\Sigma_c)$ (no MCMC, Rosenblatt-validated).  RQMC/
+deterministic sampling is not implemented for the t kernel yet — use
+`method='exhaustive'`.
+
+`GaussianCopulaMixed` delegates latent sampling to `MultivariateNormal`, so
+its RNG stream is identical to the hand-rolled class historically defined in
+`Examples/cantilever_beam.ipynb` — published numbers reproduce exactly.
+
+Full worked example: `docs/tutorials/cantilever_beam_copulas.ipynb`.
+
+---
+
 ## Custom Classes from Case Studies
 
 Several notebooks define **ad-hoc distribution classes** to handle
-challenging input models.  They illustrate the flexibility of the interface.
+challenging input models.  They illustrate the flexibility of the interface —
+and are now largely **superseded by the built-in classes above**.
 
-### `GaussianCopulaMixed` — Cantilever Beam
+### `GaussianCopulaMixed` — Cantilever Beam (historical)
 
 **Mixed Normal + LogNormal marginals** with a Gaussian copula for correlation.
-Defined inline in `Examples/cantilever_beam.ipynb`.
+Defined inline in `Examples/cantilever_beam.ipynb`; the package now ships an
+identical-stream implementation as `shapleyx.utilities.mc_shapley.GaussianCopulaMixed`.
 
 ```python
 class GaussianCopulaMixed:
